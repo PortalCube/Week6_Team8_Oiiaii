@@ -2,8 +2,6 @@
 
 #include "Runtime/Core/FAllocator.h"
 
-
-
 struct FMemory
 {
 	enum AllocationHints
@@ -49,5 +47,4 @@ public:
 
 private:
 	static inline FAllocator Allocator;
-
 };

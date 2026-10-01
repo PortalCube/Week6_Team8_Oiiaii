@@ -15,7 +15,7 @@ FAxisAlignedBoundingBox::FAxisAlignedBoundingBox(const FAxisAlignedBoundingBox& 
 }
 
 FAxisAlignedBoundingBox::FAxisAlignedBoundingBox(const FMesh& Mesh)
-{	
+{
 	if (Mesh.GetPositions().empty())
 	{
 		return;
@@ -35,7 +35,7 @@ FAxisAlignedBoundingBox::FAxisAlignedBoundingBox(const FMesh& Mesh)
 }
 
 FAxisAlignedBoundingBox::FAxisAlignedBoundingBox(const FMesh& Mesh, const FMatrix& ModelMatrix)
-	: FAxisAlignedBoundingBox(Mesh.GetLocalBounds(), ModelMatrix)
+    : FAxisAlignedBoundingBox(Mesh.GetLocalBounds(), ModelMatrix)
 {
 }
 
@@ -43,7 +43,7 @@ FAxisAlignedBoundingBox::FAxisAlignedBoundingBox(const FVector& pCenter, const F
 {
 	Center = pCenter;
 	Extent = pExtent;
-	
+
 	Min = Center - Extent;
 	Max = Center + Extent;
 }
@@ -52,7 +52,7 @@ FAxisAlignedBoundingBox FAxisAlignedBoundingBox::Union(const FAxisAlignedBoundin
 {
 	FAxisAlignedBoundingBox R;
 
-	//두 AABB를 품을 수 있는 크기로 Min, Max를 재조정한다.
+	// 두 AABB를 품을 수 있는 크기로 Min, Max를 재조정한다.
 	for (int i = 0; i < 3; ++i)
 	{
 		R.Min[i] = std::min(A.Min[i], B.Min[i]);

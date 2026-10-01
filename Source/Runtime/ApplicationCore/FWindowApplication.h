@@ -9,14 +9,12 @@
 class FWindowsApplication
 {
 private:
-
 	HINSTANCE Instance;
 	TArray<TUniquePtr<FWindow>> Windows;
 
 	FWindow* MainWindow;
 
 public:
-
 	FWindowsApplication(HINSTANCE InInstance);
 	~FWindowsApplication();
 
@@ -35,5 +33,4 @@ public:
 	void Quit();
 
 	bool CheckExitMessage();
-
 };

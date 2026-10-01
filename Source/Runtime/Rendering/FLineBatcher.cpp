@@ -5,8 +5,10 @@
 #include <cmath>
 #include <numbers>
 
-bool FLineBatcher::Initialize(ID3D11Device* Device) {
-	if (!Device) {
+bool FLineBatcher::Initialize(ID3D11Device* Device)
+{
+	if (!Device)
+	{
 		return false;
 	}
 
@@ -19,7 +21,8 @@ bool FLineBatcher::Initialize(ID3D11Device* Device) {
 	};
 
 	HRESULT Result = Device->CreateBuffer(&VbDesc, nullptr, &DynamicLineVertexBuffer);
-	if (FAILED(Result)) {
+	if (FAILED(Result))
+	{
 		return false;
 	}
 
@@ -27,35 +30,38 @@ bool FLineBatcher::Initialize(ID3D11Device* Device) {
 	return true;
 }
 
-void FLineBatcher::Shutdown() {
+void FLineBatcher::Shutdown()
+{
 	DynamicLineVertexBuffer.Reset();
 	LineVertices.clear();
 }
 
-void FLineBatcher::DrawLine(const FVector& Start, const FVector& End, const FVector4& Color) {
-	if (LineVertices.size() + 2 > MaxVertices) {
+void FLineBatcher::DrawLine(const FVector& Start, const FVector& End, const FVector4& Color)
+{
+	if (LineVertices.size() + 2 > MaxVertices)
+	{
 		return;
 	}
 
 	LineVertices.push_back(FVertexData{
-		Start.X, Start.Y, Start.Z,
-		Color.X, Color.Y, Color.Z, Color.W,
-		0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-	});
+	    Start.X, Start.Y, Start.Z,
+	    Color.X, Color.Y, Color.Z, Color.W,
+	    0.0f, 0.0f, 0.0f, 0.0f, 0.0f });
 	LineVertices.push_back(FVertexData{
-		End.X, End.Y, End.Z,
-		Color.X, Color.Y, Color.Z, Color.W,
-		0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-	});
+	    End.X, End.Y, End.Z,
+	    Color.X, Color.Y, Color.Z, Color.W,
+	    0.0f, 0.0f, 0.0f, 0.0f, 0.0f });
 }
 
-void FLineBatcher::DrawBoxCenterExtent(const FVector& Center, const FVector& Extent, const FVector4& Color) {
+void FLineBatcher::DrawBoxCenterExtent(const FVector& Center, const FVector& Extent, const FVector4& Color)
+{
 	const FVector Min = Center - Extent;
 	const FVector Max = Center + Extent;
 	DrawBoxMinMax(Min, Max, Color);
 }
 
-void FLineBatcher::DrawBoxMinMax(const FVector& Min, const FVector& Max, const FVector4& Color) {
+void FLineBatcher::DrawBoxMinMax(const FVector& Min, const FVector& Max, const FVector4& Color)
+{
 
 	// 하단 사각형
 	DrawLine(FVector{ Min.X, Min.Y, Min.Z }, FVector{ Max.X, Min.Y, Min.Z }, Color);
@@ -77,12 +83,11 @@ void FLineBatcher::DrawBoxMinMax(const FVector& Min, const FVector& Max, const F
 }
 
 void FLineBatcher::DrawQuad(
-	const FVector& A,
-	const FVector& B,
-	const FVector& C,
-	const FVector& D,
-	const FVector4& Color
-)
+    const FVector& A,
+    const FVector& B,
+    const FVector& C,
+    const FVector& D,
+    const FVector4& Color)
 {
 	DrawLine(A, B, Color);
 	DrawLine(B, C, Color);
@@ -90,11 +95,14 @@ void FLineBatcher::DrawQuad(
 	DrawLine(D, A, Color);
 }
 
-void FLineBatcher::DrawSphere(const FVector& Center, float Radius, const FVector4& Color, uint32 Segments) {
-	if (Segments < 4) Segments = 4;
+void FLineBatcher::DrawSphere(const FVector& Center, float Radius, const FVector4& Color, uint32 Segments)
+{
+	if (Segments < 4)
+		Segments = 4;
 	const float Step = std::numbers::pi_v<float> * 2.0f / static_cast<float>(Segments);
 
-	for (uint32 i = 0; i < Segments; ++i) {
+	for (uint32 i = 0; i < Segments; ++i)
+	{
 		const float A0 = static_cast<float>(i) * Step;
 		const float A1 = static_cast<float>(i + 1) * Step;
 
@@ -111,15 +119,18 @@ void FLineBatcher::DrawSphere(const FVector& Center, float Radius, const FVector
 }
 
 void FLineBatcher::Flush(ID3D11DeviceContext& Context,
-	const TSharedPtr<FRenderPipeline>& Pipeline) {
-	if (LineVertices.empty() || !DynamicLineVertexBuffer) {
+    const TSharedPtr<FRenderPipeline>& Pipeline)
+{
+	if (LineVertices.empty() || !DynamicLineVertexBuffer)
+	{
 		return;
 	}
 
 	// 정점 버퍼 매핑 및 데이터 복사
 	D3D11_MAPPED_SUBRESOURCE MappedVb{};
 	HRESULT Result = Context.Map(DynamicLineVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedVb);
-	if (FAILED(Result)) {
+	if (FAILED(Result))
+	{
 		LineVertices.clear();
 		return;
 	}
@@ -129,7 +140,8 @@ void FLineBatcher::Flush(ID3D11DeviceContext& Context,
 	Context.Unmap(DynamicLineVertexBuffer.Get(), 0);
 
 	// 파이프라인 바인딩
-	if (Pipeline) {
+	if (Pipeline)
+	{
 		Pipeline->Bind(Context);
 	}
 

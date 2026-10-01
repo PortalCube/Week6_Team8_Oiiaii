@@ -20,17 +20,16 @@ namespace EditorConstant
 	/// <summary>
 	/// 에디터에서 스폰 가능한 액터들을 정의합니다.
 	/// </summary>
-	inline UClass* const SpawnableActors[]
-	{
-	   AAppleNormalActor::StaticClass(),
-	   AAppleBittenActor::StaticClass(),
-	   ACubeActor::StaticClass(),
-	   ASphereActor::StaticClass(),
-	   ACylinderActor::StaticClass(),
-	   ABillboardActor::StaticClass(),
-	   AAnimatedBillboardActor::StaticClass(),
-	   ASpotlightActor::StaticClass(),
-	   ATextRenderActor::StaticClass(),
+	inline UClass* const SpawnableActors[]{
+		AAppleNormalActor::StaticClass(),
+		AAppleBittenActor::StaticClass(),
+		ACubeActor::StaticClass(),
+		ASphereActor::StaticClass(),
+		ACylinderActor::StaticClass(),
+		ABillboardActor::StaticClass(),
+		AAnimatedBillboardActor::StaticClass(),
+		ASpotlightActor::StaticClass(),
+		ATextRenderActor::StaticClass(),
 	};
 
-}
+} // namespace EditorConstant

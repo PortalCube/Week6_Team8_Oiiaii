@@ -29,7 +29,7 @@ void USpotLightComponent::Serialize(FArchive& Archive) const
 	Archive.SetVector("LightColor", LightColor);
 }
 
-void USpotLightComponent::Deserialize(const FArchive & Archive)
+void USpotLightComponent::Deserialize(const FArchive& Archive)
 {
 	Super::Deserialize(Archive);
 
@@ -37,5 +37,4 @@ void USpotLightComponent::Deserialize(const FArchive & Archive)
 	Range = Archive.GetFloat("Range");
 	Intensity = Archive.GetFloat("Intensity");
 	LightColor = Archive.GetVector("LightColor");
-
 }

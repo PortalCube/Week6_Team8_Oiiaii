@@ -19,7 +19,6 @@ void FInputManager::EndFrame()
 	memcpy(bPreviousMouseState, bCurrentMouseState, sizeof(bool) * MAX_MOUSE_BUTTONS);
 }
 
-
 bool FInputManager::IsKeyPressed(uint32 Key) const
 {
 	if (Key >= MAX_KEYS)

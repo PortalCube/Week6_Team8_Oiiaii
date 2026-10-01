@@ -10,111 +10,120 @@ IMPLEMENT_UCLASS(UPrimitiveComponent, USceneComponent)
 
 void UPrimitiveComponent::Initialize()
 {
-    Super::Initialize();
-    RenderData.Type = ERenderType::Primitive;
+	Super::Initialize();
+	RenderData.Type = ERenderType::Primitive;
 
-    FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-    FMaterialInstance DefaultMaterial{ Registry.Get<UMaterial>("Material/Simple.json") };
+	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+	FMaterialInstance DefaultMaterial{ Registry.Get<UMaterial>("Material/Simple.json") };
 
-    RenderData.Materials.push_back(DefaultMaterial);
-    UpdateMaterialCache();
-    UpdateSortKey();
+	RenderData.Materials.push_back(DefaultMaterial);
+	UpdateMaterialCache();
+	UpdateSortKey();
 }
 
 void UPrimitiveComponent::SetMesh(UStaticMesh* Mesh)
 {
-    RenderData.Mesh = Mesh;
-    LocalBounds = Mesh->Get()->GetLocalBounds();
-    MarkBoundDirty();
+	RenderData.Mesh = Mesh;
+	LocalBounds = Mesh->Get()->GetLocalBounds();
+	MarkBoundDirty();
 }
 
 void UPrimitiveComponent::SetMaterial(UMaterial* Material, int32 Index)
 {
-    if (!Material || Index < 0) { return; }
+	if (!Material || Index < 0)
+	{
+		return;
+	}
 
-    const size_t TargetIndex = static_cast<size_t>(Index);
-    if (RenderData.Materials.size() <= TargetIndex)
-    {
-        RenderData.Materials.resize(TargetIndex + 1, FMaterialInstance{ Material });
-    }
-    RenderData.Materials[TargetIndex] = FMaterialInstance{ Material };
-    UpdateMaterialCache();
-    UpdateSortKey();
+	const size_t TargetIndex = static_cast<size_t>(Index);
+	if (RenderData.Materials.size() <= TargetIndex)
+	{
+		RenderData.Materials.resize(TargetIndex + 1, FMaterialInstance{ Material });
+	}
+	RenderData.Materials[TargetIndex] = FMaterialInstance{ Material };
+	UpdateMaterialCache();
+	UpdateSortKey();
 }
 
 void UPrimitiveComponent::SetTexture(UTexture* Texture, int32 Index)
 {
-    if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size()) { return; }
-    RenderData.Materials[static_cast<size_t>(Index)].Texture = Texture;
-    UpdateMaterialCache();
-    UpdateSortKey();
+	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size())
+	{
+		return;
+	}
+	RenderData.Materials[static_cast<size_t>(Index)].Texture = Texture;
+	UpdateMaterialCache();
+	UpdateSortKey();
 }
 
 void UPrimitiveComponent::SetColor(const FVector4& Color, int32 Index)
 {
-    if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size()) { return; }
-    RenderData.Materials[static_cast<size_t>(Index)].Color = Color;
+	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size())
+	{
+		return;
+	}
+	RenderData.Materials[static_cast<size_t>(Index)].Color = Color;
 }
 
 void UPrimitiveComponent::MarkBoundDirty()
 {
-    if (Scene)
-    {
-        Scene->MarkBoundsDirty(this);
-    }
+	if (Scene)
+	{
+		Scene->MarkBoundsDirty(this);
+	}
 }
 
 void UPrimitiveComponent::UpdateWorldBounds()
 {
-    WorldBounds = FAxisAlignedBoundingBox(GetLocalBounds(), GetGlobalTransformMatrix());
+	WorldBounds = FAxisAlignedBoundingBox(GetLocalBounds(), GetGlobalTransformMatrix());
 }
 
 void UPrimitiveComponent::OnTransformChanged()
 {
-    MarkBoundDirty();
+	MarkBoundDirty();
 }
 
 void UPrimitiveComponent::SetRelativeTransform(const FTransform& RelativeTransform)
 {
-    Super::SetRelativeTransform(RelativeTransform);
-    UpdateWorldBounds();
+	Super::SetRelativeTransform(RelativeTransform);
+	UpdateWorldBounds();
 }
 
-const FAxisAlignedBoundingBox &UPrimitiveComponent::GetWorldBounds() const
+const FAxisAlignedBoundingBox& UPrimitiveComponent::GetWorldBounds() const
 {
-    return WorldBounds;
+	return WorldBounds;
 }
 
 FAxisAlignedBoundingBox UPrimitiveComponent::GetViewBounds(const FCamera& Camera) const
 {
-    return FAxisAlignedBoundingBox(GetWorldBounds(), Camera.GetViewMatrix());
+	return FAxisAlignedBoundingBox(GetWorldBounds(), Camera.GetViewMatrix());
 }
 
 void UPrimitiveComponent::Register(UScene& InScene)
 {
-    if (RenderData.Type == ERenderType::None)
-    {
-        RenderData.Type = ERenderType::Primitive;
-    }
+	if (RenderData.Type == ERenderType::None)
+	{
+		RenderData.Type = ERenderType::Primitive;
+	}
 
-    Super::Register(InScene);
-    InScene.AddRenderComponent(this);
+	Super::Register(InScene);
+	InScene.AddRenderComponent(this);
 }
 
 void UPrimitiveComponent::Unregister()
 {
-    if (Scene)
-    {
-        Scene->RemoveRenderComponent(this);
-    }
-    Super::Unregister();
+	if (Scene)
+	{
+		Scene->RemoveRenderComponent(this);
+	}
+	Super::Unregister();
 }
 
 void UPrimitiveComponent::UpdateMaterialCache()
 {
 	CachedMaterials.clear();
 	CachedMaterials.reserve(RenderData.Materials.size());
-	
+
 	for (const auto& Item : RenderData.Materials)
 	{
 		if (!Item.Pipeline)
@@ -136,30 +145,30 @@ void UPrimitiveComponent::UpdateMaterialCache()
 
 bool UPrimitiveComponent::IsOcclusionTarget() const
 {
-    return RenderData.Mesh != nullptr && RenderData.Mesh->Get() != nullptr;
+	return RenderData.Mesh != nullptr && RenderData.Mesh->Get() != nullptr;
 }
 
 void UPrimitiveComponent::UpdateSortKey()
 {
-    RenderData.SortKey = 0;
-    if (RenderData.Materials.empty())
-    {
-        return;
-    }
+	RenderData.SortKey = 0;
+	if (RenderData.Materials.empty())
+	{
+		return;
+	}
 
-    const FMaterialInstance& Material = RenderData.Materials[0];
-    const uint64 PipelineId = Material.Pipeline
-        ? static_cast<uint64>(Material.Pipeline->GetID().GetHash())
-        : 0;
-    const uint64 MaterialId = Material.Material
-        ? static_cast<uint64>(Material.Material->GetID().GetHash())
-        : 0;
-    const uint64 TextureId = Material.Texture
-        ? static_cast<uint64>(Material.Texture->GetID().GetHash())
-        : 0;
+	const FMaterialInstance& Material = RenderData.Materials[0];
+	const uint64 PipelineId = Material.Pipeline
+	                              ? static_cast<uint64>(Material.Pipeline->GetID().GetHash())
+	                              : 0;
+	const uint64 MaterialId = Material.Material
+	                              ? static_cast<uint64>(Material.Material->GetID().GetHash())
+	                              : 0;
+	const uint64 TextureId = Material.Texture
+	                             ? static_cast<uint64>(Material.Texture->GetID().GetHash())
+	                             : 0;
 
-    RenderData.SortKey =
-        ((PipelineId & 0xFFFFull) << 48) |
-        ((MaterialId & 0xFFFFull) << 32) |
-        ((TextureId & 0xFFFFull) << 16);
+	RenderData.SortKey =
+	    ((PipelineId & 0xFFFFull) << 48) |
+	    ((MaterialId & 0xFFFFull) << 32) |
+	    ((TextureId & 0xFFFFull) << 16);
 }

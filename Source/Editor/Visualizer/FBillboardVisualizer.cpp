@@ -9,22 +9,28 @@
 #include "Runtime/Core/TArray.h"
 
 void FBillboardVisualizer::Draw(
-	const UPrimitiveComponent& Component,
-	FRenderView& RenderView,
-	const FCamera& Camera,
-	const FVector4& Color
-) const
+    const UPrimitiveComponent& Component,
+    FRenderView& RenderView,
+    const FCamera& Camera,
+    const FVector4& Color) const
 {
-	if (Component.IsA<UBillBoardComp>() == false) { return; }
+	if (Component.IsA<UBillBoardComp>() == false)
+	{
+		return;
+	}
 
 	const UBillBoardComp& BillBoardComponent = *Component.Cast<UBillBoardComp>();
 
 	UStaticMesh* MeshPtr = BillBoardComponent.GetRenderData(Camera).Mesh;
-	if (!MeshPtr) return;
+	if (!MeshPtr)
+		return;
 	const FMesh& Mesh = *MeshPtr->Get();
 	const FMatrix ModelMatrix = BillBoardComponent.GetRenderMatrix(Camera);
 
-	if (Mesh.GetPositions().size() != 4) { return; }
+	if (Mesh.GetPositions().size() != 4)
+	{
+		return;
+	}
 
 	TArray<FVector> Array;
 	for (int i = 0; i < 4; ++i)
@@ -34,10 +40,9 @@ void FBillboardVisualizer::Draw(
 	}
 
 	RenderView.RenderQuad(
-		Array[0],
-		Array[1],
-		Array[2],
-		Array[3],
-		Color
-	);
+	    Array[0],
+	    Array[1],
+	    Array[2],
+	    Array[3],
+	    Color);
 }

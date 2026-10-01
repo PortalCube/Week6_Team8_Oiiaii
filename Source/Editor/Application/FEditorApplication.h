@@ -16,7 +16,8 @@
 #include "Editor/Visualizer/FVisualizerRegistry.h"
 #include "Runtime/UI/SWindow.h"
 
-class FEditorApplication final : public IApplication {
+class FEditorApplication final : public IApplication
+{
 	FEditor Editor;
 
 	USceneManager* SceneManager = nullptr;
@@ -36,6 +37,7 @@ class FEditorApplication final : public IApplication {
 	FRenderView* RenderView = nullptr;
 
 	SWindow EditorViewports;
+
 public:
 	FEditorApplication() = default;
 	~FEditorApplication() override = default;

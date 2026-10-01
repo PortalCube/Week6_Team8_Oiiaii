@@ -28,7 +28,7 @@ void FImguiWorldOutliner::Process(FEditor& Editor)
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("체크: 캐쉬된 라벨 및 화면에 보이는 일부 노드만 랜더\n"
-			"해제: 매 프레임 동적 생성 및 전체 순회");
+		                  "해제: 매 프레임 동적 생성 및 전체 순회");
 	}
 	ImGui::Separator();
 
@@ -80,7 +80,7 @@ void FImguiWorldOutliner::Process(FEditor& Editor)
 			{
 				continue;
 			}
-			//액터 노드 표시
+			// 액터 노드 표시
 			ShowActorNode(Editor, Actor, CurrentFilterStr.c_str(), SelectedActor);
 		}
 	}
@@ -116,7 +116,10 @@ void FImguiWorldOutliner::RefreshCache(UScene* Scene)
 
 	for (AActor* Actor : Actors)
 	{
-		if (!Actor) { continue; }
+		if (!Actor)
+		{
+			continue;
+		}
 
 		FOutlinerItem Item;
 		Item.Type = EOutlinerItemRowType::Actor;
@@ -128,7 +131,8 @@ void FImguiWorldOutliner::RefreshCache(UScene* Scene)
 
 		Item.LowerLabel = Item.DisplayLabel;
 		std::transform(Item.LowerLabel.begin(), Item.LowerLabel.end(), Item.LowerLabel.begin(),
-			[](unsigned char c) { return static_cast<char>(::tolower(c)); });
+		    [](unsigned char c)
+		    { return static_cast<char>(::tolower(c)); });
 
 		CachedActors.push_back(std::move(Item));
 	}
@@ -157,7 +161,10 @@ void FImguiWorldOutliner::UpdateFilter(const FString& FilterStr)
 
 void FImguiWorldOutliner::ShowActorNode(FEditor& Editor, AActor* Actor, const std::string& FilterStr, AActor* SelectedActor)
 {
-	if (!Actor->GetClass()) { return; }
+	if (!Actor->GetClass())
+	{
+		return;
+	}
 
 	// 검색어 필터링
 	if (!FilterStr.empty())
@@ -192,7 +199,6 @@ void FImguiWorldOutliner::ShowActorNode(FEditor& Editor, AActor* Actor, const st
 		Editor.SelectActor(Actor);
 	}
 
-
 	// 자식 컴포넌트 목록 전개
 	if (bNodeOpen && !Components.empty())
 	{
@@ -203,12 +209,10 @@ void FImguiWorldOutliner::ShowActorNode(FEditor& Editor, AActor* Actor, const st
 				return;
 			}
 			ShowComponentNode(*Comp);
-
 		}
 
 		ImGui::TreePop();
 	}
-
 }
 
 void FImguiWorldOutliner::ShowActorNode_Cached(FEditor& Editor, const FOutlinerItem& Item, AActor* SelectedActor)
@@ -221,7 +225,8 @@ void FImguiWorldOutliner::ShowActorNode_Cached(FEditor& Editor, const FOutlinerI
 	if (Item.Type == EOutlinerItemRowType::Actor)
 	{
 		AActor* Actor = Item.Actor;
-		if (!Actor) return;
+		if (!Actor)
+			return;
 
 		const bool bIsOpen = ExpandedActorUUIDs.contains(Item.UUID);
 		const bool bIsSelected = (Actor == SelectedActor);
@@ -281,8 +286,6 @@ void FImguiWorldOutliner::ShowComponentNode(USceneComponent& Comp) const
 	ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(Comp.GetUUID())), CompFlags, "%s (ID: %u)", CompClassName, Comp.GetUUID());
 }
 
-
-
 bool FImguiWorldOutliner::ShowSearchBar()
 {
 	ImGui::SetNextItemWidth(-1.0f);
@@ -291,9 +294,11 @@ bool FImguiWorldOutliner::ShowSearchBar()
 		CurrentFilterStr = FilterBuffer;
 
 		std::transform(CurrentFilterStr.begin(), CurrentFilterStr.end(), CurrentFilterStr.begin(),
-			[](unsigned char c) { return static_cast<char>(::tolower(c)); });
+		    [](unsigned char c)
+		    { return static_cast<char>(::tolower(c)); });
 
-		return true;;
+		return true;
+		;
 	}
 
 	return false;
@@ -307,7 +312,8 @@ void FImguiWorldOutliner::RebuildDisplayList()
 	{
 		const FOutlinerItem& ActorItem = CachedActors[ItemIndex];
 		AActor* Actor = ActorItem.Actor;
-		if (!Actor) continue;
+		if (!Actor)
+			continue;
 
 		FOutlinerItem Row = ActorItem;
 		Row.Depth = 0;
@@ -317,7 +323,8 @@ void FImguiWorldOutliner::RebuildDisplayList()
 		{
 			for (USceneComponent* Comp : Actor->GetAttachedComponents())
 			{
-				if (!Comp) continue;
+				if (!Comp)
+					continue;
 
 				FOutlinerItem CompItem;
 				CompItem.Type = EOutlinerItemRowType::Component;

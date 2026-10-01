@@ -101,7 +101,7 @@ struct FMathSSE
 	}
 
 	// Vec에서 특정 인덱스(Index)에 있는 원소를 뽑아 4개 슬롯에 복제하는 함수
-	template<uint32_t Index>
+	template <uint32_t Index>
 	FORCEINLINE static VectorRegister4Float VectorReplicate(VectorRegister4Float Vec)
 	{
 		static_assert(Index < 4, "Index must be between 0 and 3");

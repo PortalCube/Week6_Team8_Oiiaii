@@ -21,12 +21,10 @@
 #include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Asset/UFont.h"
 
-
 namespace
 {
 	constexpr float SlotSize = 64.0f;
 }
-
 
 void FImguiPropertyWindow::Process(FEditor& Editor)
 {
@@ -111,8 +109,7 @@ void FImguiPropertyWindow::ShowComponentSections(FEditor& Editor, AActor& Actor)
 		const char* CompTypeName = Comp->GetClass() ? Comp->GetClass()->GetDisplayName().c_str() : "Component";
 
 		// ### 뒤쪽이 실제 ID 라서, 앞의 표시 이름이 바뀌어도 접힘 상태가 유지된다.
-		std::string SectionTitle = (bIsRoot ? "[Root] " : "[Sub] ") + std::string(CompTypeName)
-			+ " (ID: " + std::to_string(Comp->GetUUID()) + ")###CompHeader_" + std::to_string(Comp->GetUUID());
+		std::string SectionTitle = (bIsRoot ? "[Root] " : "[Sub] ") + std::string(CompTypeName) + " (ID: " + std::to_string(Comp->GetUUID()) + ")###CompHeader_" + std::to_string(Comp->GetUUID());
 
 		if (!ImGui::CollapsingHeader(SectionTitle.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -129,7 +126,7 @@ void FImguiPropertyWindow::ShowComponentSections(FEditor& Editor, AActor& Actor)
 }
 
 void FImguiPropertyWindow::ShowComponentDetails(FEditor& Editor, AActor& Actor,
-	USceneComponent& Comp, bool bIsRoot)
+    USceneComponent& Comp, bool bIsRoot)
 {
 	ShowTransform(Editor, Comp, bIsRoot);
 
@@ -217,7 +214,6 @@ void FImguiPropertyWindow::ShowTextSettings(UTextInstanceComponent& TextComp) co
 {
 	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "Text Settings");
-
 
 	ImGui::TextDisabled("Font");
 	const UFont* Font = TextComp.GetFont();
@@ -345,14 +341,23 @@ void FImguiPropertyWindow::ShowAnimatedBillboardSettings(UAnimatedBillboardComp&
 
 	if (BillboardComp.IsPlaying())
 	{
-		if (ImGui::Button("Pause")) { BillboardComp.Pause(); }
+		if (ImGui::Button("Pause"))
+		{
+			BillboardComp.Pause();
+		}
 	}
 	else
 	{
-		if (ImGui::Button("Play")) { BillboardComp.Play(); }
+		if (ImGui::Button("Play"))
+		{
+			BillboardComp.Play();
+		}
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Stop")) { BillboardComp.Stop(); }
+	if (ImGui::Button("Stop"))
+	{
+		BillboardComp.Stop();
+	}
 }
 
 void FImguiPropertyWindow::ShowSpotLightSettings(USpotLightComponent& LightComp) const
@@ -390,14 +395,12 @@ void FImguiPropertyWindow::ShowStaticMeshSettings(AActor& Actor, UStaticMeshComp
 	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Static Mesh Settings");
 
-
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 
 	if (ImGui::BeginTable(
-		"StaticMeshAssetSlots",
-		3,
-		ImGuiTableFlags_SizingStretchSame
-	))
+	        "StaticMeshAssetSlots",
+	        3,
+	        ImGuiTableFlags_SizingStretchSame))
 	{
 		ImGui::TableNextRow();
 
@@ -472,7 +475,10 @@ void FImguiPropertyWindow::ShowMaterialSlot(UStaticMeshComponent& MeshComp, int 
 	ImGui::Button(Label.c_str(), ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
-	if (!ImGui::BeginDragDropTarget()) { return; }
+	if (!ImGui::BeginDragDropTarget())
+	{
+		return;
+	}
 
 	if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ContentDragPayloadType))
 	{
@@ -504,7 +510,10 @@ void FImguiPropertyWindow::ShowPipelineSlot(UStaticMeshComponent& MeshComp, int 
 	ImGui::Button(Pipeline->GetID().ToString().c_str(), ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
-	if (!ImGui::BeginDragDropTarget()) { return; }
+	if (!ImGui::BeginDragDropTarget())
+	{
+		return;
+	}
 
 	if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ContentDragPayloadType))
 	{
@@ -528,7 +537,7 @@ void FImguiPropertyWindow::ShowTextureSlot(UStaticMeshComponent& MeshComp, int S
 {
 	UTexture* TextureAsset = MeshComp.GetMaterialInstance(Slot)->Texture;
 	FTexture* CurrentTexture = nullptr;
-	
+
 	if (TextureAsset)
 	{
 		CurrentTexture = TextureAsset->Get();
@@ -550,7 +559,10 @@ void FImguiPropertyWindow::ShowTextureSlot(UStaticMeshComponent& MeshComp, int S
 	}
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
-	if (!ImGui::BeginDragDropTarget()) { return; }
+	if (!ImGui::BeginDragDropTarget())
+	{
+		return;
+	}
 
 	if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ContentDragPayloadType))
 	{
@@ -582,7 +594,10 @@ void FImguiPropertyWindow::ShowStaticMeshSlot(UStaticMeshComponent& MeshComp) co
 	ImGui::Button(StaticMesh->GetID().ToString().c_str(), ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
-	if (!ImGui::BeginDragDropTarget()) { return; }
+	if (!ImGui::BeginDragDropTarget())
+	{
+		return;
+	}
 
 	if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ContentDragPayloadType))
 	{
@@ -602,7 +617,6 @@ void FImguiPropertyWindow::ShowStaticMeshSlot(UStaticMeshComponent& MeshComp) co
 	ImGui::EndDragDropTarget();
 }
 
-
 void FImguiPropertyWindow::ShowApplyAllMaterialSlot(UStaticMeshComponent& MeshComp) const
 {
 	ImGui::Spacing();
@@ -613,7 +627,10 @@ void FImguiPropertyWindow::ShowApplyAllMaterialSlot(UStaticMeshComponent& MeshCo
 	ImGui::Button("Apply All Material", ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
-	if (!ImGui::BeginDragDropTarget()) { return; }
+	if (!ImGui::BeginDragDropTarget())
+	{
+		return;
+	}
 
 	if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ContentDragPayloadType))
 	{
@@ -646,7 +663,10 @@ void FImguiPropertyWindow::ShowApplyAllPipelineSlot(UStaticMeshComponent& MeshCo
 	ImGui::Button("Apply All Pipeline", ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
-	if (!ImGui::BeginDragDropTarget()) { return; }
+	if (!ImGui::BeginDragDropTarget())
+	{
+		return;
+	}
 
 	if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ContentDragPayloadType))
 	{
@@ -679,7 +699,10 @@ void FImguiPropertyWindow::ShowApplyAllTextureSlot(UStaticMeshComponent& MeshCom
 	ImGui::Button("Apply All Texture", ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
-	if (!ImGui::BeginDragDropTarget()) { return; }
+	if (!ImGui::BeginDragDropTarget())
+	{
+		return;
+	}
 
 	if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ContentDragPayloadType))
 	{
@@ -701,7 +724,6 @@ void FImguiPropertyWindow::ShowApplyAllTextureSlot(UStaticMeshComponent& MeshCom
 
 	ImGui::EndDragDropTarget();
 }
-
 
 void FImguiPropertyWindow::ShowGizmoSettings(FEditor& Editor) const
 {

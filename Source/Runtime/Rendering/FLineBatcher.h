@@ -15,13 +15,15 @@ class FRenderer;
 class FRenderPipeline;
 
 // 라인 정점 구조체
-struct FLineVertex {
+struct FLineVertex
+{
 	FVector Position;
 	FVector4 Color;
 };
 
 // 라인 일괄 렌더러
-class FLineBatcher final {
+class FLineBatcher final
+{
 public:
 	static constexpr uint32 MaxLines = 16384;
 	static constexpr uint32 MaxVertices = MaxLines * 2;
@@ -38,19 +40,18 @@ public:
 
 	// Quad 와이어프레임 추가
 	void DrawQuad(
-		const FVector& A,
-		const FVector& B,
-		const FVector& C,
-		const FVector& D,
-		const FVector4& Color
-	);
+	    const FVector& A,
+	    const FVector& B,
+	    const FVector& C,
+	    const FVector& D,
+	    const FVector4& Color);
 
 	// 구체 와이어프레임 추가
 	void DrawSphere(const FVector& Center, float Radius, const FVector4& Color, uint32 Segments = 16);
 
 	// 수집된 선들을 일괄 렌더링하고 비움
 	void Flush(ID3D11DeviceContext& Context,
-		const TSharedPtr<FRenderPipeline>& Pipeline);
+	    const TSharedPtr<FRenderPipeline>& Pipeline);
 
 	// 대기 중인 정점 수
 	[[nodiscard]] uint32 GetVertexCount() const { return static_cast<uint32>(LineVertices.size()); }

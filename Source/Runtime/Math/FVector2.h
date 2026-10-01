@@ -16,26 +16,26 @@ struct FVector2
 
 	[[nodiscard]] FVector2 operator+(const FVector2& V) const;
 
-	template<typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	[[nodiscard]] FVector2 operator+(ScalarType Scale) const;
 
 	[[nodiscard]] FVector2 operator-(const FVector2& V) const;
 
-	template<typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	[[nodiscard]] FVector2 operator-(ScalarType Scale) const;
 
 	[[nodiscard]] FVector2 operator*(const FVector2& V) const;
 
 	template <typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	[[nodiscard]] FVector2 operator*(ScalarType Scale) const;
 
 	[[nodiscard]] FVector2 operator/(const FVector2& V) const;
 
 	template <typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	[[nodiscard]] FVector2 operator/(ScalarType Scale) const;
 
 	[[nodiscard]] bool operator==(const FVector2& V) const;
@@ -46,26 +46,26 @@ struct FVector2
 
 	FVector2& operator+=(const FVector2& V);
 
-	template<typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	FVector2& operator+=(ScalarType Scale);
 
 	FVector2& operator-=(const FVector2& V);
 
-	template<typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	FVector2& operator-=(ScalarType Scale);
 
 	FVector2& operator*=(const FVector2& V);
 
-	template<typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	FVector2& operator*=(ScalarType Scale);
 
 	FVector2& operator/=(const FVector2& V);
 
-	template<typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	FVector2& operator/=(ScalarType Scale);
 
 	[[nodiscard]] float& operator[](int32 Index);
@@ -83,15 +83,17 @@ inline const FVector2 FVector2::ZeroVector{ 0.0f, 0.0f };
 inline const FVector2 FVector2::OneVector{ 1.0f, 1.0f };
 
 constexpr FVector2::FVector2(float InX, float InY)
-	: X(InX), Y(InY)
-{}
+    : X(InX), Y(InY)
+{
+}
 
 inline FVector2 FVector2::operator+(const FVector2& V) const
 {
 	return { X + V.X, Y + V.Y };
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector2 FVector2::operator+(ScalarType Scale) const
 {
 	return { X + Scale, Y + Scale };
@@ -102,7 +104,8 @@ inline FVector2 FVector2::operator-(const FVector2& V) const
 	return { X - V.X, Y - V.Y };
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector2 FVector2::operator-(ScalarType Scale) const
 {
 	return { X - Scale, Y - Scale };
@@ -113,7 +116,8 @@ inline FVector2 FVector2::operator*(const FVector2& V) const
 	return { X * V.X, Y * V.Y };
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector2 FVector2::operator*(ScalarType Scale) const
 {
 	return { X * Scale, Y * Scale };
@@ -124,7 +128,8 @@ inline FVector2 FVector2::operator/(const FVector2& V) const
 	return { X / V.X, Y / V.Y };
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector2 FVector2::operator/(ScalarType Scale) const
 {
 	return { X / Scale, Y / Scale };
@@ -147,53 +152,65 @@ inline FVector2 FVector2::operator-() const
 
 inline FVector2& FVector2::operator+=(const FVector2& V)
 {
-	X += V.X; Y += V.Y;
+	X += V.X;
+	Y += V.Y;
 	return *this;
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector2& FVector2::operator+=(ScalarType Scale)
 {
-	X += Scale; Y += Scale;
+	X += Scale;
+	Y += Scale;
 	return *this;
 }
 
 inline FVector2& FVector2::operator-=(const FVector2& V)
 {
-	X -= V.X; Y -= V.Y;
+	X -= V.X;
+	Y -= V.Y;
 	return *this;
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector2& FVector2::operator-=(ScalarType Scale)
 {
-	X -= Scale; Y -= Scale;
+	X -= Scale;
+	Y -= Scale;
 	return *this;
 }
 
 inline FVector2& FVector2::operator*=(const FVector2& V)
 {
-	X *= V.X; Y *= V.Y;
+	X *= V.X;
+	Y *= V.Y;
 	return *this;
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector2& FVector2::operator*=(ScalarType Scale)
 {
-	X *= Scale; Y *= Scale;
+	X *= Scale;
+	Y *= Scale;
 	return *this;
 }
 
 inline FVector2& FVector2::operator/=(const FVector2& V)
 {
-	X /= V.X; Y /= V.Y;
+	X /= V.X;
+	Y /= V.Y;
 	return *this;
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector2& FVector2::operator/=(ScalarType Scale)
 {
-	X /= Scale; Y /= Scale;
+	X /= Scale;
+	Y /= Scale;
 	return *this;
 }
 

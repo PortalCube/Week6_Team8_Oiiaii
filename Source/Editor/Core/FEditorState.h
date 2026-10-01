@@ -13,10 +13,10 @@ class FConfigArchive;
 class FEditorState
 {
 public:
-
 	static inline FString DefaultFileName = "editor.ini";
 
-	enum class SplitViewMode {
+	enum class SplitViewMode
+	{
 		SINGLE,
 		HORIZONTAL,
 		VERTICAL,
@@ -50,7 +50,7 @@ private:
 
 	// Viewport
 	SplitViewMode splitViewMode = SplitViewMode::SINGLE;
-	float SplitterVRatio=0.5f;
+	float SplitterVRatio = 0.5f;
 	float SplitterHRatio = 0.5f;
 	float SplitterH2Ratio = 0.5f;
 
@@ -102,5 +102,4 @@ public:
 
 	void SetSplitMode(SplitViewMode mode);
 	SplitViewMode GetSplitMode() const { return splitViewMode; }
-
 };

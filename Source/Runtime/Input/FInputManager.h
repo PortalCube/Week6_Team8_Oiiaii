@@ -16,7 +16,7 @@ public:
 		static FInputManager Instance;
 		return Instance;
 	}
-	
+
 	void BeginFrame();
 	void EndFrame();
 
@@ -48,7 +48,7 @@ private:
 	~FInputManager() = default;
 
 	bool IsPrevKeyDown(uint32 Key) const;
-	
+
 	bool CurrentKeyStates[MAX_KEYS] = {};
 	bool PreviousKeyStates[MAX_KEYS] = {};
 

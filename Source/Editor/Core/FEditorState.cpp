@@ -33,7 +33,6 @@ void FEditorState::WriteToFile(FStringView FilePath) const
 	Archive.SetFloat("view", "SplitterH2", SplitterH2Ratio);
 	Archive.SetUInt32("view", "viewmode", static_cast<uint32>(splitViewMode));
 
-	
 	mINI::INIFile File{ FilePath };
 	mINI::INIStructure Structure = Archive.GetConfig();
 
@@ -66,12 +65,10 @@ void FEditorState::ReadFromFile(FStringView FilePath)
 		CameraSpeed = Archive.GetFloat("Camera", "Speed");
 	}
 
-	if
-	(
-		!Archive.IsEmpty("Camera", "Location.0") &&
-		!Archive.IsEmpty("Camera", "Location.1") &&
-		!Archive.IsEmpty("Camera", "Location.2")
-	)
+	if (
+	    !Archive.IsEmpty("Camera", "Location.0") &&
+	    !Archive.IsEmpty("Camera", "Location.1") &&
+	    !Archive.IsEmpty("Camera", "Location.2"))
 	{
 		CameraLocation = Archive.GetVector("Camera", "Location");
 	}
@@ -136,12 +133,12 @@ void FEditorState::ReadFromFile(FStringView FilePath)
 	if (!Archive.IsEmpty("view", "splitterv"))
 	{
 		SetSplitter(static_cast<float>(Archive.GetFloat("view", "splitterv")),
-			static_cast<float>(Archive.GetFloat("view", "splitterh")),
-			static_cast<float>(Archive.GetFloat("view", "splitterh2")));
+		    static_cast<float>(Archive.GetFloat("view", "splitterh")),
+		    static_cast<float>(Archive.GetFloat("view", "splitterh2")));
 	}
 	if (!Archive.IsEmpty("view", "viewmode"))
 	{
-		SetSplitMode(static_cast<FEditorState::SplitViewMode>(Archive.GetUInt32("view","viewmode")));		
+		SetSplitMode(static_cast<FEditorState::SplitViewMode>(Archive.GetUInt32("view", "viewmode")));
 	}
 	bDirty = false;
 	TimeSinceLastSave = 0.0f;
@@ -178,90 +175,129 @@ void FEditorState::FlushToFile(FStringView FilePath)
 
 void FEditorState::SetCameraSensitivity(float Value)
 {
-	if (CameraSensitivity == Value) { return; }
+	if (CameraSensitivity == Value)
+	{
+		return;
+	}
 	CameraSensitivity = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetCameraSpeed(float Value)
 {
-	if (CameraSpeed == Value) { return; }
+	if (CameraSpeed == Value)
+	{
+		return;
+	}
 	CameraSpeed = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetCameraLocation(const FVector& Value)
 {
-	if (CameraLocation == Value) { return; }
+	if (CameraLocation == Value)
+	{
+		return;
+	}
 	CameraLocation = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetCameraYaw(float Value)
 {
-	if (CameraYaw == Value) { return; }
+	if (CameraYaw == Value)
+	{
+		return;
+	}
 	CameraYaw = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetCameraPitch(float Value)
 {
-	if (CameraPitch == Value) { return; }
+	if (CameraPitch == Value)
+	{
+		return;
+	}
 	CameraPitch = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetCameraFOV(float Value)
 {
-	if (CameraFOV == Value) { return; }
+	if (CameraFOV == Value)
+	{
+		return;
+	}
 	CameraFOV = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetGridCellSize(float Value)
 {
-	if (GridCellSize == Value) { return; }
+	if (GridCellSize == Value)
+	{
+		return;
+	}
 	GridCellSize = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetSpawnActorMinLocation(float Value)
 {
-	if (SpawnActorMinLocation == Value) { return; }
+	if (SpawnActorMinLocation == Value)
+	{
+		return;
+	}
 	SpawnActorMinLocation = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetSpawnActorMaxLocation(float Value)
 {
-	if (SpawnActorMaxLocation == Value) { return; }
+	if (SpawnActorMaxLocation == Value)
+	{
+		return;
+	}
 	SpawnActorMaxLocation = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetGizmoMode(uint8 Value)
 {
-	if (GizmoMode == Value) { return; }
+	if (GizmoMode == Value)
+	{
+		return;
+	}
 	GizmoMode = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetGizmoSpace(uint8 Value)
 {
-	if (GizmoSpace == Value) { return; }
+	if (GizmoSpace == Value)
+	{
+		return;
+	}
 	GizmoSpace = Value;
 	bDirty = true;
 }
 
 void FEditorState::SetSelectedActor(uint32 Value)
 {
-	if (SelectedActor == Value) { return; }
+	if (SelectedActor == Value)
+	{
+		return;
+	}
 	SelectedActor = Value;
 	bDirty = true;
 }
 void FEditorState::SetSplitter(float SplitterV, float SplitterH, float SplitterH2)
 {
-	if (SplitterVRatio == SplitterV && SplitterHRatio == SplitterH && SplitterH2Ratio == SplitterH2) {return;}
+	if (SplitterVRatio == SplitterV && SplitterHRatio == SplitterH && SplitterH2Ratio == SplitterH2)
+	{
+		return;
+	}
 	SplitterVRatio = SplitterV;
 	SplitterHRatio = SplitterH;
 	SplitterH2Ratio = SplitterH2;
@@ -270,8 +306,8 @@ void FEditorState::SetSplitter(float SplitterV, float SplitterH, float SplitterH
 
 void FEditorState::SetSplitMode(SplitViewMode mode)
 {
-	if (splitViewMode == mode) return;
+	if (splitViewMode == mode)
+		return;
 	splitViewMode = mode;
 	bDirty = true;
 }
-

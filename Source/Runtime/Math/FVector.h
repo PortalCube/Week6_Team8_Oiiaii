@@ -27,26 +27,26 @@ struct FVector
 
 	[[nodiscard]] FVector operator+(const FVector& V) const;
 
-	template<typename ScalarType> 
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	[[nodiscard]] FVector operator+(ScalarType Scale) const;
 
 	[[nodiscard]] FVector operator-(const FVector& V) const;
 
-	template<typename ScalarType> 
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	[[nodiscard]] FVector operator-(ScalarType Scale) const;
 
 	[[nodiscard]] FVector operator*(const FVector& V) const;
 
-	template <typename ScalarType> 
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	[[nodiscard]] FVector operator*(ScalarType Scale) const;
 
 	[[nodiscard]] FVector operator/(const FVector& V) const;
 
-	template <typename ScalarType> 
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	[[nodiscard]] FVector operator/(ScalarType Scale) const;
 
 	[[nodiscard]] bool operator==(const FVector& V) const;
@@ -57,26 +57,26 @@ struct FVector
 
 	FVector& operator+=(const FVector& V);
 
-	template<typename ScalarType> 
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	FVector& operator+=(ScalarType Scale);
 
 	FVector& operator-=(const FVector& V);
 
-	template<typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	FVector& operator-=(ScalarType Scale);
 
 	FVector& operator*=(const FVector& V);
 
-	template<typename ScalarType> 
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	FVector& operator*=(ScalarType Scale);
 
 	FVector& operator/=(const FVector& V);
 
-	template<typename ScalarType>
-		requires std::is_arithmetic_v<ScalarType>
+	template <typename ScalarType>
+	    requires std::is_arithmetic_v<ScalarType>
 	FVector& operator/=(ScalarType Scale);
 
 	[[nodiscard]] float& operator[](int32 Index);
@@ -102,8 +102,9 @@ inline const FVector FVector::RightVector{ 0.0f, 1.0f, 0.0f };
 inline const FVector FVector::LeftVector{ 0.0f, -1.0f, 0.0f };
 
 constexpr FVector::FVector(float InX, float InY, float InZ)
-	: X(InX), Y(InY), Z(InZ)
-{}
+    : X(InX), Y(InY), Z(InZ)
+{
+}
 
 inline FVector FVector::operator+(const FVector& V) const
 {
@@ -111,7 +112,7 @@ inline FVector FVector::operator+(const FVector& V) const
 }
 
 template <typename ScalarType>
-	requires std::is_arithmetic_v<ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector FVector::operator+(ScalarType Scale) const
 {
 	return FVector(X + Scale, Y + Scale, Z + Scale);
@@ -123,7 +124,7 @@ inline FVector FVector::operator-(const FVector& V) const
 }
 
 template <typename ScalarType>
-	requires std::is_arithmetic_v<ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector FVector::operator-(ScalarType Scale) const
 {
 	return FVector(X - Scale, Y - Scale, Z - Scale);
@@ -134,8 +135,8 @@ inline FVector FVector::operator*(const FVector& V) const
 	return FVector(X * V.X, Y * V.Y, Z * V.Z);
 }
 
-template <typename ScalarType> 
-	requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector FVector::operator*(ScalarType Scale) const
 {
 	return FVector(X * Scale, Y * Scale, Z * Scale);
@@ -146,8 +147,8 @@ inline FVector FVector::operator/(const FVector& V) const
 	return FVector(X / V.X, Y / V.Y, Z / V.Z);
 }
 
-template <typename ScalarType> 
-	requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector FVector::operator/(ScalarType Scale) const
 {
 	return FVector(X / Scale, Y / Scale, Z / Scale);
@@ -170,53 +171,73 @@ inline FVector FVector::operator-() const
 
 inline FVector& FVector::operator+=(const FVector& V)
 {
-	X += V.X; Y += V.Y; Z += V.Z;
+	X += V.X;
+	Y += V.Y;
+	Z += V.Z;
 	return *this;
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector& FVector::operator+=(ScalarType Scale)
 {
-	X += Scale; Y += Scale; Z += Scale;
+	X += Scale;
+	Y += Scale;
+	Z += Scale;
 	return *this;
 }
 
 inline FVector& FVector::operator-=(const FVector& V)
 {
-	X -= V.X; Y -= V.Y; Z -= V.Z;
+	X -= V.X;
+	Y -= V.Y;
+	Z -= V.Z;
 	return *this;
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector& FVector::operator-=(ScalarType Scale)
 {
-	X -= Scale; Y -= Scale; Z -= Scale;
+	X -= Scale;
+	Y -= Scale;
+	Z -= Scale;
 	return *this;
 }
 
 inline FVector& FVector::operator*=(const FVector& V)
 {
-	X *= V.X; Y *= V.Y; Z *= V.Z;
+	X *= V.X;
+	Y *= V.Y;
+	Z *= V.Z;
 	return *this;
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector& FVector::operator*=(ScalarType Scale)
 {
-	X *= Scale; Y *= Scale; Z *= Scale;
+	X *= Scale;
+	Y *= Scale;
+	Z *= Scale;
 	return *this;
 }
 
 inline FVector& FVector::operator/=(const FVector& V)
 {
-	X /= V.X; Y /= V.Y; Z /= V.Z;
+	X /= V.X;
+	Y /= V.Y;
+	Z /= V.Z;
 	return *this;
 }
 
-template <typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+template <typename ScalarType>
+    requires std::is_arithmetic_v<ScalarType>
 FVector& FVector::operator/=(ScalarType Scale)
 {
-	X /= Scale; Y /= Scale; Z /= Scale;
+	X /= Scale;
+	Y /= Scale;
+	Z /= Scale;
 	return *this;
 }
 
@@ -252,7 +273,7 @@ inline float FVector::SizeSquared() const
 	return Dot(*this);
 }
 
-inline void FVector::Normalize() 
+inline void FVector::Normalize()
 {
 	float Length = this->SizeSquared();
 	X /= Length;

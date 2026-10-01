@@ -12,11 +12,11 @@ void FEngineLoop::Init(HINSTANCE Instance)
 	// 윈도우 객체 초기화
 	WindowsApplication = MakeUnique<FWindowsApplication>(Instance);
 	WindowsApplication->CreateMainWindow({
-		.Instance = Instance,
+	    .Instance = Instance,
 	    .ClassName = Globals::EngineWindowClass,
 	    .WindowName = Globals::EngineName,
-		.Width = Globals::WindowWidth,
-		.Height = Globals::WindowHeight,
+	    .Width = Globals::WindowWidth,
+	    .Height = Globals::WindowHeight,
 	});
 
 	// 엔진 객체 초기화
@@ -39,7 +39,6 @@ void FEngineLoop::Tick()
 		// 시간 업데이트
 		FTimeManager::Update();
 		Engine->Tick(FTimeManager::GetDeltaTime());
-
 	}
 }
 

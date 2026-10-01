@@ -23,22 +23,21 @@ class FMesh final
 {
 	friend class FRenderer;
 
-	//AxisAlignedBox 사용할 필요 없이 Min, Max만 저장해서 사용한다.
+	// AxisAlignedBox 사용할 필요 없이 Min, Max만 저장해서 사용한다.
 	struct FTriRef
 	{
 		FVector Min, Max;
 		FVector Centroid;
-		uint32  TriIndex;
+		uint32 TriIndex;
 	};
 
 public:
-
 	struct FMeshBVHNode
 	{
 		FVector BoundsMin;
 		FVector BoundsMax;
-		uint32  LeftOrFirst;
-		uint32  TriCount;
+		uint32 LeftOrFirst;
+		uint32 TriCount;
 	};
 
 	~FMesh();
@@ -55,9 +54,10 @@ public:
 
 	// 버퍼 데이터 갱신
 	bool UpdateBuffers(ID3D11Device* Device, ID3D11DeviceContext* Context, const struct FMeshDesc& Desc);
-	FName MeshId{"None"};
+	FName MeshId{ "None" };
 
 	uint32 GetBufferSize() { return VertexBufferSize + IndexBufferSize; }
+
 private:
 	void BindResources(ID3D11DeviceContext& Context) const;
 	void BuildTriangleVertices();
@@ -75,10 +75,10 @@ private:
 	TArray<FVector> Positions;
 	TArray<uint32> Indices;
 	TArray<FMeshSection> Sections;
-	TArray<FVector> TriangleVertices;   // 삼각형 순서대로 펼친 정점 (3개씩)
+	TArray<FVector> TriangleVertices; // 삼각형 순서대로 펼친 정점 (3개씩)
 
 	//=================
-	//Mesh BVH
+	// Mesh BVH
 	TArray<FMeshBVHNode> BVHNodes;
 	uint32 LeafSize = 16;
 	//=================

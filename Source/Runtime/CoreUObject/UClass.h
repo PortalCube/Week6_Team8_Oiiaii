@@ -17,7 +17,7 @@ private:
 	static inline TMap<FString, uint32> nameToId;
 	static inline TMap<FString, uint32> displayNameToId;
 	FString className, superClassTypeName;
-	TFunction<UObject* ()> createFunction;
+	TFunction<UObject*()> createFunction;
 	uint32 typeId;
 	UClass* superClass;
 	TMap<FString, FString> metadata;
@@ -25,12 +25,11 @@ private:
 	bool processed = false;
 
 public:
-
-	UObject* CreateDefaultObject() const; 
+	UObject* CreateDefaultObject() const;
 	static UClass* RegisterToFactory(
-		const FString& typeName,
-		const TFunction<UObject* ()>& createFunction, 
-		const FString& superClassTypeName);
+	    const FString& typeName,
+	    const TFunction<UObject*()>& createFunction,
+	    const FString& superClassTypeName);
 
 	static UClass* FindByName(const FString& Name);
 	const FString& GetDisplayName() const;
@@ -53,7 +52,8 @@ public:
 		return (it != nameToId.end()) ? GetClassById(it->second) : nullptr;
 	}
 
-	static UClass* GetClassById(uint32 typeId) {
+	static UClass* GetClassById(uint32 typeId)
+	{
 		return (typeId < classList.size()) ? classList[typeId].get() : nullptr;
 	}
 
@@ -61,9 +61,4 @@ public:
 	{
 		return superClass;
 	}
-
-
-
-
-
 };

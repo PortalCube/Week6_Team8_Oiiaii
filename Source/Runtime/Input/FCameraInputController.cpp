@@ -7,7 +7,7 @@
 #include "FInputManager.h"
 #include <algorithm>
 
-void FCameraInputController::UpdateKeyInput(FCamera& Camera, float DeltaTime) 
+void FCameraInputController::UpdateKeyInput(FCamera& Camera, float DeltaTime)
 {
 	const FMatrix& Rotation = Camera.GetRotationMatrix();
 
@@ -49,7 +49,7 @@ void FCameraInputController::UpdateKeyInput(FCamera& Camera, float DeltaTime)
 	// 하강 이동
 	if (FInputManager::Get().IsKeyPressed('Q'))
 	{
-		Direction += FVector{0.0f, 0.0f, -1.0f};
+		Direction += FVector{ 0.0f, 0.0f, -1.0f };
 	}
 
 	// 상승 이동
@@ -71,7 +71,7 @@ void FCameraInputController::UpdateKeyInput(FCamera& Camera, float DeltaTime)
 	// 대각선 정규화
 	if (Direction.SizeSquared() > 0.0f)
 	{
-		Direction = (Direction /Direction.Size());
+		Direction = (Direction / Direction.Size());
 	}
 
 	const FVector TargetVelocity = Direction * CameraMoveSpeed * RelativeSpeed;
@@ -82,7 +82,10 @@ void FCameraInputController::UpdateKeyInput(FCamera& Camera, float DeltaTime)
 	Velocity += (TargetVelocity - Velocity) * Alpha;
 
 	// 아주 느려지면 0으로 떨어뜨려 미세하게 떠다니는 것을 막는다
-	if (Velocity.SizeSquared() < 0.0001f) { Velocity = FVector{}; }
+	if (Velocity.SizeSquared() < 0.0001f)
+	{
+		Velocity = FVector{};
+	}
 
 	Camera.SetPosition(Camera.GetPosition() + Velocity * DeltaTime);
 }
@@ -104,13 +107,13 @@ void FCameraInputController::UpdateMouseInput_ORTHOGRAPHIC(FCamera& Camera) cons
 	{
 		// 마우스의 클릭에 대한 원점은 좌측 상단
 		const FVector2 Delta = FInputManager::Get().GetMouseDelta();
-		
+
 		const FMatrix Rotation = Camera.GetRotationMatrix();
-		//카메라 로컬 +X방향
-		const FVector Right{ Rotation.M[1][0], Rotation.M[1][1], Rotation.M[1][2] }; 
-		//카메라 로컬 +Y방향
+		// 카메라 로컬 +X방향
+		const FVector Right{ Rotation.M[1][0], Rotation.M[1][1], Rotation.M[1][2] };
+		// 카메라 로컬 +Y방향
 		const FVector Up{ Rotation.M[2][0], Rotation.M[2][1], Rotation.M[2][2] };
-		
+
 		const float PanSpeed = Camera.GetProjection().GetOrthographicHeight() * 0.001f;
 		Camera.SetPosition(Camera.GetPosition() + (Up * Delta.Y - Right * Delta.X) * PanSpeed);
 	}

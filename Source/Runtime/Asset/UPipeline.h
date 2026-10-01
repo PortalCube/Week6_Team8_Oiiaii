@@ -23,11 +23,9 @@ class UPipeline : public UAsset
 	DECLARE_UCLASS(UPipeline, UAsset)
 
 private:
-
 	FRenderPipeline* Pipeline = nullptr;
 
 public:
-
 	void Load(UPipelineDesc& Desc);
 
 	FRenderPipeline* Get() const { return Pipeline; }

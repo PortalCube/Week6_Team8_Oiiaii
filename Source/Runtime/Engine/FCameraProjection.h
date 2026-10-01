@@ -14,12 +14,12 @@ class FCameraProjection
 
 private:
 	EProjectionType ProjectionType = EProjectionType::Perspective;
-	float FOV = 60.0f; // Perspective 전용, Vertical
+	float FOV = 60.0f;   // Perspective 전용, Vertical
 	float Aspect = 1.0f; // Perspective 전용. Width / Height
 	float Height = 8.0f; // Orthographic 전용
 	float NearZ = 0.1f;
 	float FarZ = 100.0f;
-	
+
 	FMatrix ProjectionMatrix;
 
 	// Perspective 전용. 반지름 R, 거리 D인 구의 화면 점유율은 ScreenSizeMultiple * R / D.

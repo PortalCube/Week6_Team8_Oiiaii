@@ -15,8 +15,7 @@ TUniquePtr<FWindow> FWindow::Create(const FWindowDesc& Desc)
 	FWString ClassName = WindowsUtil::ToWString(FString{ Desc.ClassName });
 	FWString WindowName = WindowsUtil::ToWString(FString{ Desc.WindowName });
 
-	WNDCLASSEX WindowClass
-	{
+	WNDCLASSEX WindowClass{
 		.cbSize = sizeof(WNDCLASSEX),
 		.lpfnWndProc = GlobalMessageCallback,
 		.cbClsExtra = 0,
@@ -46,8 +45,7 @@ TUniquePtr<FWindow> FWindow::Create(const FWindowDesc& Desc)
 	    WindowName.c_str(),
 	    WS_POPUP | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 	    CW_USEDEFAULT, CW_USEDEFAULT, Desc.Width, Desc.Height,
-	    nullptr, nullptr, Desc.Instance, WindowPtr.get()
-	);
+	    nullptr, nullptr, Desc.Instance, WindowPtr.get());
 
 	if (!Window)
 	{
@@ -57,7 +55,7 @@ TUniquePtr<FWindow> FWindow::Create(const FWindowDesc& Desc)
 	WindowPtr->Handle = Window;
 
 	// TODO: 이거 제대로 고칠것
-	//ShowWindow(Window, 10);
+	// ShowWindow(Window, 10);
 
 	return WindowPtr;
 }
@@ -67,9 +65,8 @@ TUniquePtr<FWindow> FWindow::Create(const FWindowDesc& Desc)
 extern LRESULT ImGui_ImplWin32_WndProcHandler(
     HWND,
     UINT,
-	WPARAM,
-	LPARAM
-);
+    WPARAM,
+    LPARAM);
 
 LRESULT FWindow::GlobalMessageCallback(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam)
 {
@@ -127,15 +124,20 @@ LRESULT FWindow::MessageCallback(HWND Window, UINT Message, WPARAM WParam, LPARA
 
 	switch (Message)
 	{
-	case WM_KEYDOWN:   case WM_KEYUP:
-	case WM_SYSKEYDOWN: case WM_SYSKEYUP:
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+	case WM_SYSKEYDOWN:
+	case WM_SYSKEYUP:
 	case WM_CHAR:
-	case WM_LBUTTONDOWN: case WM_LBUTTONUP:
-	case WM_RBUTTONDOWN: case WM_RBUTTONUP:
-	case WM_MBUTTONDOWN: case WM_MBUTTONUP:
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
 	case WM_MOUSEMOVE:
 	case WM_MOUSEWHEEL:
-		//입력 지연 측정 시작 시간 기록
+		// 입력 지연 측정 시작 시간 기록
 		FInputLatencyTimer::Get().Trigger();
 	}
 
@@ -253,5 +255,4 @@ LRESULT FWindow::MessageCallback(HWND Window, UINT Message, WPARAM WParam, LPARA
 	}
 
 	return 0;
-
 }

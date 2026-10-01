@@ -12,7 +12,7 @@ ACubeActor::ACubeActor()
 	// 기본 큐브 컴포넌트 장착
 	UStaticMeshComponent* Object = NewObject<UStaticMeshComponent>();
 	SetRootComponent(Object);
-	
+
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 	Object->SetMesh(Registry.Get<UStaticMesh>("#Cube"));
 	Object->SetMaterial(Registry.Get<UMaterial>("Material/Textured.json"));

@@ -28,10 +28,7 @@ private:
 	int32 Width = 0;
 	int32 Height = 0;
 
-
-
 public:
-
 	FWindow();
 
 	static TUniquePtr<FWindow> Create(const FWindowDesc& Desc);
@@ -40,8 +37,7 @@ public:
 	    HWND Window,
 	    UINT Message,
 	    WPARAM WParam,
-	    LPARAM LParam
-	);
+	    LPARAM LParam);
 
 	~FWindow();
 
@@ -68,7 +64,5 @@ public:
 	    HWND _hWnd,
 	    UINT Message,
 	    WPARAM wParam,
-	    LPARAM lParam
-	);
-
+	    LPARAM lParam);
 };

@@ -3,10 +3,9 @@
 #include "ThirdParty/Imgui/imgui.h"
 #include <vector>
 
-
 class FImguiStatsWindow final
 {
-	
+
 public:
 	enum class EStatsWindow
 	{
@@ -67,4 +66,3 @@ private:
 	float SmoothedFPS = 0.0f;
 	ScrollingBuffer FPSHistory;
 };
-

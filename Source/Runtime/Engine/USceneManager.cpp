@@ -91,8 +91,14 @@ void USceneManager::LoadScene(const FString& path, FCamera* OutCamera)
 
 void USceneManager::SetScene(UScene* scene)
 {
-	if (scene == nullptr) { return; }
-	if (scene == CurrentScene) { return; }
+	if (scene == nullptr)
+	{
+		return;
+	}
+	if (scene == CurrentScene)
+	{
+		return;
+	}
 	scene->Initialize();
 	scene->SetRenderResourceLibrary(&FRenderResourceLibrary::Get());
 

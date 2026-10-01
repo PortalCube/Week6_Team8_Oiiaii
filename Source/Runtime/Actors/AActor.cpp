@@ -82,9 +82,9 @@ void AActor::Deserialize(const FArchive& Archive)
 		if (RootComponent)
 		{
 			UE_LOG_WARN("[%s::Deserialize] RootComponent(%s)에 대한 직렬화 데이터가 "
-				"누락되었습니다.",
-				GetClass()->GetUClassName(),
-				RootComponent->GetClass()->GetUClassName());
+			            "누락되었습니다.",
+			    GetClass()->GetUClassName(),
+			    RootComponent->GetClass()->GetUClassName());
 		}
 		return;
 	}
@@ -96,7 +96,7 @@ void AActor::Deserialize(const FArchive& Archive)
 	if (SavedClass == nullptr)
 	{
 		UE_LOG_WARN("[%s::Deserialize] 알 수 없는 타입 %s",
-			GetClass()->GetUClassName(), SavedTypeName);
+		    GetClass()->GetUClassName(), SavedTypeName);
 		return;
 	}
 
@@ -107,7 +107,7 @@ void AActor::Deserialize(const FArchive& Archive)
 		if (RootComponent == nullptr)
 		{
 			UE_LOG_WARN("[%s::Deserialize] RootComponent %s를 생성할 수 없습니다.",
-				GetClass()->GetUClassName(), SavedTypeName);
+			    GetClass()->GetUClassName(), SavedTypeName);
 			return;
 		}
 	}
@@ -115,9 +115,9 @@ void AActor::Deserialize(const FArchive& Archive)
 	if (RootComponent->GetClass() != SavedClass)
 	{
 		UE_LOG_WARN("[%s::Deserialize] 기본 RootComponent (%s)와 저장된 타입 "
-			"(%s)가 일치하지 않습니다.",
-			GetClass()->GetUClassName(),
-			RootComponent->GetClass()->GetUClassName(), SavedTypeName);
+		            "(%s)가 일치하지 않습니다.",
+		    GetClass()->GetUClassName(),
+		    RootComponent->GetClass()->GetUClassName(), SavedTypeName);
 		return;
 	}
 
@@ -126,7 +126,10 @@ void AActor::Deserialize(const FArchive& Archive)
 
 void AActor::CreateRootComponent(UClass* ClassType)
 {
-	if (RootComponent) { return; }
+	if (RootComponent)
+	{
+		return;
+	}
 
 	UObject* Object = NewObject(ClassType);
 	USceneComponent* Component = Object->Cast<USceneComponent>();
@@ -232,7 +235,8 @@ void AActor::Register(UScene& Scene)
 	}
 }
 
-void AActor::BeginPlay() {
+void AActor::BeginPlay()
+{
 	if (!Owner || bHasBegunPlay)
 	{
 		return;
@@ -248,7 +252,8 @@ void AActor::BeginPlay() {
 	}
 }
 
-void AActor::Update(float DeltaTime) {
+void AActor::Update(float DeltaTime)
+{
 	if (!bTickEnabled || !bHasBegunPlay)
 	{
 		return;
@@ -263,7 +268,8 @@ void AActor::Update(float DeltaTime) {
 	}
 }
 
-void AActor::EndPlay() {
+void AActor::EndPlay()
+{
 	if (!bHasBegunPlay)
 	{
 		return;
@@ -279,7 +285,8 @@ void AActor::EndPlay() {
 	bHasBegunPlay = false;
 }
 
-void AActor::Unregister() {
+void AActor::Unregister()
+{
 	if (bHasBegunPlay)
 	{
 		EndPlay();
@@ -300,7 +307,8 @@ void AActor::Unregister() {
 	Owner = nullptr;
 }
 
-void AActor::Destroy() {
+void AActor::Destroy()
+{
 	if (Owner)
 	{
 		Owner->DestroyActor(this);

@@ -62,14 +62,13 @@ void FEngine::Init()
 	EditorApp->Initialize_Runtime(&SceneManager, &RenderView);
 	Application = std::move(EditorApp);
 #endif
-
 }
 
 void FEngine::Tick(float DeltaTime)
 {
 	FStatsManager::Get().ResetFrame();
 	FInputManager::Get().BeginFrame();
-	
+
 	if (Globals::bIsRequestingResize)
 	{
 		Renderer.OnWindowSize(Globals::ResizeWidth, Globals::ResizeHeight);
@@ -108,5 +107,4 @@ void FEngine::Exit()
 	Application.Reset();
 
 	Renderer.Shutdown();
-
 }

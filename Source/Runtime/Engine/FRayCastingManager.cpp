@@ -34,13 +34,12 @@ FRay FRayCastingManager::CreateRayFromScreenPosition(const FCamera& Camera, cons
 	return Ray;
 }
 
-
 bool FRayCastingManager::RayIntersectsMeshes(
-	const FRay& Ray,
-	const FCamera& Camera,
-	const TArray<UPrimitiveComponent*>& Components,
-	UPrimitiveComponent*& HitComponent,
-	FVector& OutImpactPoint)
+    const FRay& Ray,
+    const FCamera& Camera,
+    const TArray<UPrimitiveComponent*>& Components,
+    UPrimitiveComponent*& HitComponent,
+    FVector& OutImpactPoint)
 {
 	HitComponent = nullptr;
 
@@ -72,7 +71,7 @@ bool FRayCastingManager::RayIntersectsMeshes(
 			ClosestImpactPoint = ImpactPoint;
 		}
 	}
-	
+
 	HitComponent = ClosestComponent;
 	OutImpactPoint = ClosestImpactPoint;
 
@@ -97,9 +96,9 @@ bool FRayCastingManager::RayIntersectsAABB(const FRay& Ray, const FAxisAlignedBo
 			}
 			else
 			{
-				//Orthographic모드 피킹버그 추가분
-				TMin[i] = -std::numeric_limits<float>::infinity(); 
-				TMax[i] = std::numeric_limits<float>::infinity(); 
+				// Orthographic모드 피킹버그 추가분
+				TMin[i] = -std::numeric_limits<float>::infinity();
+				TMax[i] = std::numeric_limits<float>::infinity();
 				continue;
 			}
 		}
@@ -165,7 +164,11 @@ bool FRayCastingManager::IntersectMeshBVH(const FRay& ObjectRay, const FMesh& Me
 	}
 
 	// 노드 번호와 진입 거리를 같이 쌓아, 꺼낼 때 그사이 줄어든 Closest로 다시 가지친다.
-	struct FStackEntry { uint32 Node; float TNear; };
+	struct FStackEntry
+	{
+		uint32 Node;
+		float TNear;
+	};
 	FStackEntry Stack[64];
 	int32 Sp = 0;
 	Stack[Sp++] = { 0, RootNear };
@@ -174,7 +177,10 @@ bool FRayCastingManager::IntersectMeshBVH(const FRay& ObjectRay, const FMesh& Me
 	while (Sp > 0)
 	{
 		const FStackEntry Entry = Stack[--Sp];
-		if (Entry.TNear >= OutClosestHit) { continue; }
+		if (Entry.TNear >= OutClosestHit)
+		{
+			continue;
+		}
 
 		const FMesh::FMeshBVHNode& N = Nodes[Entry.Node];
 
@@ -187,7 +193,7 @@ bool FRayCastingManager::IntersectMeshBVH(const FRay& ObjectRay, const FMesh& Me
 				const FVector* V = Verts + static_cast<size_t>(t) * 3;
 				float HitT = 0.0f;
 				if (FRayCastingManager::RayIntersectsTriangle(ObjectRay, V[0], V[1], V[2], HitT) &&
-					HitT < OutClosestHit)
+				    HitT < OutClosestHit)
 				{
 					OutClosestHit = HitT;
 					bHit = true;
@@ -218,8 +224,14 @@ bool FRayCastingManager::IntersectMeshBVH(const FRay& ObjectRay, const FMesh& Me
 				Stack[Sp++] = { R, TR };
 			}
 		}
-		else if (bL) { Stack[Sp++] = { L, TL }; }
-		else if (bR) { Stack[Sp++] = { R, TR }; }
+		else if (bL)
+		{
+			Stack[Sp++] = { L, TL };
+		}
+		else if (bR)
+		{
+			Stack[Sp++] = { R, TR };
+		}
 	}
 	return bHit;
 }
@@ -233,8 +245,8 @@ static bool IntersectFlattenedTriangles(const FRay& ObjectRay, const FMesh& Mesh
 	for (uint32 i = 0; i + 2 < Tri.size(); i += 3)
 	{
 		float HitT = 0.0f;
-		if (FRayCastingManager::RayIntersectsTriangle(ObjectRay, Tri[i], Tri[i+1], Tri[i+2], HitT) &&
-			HitT < OutClosestHit)
+		if (FRayCastingManager::RayIntersectsTriangle(ObjectRay, Tri[i], Tri[i + 1], Tri[i + 2], HitT) &&
+		    HitT < OutClosestHit)
 		{
 			OutClosestHit = HitT;
 			bHit = true;
@@ -250,8 +262,8 @@ static bool IntersectIndexedTriangles(const FRay& ObjectRay, const FMesh& Mesh, 
 	const auto& Indices = Mesh.GetIndices();
 
 	const uint32 elementCount = Mesh.HasIndices()
-		? static_cast<uint32>(Indices.size())
-		: static_cast<uint32>(Positions.size());
+	                                ? static_cast<uint32>(Indices.size())
+	                                : static_cast<uint32>(Positions.size());
 
 	bool bHit = false;
 	for (uint32 i = 0; i + 2 < elementCount; i += 3)
@@ -262,8 +274,8 @@ static bool IntersectIndexedTriangles(const FRay& ObjectRay, const FMesh& Mesh, 
 
 		// 잘못된 인덱스 방어
 		if (i0 >= Positions.size() ||
-			i1 >= Positions.size() ||
-			i2 >= Positions.size())
+		    i1 >= Positions.size() ||
+		    i2 >= Positions.size())
 		{
 			continue;
 		}
@@ -274,7 +286,7 @@ static bool IntersectIndexedTriangles(const FRay& ObjectRay, const FMesh& Mesh, 
 
 		float HitT = 0.0f;
 		if (FRayCastingManager::RayIntersectsTriangle(ObjectRay, A, B, C, HitT) &&
-			HitT < OutClosestHit)
+		    HitT < OutClosestHit)
 		{
 			OutClosestHit = HitT;
 			bHit = true;
@@ -283,7 +295,7 @@ static bool IntersectIndexedTriangles(const FRay& ObjectRay, const FMesh& Mesh, 
 	return bHit;
 }
 
-bool FRayCastingManager::RayIntersectsMesh(const FRay& Ray, const FMesh& Mesh, const FMatrix& ModelMatrix, float& OutDistance, FVector& OutImpactPoint, float &ClosestHit, bool bBVH)
+bool FRayCastingManager::RayIntersectsMesh(const FRay& Ray, const FMesh& Mesh, const FMatrix& ModelMatrix, float& OutDistance, FVector& OutImpactPoint, float& ClosestHit, bool bBVH)
 {
 	// Ray를 Object 좌표계로 변환
 	FMatrix InvM;
@@ -299,8 +311,8 @@ bool FRayCastingManager::RayIntersectsMeshWithInversedModel(const FRay& Ray, con
 {
 
 	const size_t VertexCount = bUseFlattenedTriangles
-		? Mesh.GetTriangleVertices().size()
-		: Mesh.GetPositions().size();
+	                               ? Mesh.GetTriangleVertices().size()
+	                               : Mesh.GetPositions().size();
 	if (VertexCount < 3)
 	{
 		return false;
@@ -328,8 +340,8 @@ bool FRayCastingManager::RayIntersectsMeshWithInversedModel(const FRay& Ray, con
 	else
 	{
 		bHit = bUseFlattenedTriangles
-			? IntersectFlattenedTriangles(ObjectRay, Mesh, ClosestHit)
-			: IntersectIndexedTriangles(ObjectRay, Mesh, ClosestHit);
+		           ? IntersectFlattenedTriangles(ObjectRay, Mesh, ClosestHit)
+		           : IntersectIndexedTriangles(ObjectRay, Mesh, ClosestHit);
 	}
 
 	OutDistance = ClosestHit;
@@ -342,11 +354,11 @@ bool FRayCastingManager::RayIntersectsMeshWithInversedModel(const FRay& Ray, con
 }
 
 bool FRayCastingManager::RayIntersectsTriangle(
-	const FRay& Ray,
-	const FVector& A,
-	const FVector& B,
-	const FVector& C,
-	float& OutT)
+    const FRay& Ray,
+    const FVector& A,
+    const FVector& B,
+    const FVector& C,
+    float& OutT)
 {
 
 	const FVector edge1 = B - A;

@@ -9,60 +9,61 @@
 
 namespace
 {
-TSharedPtr<FMesh> CreateInternalMesh(FRenderer& Renderer, FMeshDesc Desc)
+	TSharedPtr<FMesh> CreateInternalMesh(FRenderer& Renderer, FMeshDesc Desc)
+	{
+		if (Desc.Sections.empty())
+		{
+			Desc.Sections.push_back(FMeshSection{
+			    .SectionName = "",
+			    .StartIndex = 0,
+			    .IndexCount = Desc.IndexCount,
+			});
+		}
+
+		return Renderer.CreateMesh(Desc);
+	}
+} // namespace
+
+bool MeshUtil::CreateGridMesh(FRenderer& Renderer, FRenderResourceLibrary& Library)
 {
-  if (Desc.Sections.empty())
-  {
-    Desc.Sections.push_back(FMeshSection{
-        .SectionName = "",
-        .StartIndex = 0,
-        .IndexCount = Desc.IndexCount,
-    });
-  }
+	constexpr float HalfW = 10.0f;
+	constexpr float HalfH = 10.0f;
 
-  return Renderer.CreateMesh(Desc);
-}
-}
+	const TArray<FVertexData> Vertices = {
+		{ -HalfW, -HalfH, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		    1.0f },
+		{ HalfW, -HalfH, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		    1.0f },
+		{ HalfW, HalfH, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+		    1.0f },
+		{ -HalfW, HalfH, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		    1.0f },
+	};
+	const TArray<uint32> Indices = { 0, 1, 2, 0, 2, 3 };
 
-bool MeshUtil::CreateGridMesh(FRenderer &Renderer, FRenderResourceLibrary &Library) {
-  constexpr float HalfW = 10.0f;
-  constexpr float HalfH = 10.0f;
+	FMeshDesc MeshDesc{
+		.VertexData = Vertices.data(),
+		.VertexDataSize =
+		    static_cast<uint32>(sizeof(FVertexData) * Vertices.size()),
+		.VertexStride = sizeof(FVertexData),
+		.VertexCount = static_cast<uint32>(Vertices.size()),
+		.IndexData = Indices.data(),
+		.IndexDataSize = static_cast<uint32>(sizeof(uint32) * Indices.size()),
+		.IndexCount = static_cast<uint32>(Indices.size()),
+	};
 
-  const TArray<FVertexData> Vertices = {
-      {-HalfW, -HalfH, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-       1.0f},
-      {HalfW, -HalfH, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-       1.0f},
-      {HalfW, HalfH, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-       1.0f},
-      {-HalfW, HalfH, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-       1.0f},
-  };
-  const TArray<uint32> Indices = {0, 1, 2, 0, 2, 3};
-
-  FMeshDesc MeshDesc{
-      .VertexData = Vertices.data(),
-      .VertexDataSize =
-          static_cast<uint32>(sizeof(FVertexData) * Vertices.size()),
-      .VertexStride = sizeof(FVertexData),
-      .VertexCount = static_cast<uint32>(Vertices.size()),
-      .IndexData = Indices.data(),
-      .IndexDataSize = static_cast<uint32>(sizeof(uint32) * Indices.size()),
-      .IndexCount = static_cast<uint32>(Indices.size()),
-  };
-
-  Library.RegisterMesh(FName("#Grid"), CreateInternalMesh(Renderer, MeshDesc));
-  return Library.AllMeshMap[FName("#Grid")] != nullptr;
+	Library.RegisterMesh(FName("#Grid"), CreateInternalMesh(Renderer, MeshDesc));
+	return Library.AllMeshMap[FName("#Grid")] != nullptr;
 }
 
-bool MeshUtil::CreateLineMesh(FRenderer &Renderer, FRenderResourceLibrary &Library) {
-  FMeshDesc Desc{.VertexData = LineVertices,
-                 .VertexDataSize = static_cast<uint32>(sizeof(LineVertices)),
-                 .VertexStride = sizeof(FVertexData),
-                 .VertexCount = static_cast<uint32>(std::size(LineVertices)),
-                 .bIsLine = true};
+bool MeshUtil::CreateLineMesh(FRenderer& Renderer, FRenderResourceLibrary& Library)
+{
+	FMeshDesc Desc{ .VertexData = LineVertices,
+		.VertexDataSize = static_cast<uint32>(sizeof(LineVertices)),
+		.VertexStride = sizeof(FVertexData),
+		.VertexCount = static_cast<uint32>(std::size(LineVertices)),
+		.bIsLine = true };
 
-  Library.RegisterMesh(FName("#Line"), CreateInternalMesh(Renderer, Desc));
-  return Library.AllMeshMap[FName("#Line")] != nullptr;
+	Library.RegisterMesh(FName("#Line"), CreateInternalMesh(Renderer, Desc));
+	return Library.AllMeshMap[FName("#Line")] != nullptr;
 }
-

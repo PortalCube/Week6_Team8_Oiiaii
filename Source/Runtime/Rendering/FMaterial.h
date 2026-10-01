@@ -9,9 +9,9 @@
 #include "Runtime/Material/FTextureSamplerDesc.h"
 #include "Vertices.h"
 
-class FMaterial final {
+class FMaterial final
+{
 public:
-
 	void SetPipeLine(FRenderPipeline* InPipeline) { Pipeline = InPipeline; }
 	FRenderPipeline* GetPipeline() const { return Pipeline; }
 
@@ -22,7 +22,6 @@ public:
 	FTextureSamplerDesc GetSamplerDesc() const { return SamplerDesc; }
 
 private:
-
 	FRenderPipeline* Pipeline = nullptr;
 	FTexture* Texture = nullptr;
 	FTextureSamplerDesc SamplerDesc;

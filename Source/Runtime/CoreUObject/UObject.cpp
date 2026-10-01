@@ -29,9 +29,9 @@ void UObject::Deserialize(const FArchive& Archive)
 void* UObject::operator new(std::size_t Size)
 {
 	// void* Memory = ::operator new(Size);
-	
+
 	void* Memory = FMemory::Malloc(Size);
-	
+
 	TotalAllocationBytes += Size;
 	++TotalAllocationCount;
 
@@ -40,7 +40,8 @@ void* UObject::operator new(std::size_t Size)
 
 void UObject::operator delete(void* Memory, std::size_t Size) noexcept
 {
-	if (Memory == nullptr) return;
+	if (Memory == nullptr)
+		return;
 
 	TotalAllocationBytes -= Size;
 	--TotalAllocationCount;
@@ -63,7 +64,8 @@ void* UObject::operator new(std::size_t Size, std::align_val_t Alignment)
 
 void UObject::operator delete(void* Memory, std::size_t Size, std::align_val_t Alignment) noexcept
 {
-	if (Memory == nullptr) return;
+	if (Memory == nullptr)
+		return;
 
 	TotalAllocationBytes -= Size;
 	--TotalAllocationCount;

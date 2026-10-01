@@ -44,7 +44,6 @@ void FImguiContentsDrawer::Process(FEditor& Editor)
 	ImGui::EndChild();
 
 	ImGui::End();
-
 }
 
 void FImguiContentsDrawer::RenderContentView()
@@ -59,12 +58,13 @@ void FImguiContentsDrawer::RenderContentView()
 	if (CurrentPath != RootPath)
 	{
 		ImGui::SameLine();
-		if (ImGui::SmallButton("Up")) { CurrentPath = CurrentPath.parent_path(); }
+		if (ImGui::SmallButton("Up"))
+		{
+			CurrentPath = CurrentPath.parent_path();
+		}
 	}
 
-
 	ImGui::Separator();
-
 
 	int Total = FolderView.Folders.size() + FolderView.Assets.size();
 	if (Total == 0)
@@ -100,7 +100,7 @@ void FImguiContentsDrawer::RenderContentView()
 		UTexture* Icon = Registry.Get<UTexture>("Texture/Editor/Icon_Folder.json");
 		FTexture* DisplayImage = Icon ? Icon->Get() : nullptr;
 
-		if (DisplayImage && DisplayImage->GetSRV())          
+		if (DisplayImage && DisplayImage->GetSRV())
 		{
 			// 선택 상태를 배경색으로 표시한다.
 			if (bSelected)
@@ -126,11 +126,10 @@ void FImguiContentsDrawer::RenderContentView()
 		{
 			// 이미지가 아니거나 아직 로드 전이면 종류를 글자로 보여준다.
 			if (ImGui::Selectable(
-				"[DIR]",
-				bSelected,
-				ImGuiSelectableFlags_AllowDoubleClick,
-				ImVec2(ThumbnailSize, ThumbnailSize)
-			))
+			        "[DIR]",
+			        bSelected,
+			        ImGuiSelectableFlags_AllowDoubleClick,
+			        ImVec2(ThumbnailSize, ThumbnailSize)))
 			{
 				SelectedPath = Item;
 			}
@@ -144,7 +143,7 @@ void FImguiContentsDrawer::RenderContentView()
 		// 더블클릭은 Selectable 반환값이 아니라 항목 위에서 직접 판정한다.
 		// 반환값 안에서 보면 클릭 타이밍에 따라 놓치는 경우가 있다.
 		if (ImGui::IsItemHovered() &&
-			ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 		{
 			PendingNavigate = Item;
 		}
@@ -203,7 +202,7 @@ void FImguiContentsDrawer::RenderContentView()
 
 		FTexture* DisplayImage = Icon ? Icon->Get() : nullptr;
 
-		if (DisplayImage && DisplayImage->GetSRV())          
+		if (DisplayImage && DisplayImage->GetSRV())
 		{
 			// 선택 상태를 배경색으로 표시한다.
 			if (bSelected)
@@ -225,13 +224,12 @@ void FImguiContentsDrawer::RenderContentView()
 		{
 			// 이미지가 아니거나 아직 로드 전이면 종류를 글자로 보여준다.
 			ImGui::Selectable(
-				"[FILE]",
-				bSelected,
-				ImGuiSelectableFlags_AllowDoubleClick,
-				ImVec2(ThumbnailSize, ThumbnailSize)
-			);
+			    "[FILE]",
+			    bSelected,
+			    ImGuiSelectableFlags_AllowDoubleClick,
+			    ImVec2(ThumbnailSize, ThumbnailSize));
 		}
-		
+
 		if (ImGui::BeginDragDropSource())
 		{
 			FContentDragPayload DragData;
@@ -294,8 +292,8 @@ void FImguiContentsDrawer::RenderFolderTreeNode(const fs::path& FolderPath)
 	bool bContainsDirectory = !FolderView.Folders.empty();
 
 	ImGuiTreeNodeFlags Flags =
-		ImGuiTreeNodeFlags_OpenOnArrow |
-		ImGuiTreeNodeFlags_SpanAvailWidth;
+	    ImGuiTreeNodeFlags_OpenOnArrow |
+	    ImGuiTreeNodeFlags_SpanAvailWidth;
 
 	if (!bContainsDirectory)
 	{
@@ -333,5 +331,3 @@ void FImguiContentsDrawer::RenderFolderTreeNode(const fs::path& FolderPath)
 
 	ImGui::PopID();
 }
-
-

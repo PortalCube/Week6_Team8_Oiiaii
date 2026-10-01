@@ -11,6 +11,7 @@ class FGrid
 private:
 	float CellSize = 1.0f;
 	bool bIsActive = true;
+
 public:
 	void DrawLine(FRenderer& Renderer, const FCamera& Camera);
 

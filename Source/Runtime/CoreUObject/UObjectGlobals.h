@@ -4,15 +4,17 @@
 #include <concepts>
 
 // TODO: 참조를 확실하게 관리하려면 TObjectPtr<TObject>를 반환하도록 바꿔야 함
-template <typename TObject, typename ... TArgs>
-	requires std::derived_from<TObject, UObject>
+template <typename TObject, typename... TArgs>
+    requires std::derived_from<TObject, UObject>
 TObject* NewObject(TArgs&&... Args)
 {
 	TObject* Object = new TObject(std::forward<TArgs>(Args)...);
-	try {
+	try
+	{
 		FUObjectArray::Get().AddObject(Object);
 	}
-	catch (...) {
+	catch (...)
+	{
 		delete Object;
 		throw;
 	}
@@ -24,7 +26,6 @@ inline UObject* NewObject(UClass* ClassType)
 	UObject* Object = ClassType->CreateDefaultObject();
 	return Object;
 }
-
 
 /// <summary>
 /// UObject를 엔진에서 안전하게 할당 해제합니다. (delete Object와 동일)

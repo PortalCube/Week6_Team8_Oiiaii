@@ -173,7 +173,7 @@ void FCamera::UpdateViewProjectionMatrixIfDirty() const
 	bViewProjectionMatrixDirty = false;
 }
 
-//FVector FCamera::GetForwardVector() const
+// FVector FCamera::GetForwardVector() const
 //{
 //	const FMatrix& Rot = GetRotationMatrix();
 //
@@ -181,4 +181,4 @@ void FCamera::UpdateViewProjectionMatrixIfDirty() const
 //	FVector Forward(Rot.M[0][0], Rot.M[0][1], Rot.M[0][2]);
 //	Forward.Normalize();
 //	return Forward;
-//}
+// }

@@ -20,10 +20,11 @@ class UScene;
 // 커맨드로 제어하는 컬링 옵션
 struct FCullingSettings
 {
-	//bool bEnabled = true;   // cull on/off
+	// bool bEnabled = true;   // cull on/off
 };
 
-class FRenderView final {
+class FRenderView final
+{
 	FRenderer& Renderer;
 	FRenderQueue RenderQueue;
 
@@ -33,7 +34,7 @@ public:
 	const FRenderer& GetRenderer() const { return Renderer; }
 	FRenderView(const FRenderView&) = delete;
 	FRenderView& operator=(const FRenderView&) = delete;
-	
+
 	// 전체 렌더링 준비
 	void PrepareRender();
 
@@ -77,30 +78,30 @@ public:
 
 	void SetCullingEnabled(bool pCullingEnable);
 
-	//렌더 전에 컬링 판정
+	// 렌더 전에 컬링 판정
 	void CullScene(const FSceneView& View, const UScene& Scene);
 
-	//void SetOcclusionEnabled(bool bEnable) { bOcclusionEnabled = bEnable; }
-	//bool IsOcclusionEnabled() const { return bOcclusionEnabled; }
+	// void SetOcclusionEnabled(bool bEnable) { bOcclusionEnabled = bEnable; }
+	// bool IsOcclusionEnabled() const { return bOcclusionEnabled; }
 	FOcclusionCuller& GetOcclusionCuller() { return OcclusionCuller; }
 
-	//측정 : 다음에 렌더되는 뷰 하나에서 오라클을 실행(한 프레임 멈춤)
+	// 측정 : 다음에 렌더되는 뷰 하나에서 오라클을 실행(한 프레임 멈춤)
 	void RequestOcclusionOracle() { bOracleRequested = true; }
 
 private:
 	FCullingSettings CullingSettings;
-	//컬링 후 가시 여부 인덱스(실제 renderComponent 인덱스와 동일하게)
+	// 컬링 후 가시 여부 인덱스(실제 renderComponent 인덱스와 동일하게)
 	TArray<uint8> VisibleFlags;
 	TArray<UPrimitiveComponent*> VisiblePrimitives;
 	bool bCullResultValid = false;
 
-	static constexpr uint32 MaxViewCount = 4;   // FEditor::Leaf 개수
+	static constexpr uint32 MaxViewCount = 4; // FEditor::Leaf 개수
 
 	struct FFrozenView
 	{
 		FFrustum Frustum;
 		FMatrix ViewProj;
-		FVector Corners[8];         // 와이어프레임용 (월드 좌표)
+		FVector Corners[8]; // 와이어프레임용 (월드 좌표)
 		bool bValid = false;
 		bool bHasCorners = false;
 	};
@@ -108,18 +109,18 @@ private:
 	FFrustum GetCullFrustum(const FSceneView& View);
 
 	FFlatFrustumCuller FlatCuller;
-	IPrimitiveCuller* Culler = &FlatCuller;     // 추후 BVH/SIMD 컬러로 교체하는 지점
+	IPrimitiveCuller* Culler = &FlatCuller; // 추후 BVH/SIMD 컬러로 교체하는 지점
 
-	//Occlusion Culling
+	// Occlusion Culling
 	FOcclusionCuller OcclusionCuller;
-	//bool bOcclusionEnabled = false;
+	// bool bOcclusionEnabled = false;
 
 	// [SceneIndex] 오클루전으로 지웠으면 1
 	TArray<uint8> OccludedFlags;
 
 	bool bOracleRequested = false;
-	TArray<FDrawCommand> OracleDrawnCommands;     // 그린 것
-	TArray<FDrawCommand> OracleOccludedCommands;  // 오클루전으로 지운 것 (검증 대상)
+	TArray<FDrawCommand> OracleDrawnCommands;    // 그린 것
+	TArray<FDrawCommand> OracleOccludedCommands; // 오클루전으로 지운 것 (검증 대상)
 
 	void RunOcclusionOracle();
 };

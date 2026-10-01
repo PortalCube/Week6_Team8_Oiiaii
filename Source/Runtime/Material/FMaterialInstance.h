@@ -22,7 +22,7 @@ struct FMaterialInstance
 	FTextureSamplerDesc SamplerDesc{};
 
 	// ==== Shader Constant Buffer ====
-	
+
 	FVector2 UVOffset = { 0.0f, 0.0f };
 	FVector2 UVScale = { 1.0f, 1.0f };
 
@@ -37,7 +37,7 @@ struct FMaterialInstance
 	// ================================
 
 	FMaterialInstance(UMaterial* Parent)
-		: Material{ Parent }
+	    : Material{ Parent }
 	{
 		if (Material == nullptr)
 		{

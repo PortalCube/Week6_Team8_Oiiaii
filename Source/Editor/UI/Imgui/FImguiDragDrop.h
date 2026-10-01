@@ -4,7 +4,7 @@
 
 struct FContentDragPayload
 {
-    UAsset* Ptr;
+	UAsset* Ptr;
 };
 
 inline constexpr const char* ContentDragPayloadType = "ENGINE_CONTENT";

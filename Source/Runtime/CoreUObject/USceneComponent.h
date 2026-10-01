@@ -4,7 +4,6 @@
 #include "ThirdParty/Json/json.hpp"
 #include "UObject.h"
 
-
 class UScene;
 class AActor;
 class FArchive;
@@ -16,36 +15,41 @@ class USceneComponent : public UObject
 	friend class AActor;
 
 public:
-    virtual void Initialize() override;
-    virtual void Release() override;
-    
-    AActor* GetActorOwner() const { return ActorOwner; }
-    USceneComponent* GetSceneOwner() const { return SceneOwner; }
-    void SetActorOwner(AActor* Owner) { ActorOwner = Owner; } //selectedacotor 한테 textcomponent 바로 붙여야해서 만듦
+	virtual void Initialize() override;
+	virtual void Release() override;
 
-    virtual void Register(UScene& InScene);
-    virtual void BeginPlay();
-    virtual void Update(float DeltaTime) {}
-    virtual void EndPlay();
-    virtual void Unregister();
+	AActor* GetActorOwner() const { return ActorOwner; }
+	USceneComponent* GetSceneOwner() const { return SceneOwner; }
+	void SetActorOwner(AActor* Owner) { ActorOwner = Owner; } // selectedacotor 한테 textcomponent 바로 붙여야해서 만듦
 
-    void SetupAttachment(USceneComponent* InParent);
+	virtual void Register(UScene& InScene);
+	virtual void BeginPlay();
+	virtual void Update(float DeltaTime) {}
+	virtual void EndPlay();
+	virtual void Unregister();
 
-    [[nodiscard]] bool IsRegistered() const { return Scene != nullptr; }
-    [[nodiscard]] bool HasBegunPlay() const { return bHasBegunPlay; }
-    [[nodiscard]] bool IsTickEnabled() const { return bTickEnabled; }
+	void SetupAttachment(USceneComponent* InParent);
+
+	[[nodiscard]] bool IsRegistered() const { return Scene != nullptr; }
+	[[nodiscard]] bool HasBegunPlay() const { return bHasBegunPlay; }
+	[[nodiscard]] bool IsTickEnabled() const { return bTickEnabled; }
 
 	virtual void Serialize(FArchive& Archive) const override;
 	virtual void Deserialize(const FArchive& Archive) override;
-    
-    void SetInheritRotation(bool bInherit) { bInheritRotation = bInherit; bGlobalDirty = true; }
+
+	void SetInheritRotation(bool bInherit)
+	{
+		bInheritRotation = bInherit;
+		bGlobalDirty = true;
+	}
+
 protected:
 	USceneComponent() = default;
 
 	FTransform RelativeTransform;
 
-    //파생 클래스에서 Transfrom 변경에 따라 반응.
-    virtual void OnTransformChanged() {}
+	// 파생 클래스에서 Transfrom 변경에 따라 반응.
+	virtual void OnTransformChanged() {}
 
 public:
 	const FTransform& GetRelativeTransform() const { return RelativeTransform; }
@@ -54,43 +58,43 @@ public:
 	const FMatrix& GetGlobalTransformMatrix() const { return GetGlobalTransform().GetMatrix(); }
 	// 월드 행렬의 역행렬. 스케일이 0에 가까워 역행렬이 없으면 nullptr.
 	const FMatrix* GetGlobalInverseMatrix() const;
-	//void SetRelativeTransformFromGlobal(const FTransform& GlobalTransform);
+	// void SetRelativeTransformFromGlobal(const FTransform& GlobalTransform);
 
-    //Transform이 바뀔 때 알림. 액터 전체 컴포넌트에 전파
-    void MarkActorTransformDirty();
+	// Transform이 바뀔 때 알림. 액터 전체 컴포넌트에 전파
+	void MarkActorTransformDirty();
 
-    virtual void SetRelativeLocation(const FVector& RelativeLocation);
-    virtual void SetRelativeRotation(const FVector& RelativeRotation);
-    virtual void SetRelativeRotation(const FQuaternion& RelativeRotation);
-    virtual void SetRelativeScale(const FVector& RelativeScale);
+	virtual void SetRelativeLocation(const FVector& RelativeLocation);
+	virtual void SetRelativeRotation(const FVector& RelativeRotation);
+	virtual void SetRelativeRotation(const FQuaternion& RelativeRotation);
+	virtual void SetRelativeScale(const FVector& RelativeScale);
 
-    virtual const FVector& GetRelativeLocation() const;
-    virtual const FQuaternion& GetRelativeRotation() const;
-    virtual const FVector& GetRelativeScale() const;
+	virtual const FVector& GetRelativeLocation() const;
+	virtual const FQuaternion& GetRelativeRotation() const;
+	virtual const FVector& GetRelativeScale() const;
 
-    void SetBatchIndex(int32 Index) { BatchIndex = Index; }
-    int32 GetBatchIndex() const { return BatchIndex; }
+	void SetBatchIndex(int32 Index) { BatchIndex = Index; }
+	int32 GetBatchIndex() const { return BatchIndex; }
 
 protected:
-    AActor* ActorOwner = nullptr;
-    USceneComponent* SceneOwner = nullptr;
-    UScene* Scene = nullptr;
-    bool bHasBegunPlay = false;
-    bool bTickEnabled = false;
-    bool bInheritRotation = true;
+	AActor* ActorOwner = nullptr;
+	USceneComponent* SceneOwner = nullptr;
+	UScene* Scene = nullptr;
+	bool bHasBegunPlay = false;
+	bool bTickEnabled = false;
+	bool bInheritRotation = true;
 
-    int32 BatchIndex = -1;
+	int32 BatchIndex = -1;
 
 private:
-    USceneComponent* GetTransformParent() const;
+	USceneComponent* GetTransformParent() const;
 
-    // 월드 Transform 캐시. 부모의 GlobalVersion이 바뀌면 자식도 자동으로 재계산된다.
-    mutable FTransform CachedGlobal;
-    mutable FMatrix CachedGlobalInverse;
-    mutable uint32 CachedInverseVersion = UINT32_MAX;
-    mutable bool bCachedInverseValid = false;   // 역행렬 계산 실패도 캐시한다
-    mutable const USceneComponent* CachedParent = nullptr;
-    mutable uint32 CachedParentVersion = 0;
-    mutable uint32 GlobalVersion = 0;
-    mutable bool bGlobalDirty = true;
+	// 월드 Transform 캐시. 부모의 GlobalVersion이 바뀌면 자식도 자동으로 재계산된다.
+	mutable FTransform CachedGlobal;
+	mutable FMatrix CachedGlobalInverse;
+	mutable uint32 CachedInverseVersion = UINT32_MAX;
+	mutable bool bCachedInverseValid = false; // 역행렬 계산 실패도 캐시한다
+	mutable const USceneComponent* CachedParent = nullptr;
+	mutable uint32 CachedParentVersion = 0;
+	mutable uint32 GlobalVersion = 0;
+	mutable bool bGlobalDirty = true;
 };

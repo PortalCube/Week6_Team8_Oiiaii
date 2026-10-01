@@ -22,7 +22,7 @@ public:
 	void OpenObj(const char* InPath);
 	void ImportBinary(const char* InPath);
 	void ExportObjToBinary(const char* OutPath);
-	
+
 	void OpenMtl(const char* InFilePath);
 
 	void OnWindowSize(UINT Width, UINT Height) override;

@@ -7,9 +7,9 @@
 class UObject;
 
 // 객체 해제 시 자동으로 널포인터를 반환하는 약한 참조 포인터
-//template<typename U = T>
+// template<typename U = T>
 //	requires std::derived_from<U, UObject> 이거 여기에 선언하면 다른곳에서 순환오류 날수도있음
-template<typename T>
+template <typename T>
 class TWeakObjectPtr
 {
 private:
@@ -19,20 +19,20 @@ private:
 public:
 	TWeakObjectPtr() = default;
 
-	template<typename U = T>
-		requires std::derived_from<U, UObject>
+	template <typename U = T>
+	    requires std::derived_from<U, UObject>
 	TWeakObjectPtr(T* InPtr)
-		: RawPtr(InPtr), ObjectUUID(InPtr ? InPtr->GetUUID() : 0)
+	    : RawPtr(InPtr), ObjectUUID(InPtr ? InPtr->GetUUID() : 0)
 	{
 	}
 
 	TWeakObjectPtr(std::nullptr_t)
-		: RawPtr(nullptr), ObjectUUID(0)
+	    : RawPtr(nullptr), ObjectUUID(0)
 	{
 	}
 
-	template<typename U = T>
-		requires std::derived_from<U, UObject>
+	template <typename U = T>
+	    requires std::derived_from<U, UObject>
 	TWeakObjectPtr& operator=(T* InPtr)
 	{
 		RawPtr = InPtr;
@@ -78,5 +78,9 @@ public:
 	bool operator!=(const T* Other) const { return Get() != Other; }
 
 	bool IsValid() const { return Get() != nullptr; }
-	void Reset() { RawPtr = nullptr; ObjectUUID = 0; }
+	void Reset()
+	{
+		RawPtr = nullptr;
+		ObjectUUID = 0;
+	}
 };

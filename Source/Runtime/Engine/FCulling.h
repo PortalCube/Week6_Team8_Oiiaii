@@ -8,7 +8,7 @@
 
 struct FFrustum;
 
-//항상 보이게 된다. 아주 큰 Extent를 가진 AABB를 사용하므로 어떤 평면에서도 d < -r이 되지 않는다.
+// 항상 보이게 된다. 아주 큰 Extent를 가진 AABB를 사용하므로 어떤 평면에서도 d < -r이 되지 않는다.
 inline FAxisAlignedBoundingBox MakeAlwaysVisibleCullData()
 {
 	constexpr float Huge = 1.0e30f;
@@ -35,7 +35,7 @@ namespace FrustumUtils
 	}
 
 	// 6개 평면 중 하나라도 완전히 바깥이면 컬링. 걸치면 가시(보수적)
-	inline bool IsVisible(const FFrustum& Frustum, const FVector(&AbsNormals)[FFrustum::PlaneCount], const FAxisAlignedBoundingBox& Box)
+	inline bool IsVisible(const FFrustum& Frustum, const FVector (&AbsNormals)[FFrustum::PlaneCount], const FAxisAlignedBoundingBox& Box)
 	{
 		for (int32 p = 0; p < FFrustum::PlaneCount; ++p)
 		{
@@ -46,7 +46,7 @@ namespace FrustumUtils
 		}
 		return true;
 	}
-}
+} // namespace FrustumUtils
 
 class IPrimitiveCuller
 {
@@ -56,8 +56,8 @@ public:
 	virtual uint32 Cull(const FFrustum& Frustum, const TArray<FAxisAlignedBoundingBox>& CullDataList, TArray<uint8>& OutVisibleFlags) = 0;
 };
 
-//공간 분할 없는, SIMD 안쓰는 기본 Frustum Culling.
-//추후 공간 분할, SIMD가 추가된다면 늘려나갈것
+// 공간 분할 없는, SIMD 안쓰는 기본 Frustum Culling.
+// 추후 공간 분할, SIMD가 추가된다면 늘려나갈것
 class FFlatFrustumCuller final : public IPrimitiveCuller
 {
 public:

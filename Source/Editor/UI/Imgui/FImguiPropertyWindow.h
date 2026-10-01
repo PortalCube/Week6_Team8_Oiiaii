@@ -10,14 +10,15 @@ class UBillBoardComp;
 class UAnimatedBillboardComp;
 
 // 선택된 액터의 컴포넌트 속성을 편집하는 창.
-class FImguiPropertyWindow final {
+class FImguiPropertyWindow final
+{
 public:
 	FImguiPropertyWindow() = default;
 	~FImguiPropertyWindow() = default;
 
-	//복사 생성 금지
+	// 복사 생성 금지
 	FImguiPropertyWindow(const FImguiPropertyWindow&) = delete;
-	//복사 대입 금지
+	// 복사 대입 금지
 	FImguiPropertyWindow& operator=(const FImguiPropertyWindow&) = delete;
 
 	void Process(FEditor& Editor);

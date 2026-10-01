@@ -26,29 +26,29 @@ struct FObjIndex
 
 struct FRawObjData
 {
-	TArray<FVector> Positions; // v
-	TArray<FVector2> TexCoords; // vt
-	TArray<FVector> Normals; // vn
+	TArray<FVector> Positions;       // v
+	TArray<FVector2> TexCoords;      // vt
+	TArray<FVector> Normals;         // vn
 	TArray<TArray<FObjIndex>> Faces; // f
-	TArray<FMeshSection> Sections; // Mesh Section
+	TArray<FMeshSection> Sections;   // Mesh Section
 };
 
 struct FMtlData
 {
 	FString MaterialName;
-	float Ns; // Specular Power
-	float Ni; // Optical Density
-	float d; // Transparency
-	float Tr; // Transparency
-	FVector Tf; // Transmission Filter
-	uint8 illum; // Illumination Model
-	FVector Ka; // Ambient Color
-	FVector Kd; // Diffuse Color
-	FVector Ks; // Specular Color
-	FVector Ke; // Emissive Color
-	FString map_Ka; // Ambient Color Map
-	FString map_Kd; // Diffuse Color Map
-	FString map_Ks; // Specular Color Map
+	float Ns;         // Specular Power
+	float Ni;         // Optical Density
+	float d;          // Transparency
+	float Tr;         // Transparency
+	FVector Tf;       // Transmission Filter
+	uint8 illum;      // Illumination Model
+	FVector Ka;       // Ambient Color
+	FVector Kd;       // Diffuse Color
+	FVector Ks;       // Specular Color
+	FVector Ke;       // Emissive Color
+	FString map_Ka;   // Ambient Color Map
+	FString map_Kd;   // Diffuse Color Map
+	FString map_Ks;   // Specular Color Map
 	FString map_bump; // Bump Map
 };
 
@@ -56,7 +56,7 @@ struct FMtlData
 struct FMeshFileHeader
 {
 	uint32 Magic = 0x4D455348; // Magin number : 'MESH'
-	uint64 SourceHash = 0; // Compare with Source obj hash
+	uint64 SourceHash = 0;     // Compare with Source obj hash
 
 	uint32 VertexCount = 0;
 	uint32 IndexCount = 0;
@@ -73,7 +73,7 @@ public:
 	static bool LoadMeshFromBinary(const char* InFilePath, TArray<FVertexData>& OutVertices, TArray<uint32>& OutIndices, TArray<FMeshSection>& OutSections);
 
 	static bool LoadMtl(const char* InFilePath, TArray<FMtlData>& OutResult);
-	
+
 	// Validate bin file by Magic number and hash
 	static bool ValidateBinary(const char* InBinFilePath, const char* InObjFilePath);
 

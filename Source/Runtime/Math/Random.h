@@ -14,8 +14,7 @@ namespace Random
 	inline std::mt19937 Generate()
 	{
 		std::random_device RandomDevice;
-		std::seed_seq SeedSequence
-		{
+		std::seed_seq SeedSequence{
 			static_cast<std::seed_seq::result_type>(std::chrono::steady_clock::now().time_since_epoch().count()),
 			RandomDevice(),
 			RandomDevice(),
@@ -62,4 +61,4 @@ namespace Random
 	{
 		return Get<ReturnType>(static_cast<ReturnType>(InMin), static_cast<ReturnType>(InMax));
 	}
-}
+} // namespace Random

@@ -10,7 +10,6 @@ class FResourceLoader
 {
 
 private:
-
 	static constexpr int32 CurrentSchemaVersion = 1;
 
 	static void LoadPipelineAsset(const FArchive& Archive, const FName& ID);
@@ -28,14 +27,11 @@ private:
 	static void LoadCodeGeneratedRenderAssets();
 
 public:
-
-
 	/// <summary>
-	/// AssetPath의 모든 애셋을 로드합니다. 
+	/// AssetPath의 모든 애셋을 로드합니다.
 	/// </summary>
 	static void LoadAssets();
 
 	// Import Obj by UI
 	static bool ImportObj(const std::filesystem::path& ObjFilePath, FString* OutAssetId = nullptr, bool bZUp = false);
-
 };

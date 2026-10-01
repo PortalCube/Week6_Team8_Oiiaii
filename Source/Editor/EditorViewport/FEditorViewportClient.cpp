@@ -2,7 +2,8 @@
 
 void FEditorViewportClient::UpdateFocusedAndHovered(bool bFocused, bool bHovered)
 {
-	this->bFocused = bFocused; this->bHovered = bHovered;
+	this->bFocused = bFocused;
+	this->bHovered = bHovered;
 	return;
 }
 void FEditorViewportClient::SetOrthograpihcView(FEditorViewportClient::EOrthogonalType type)

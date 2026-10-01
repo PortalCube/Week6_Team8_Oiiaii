@@ -24,28 +24,25 @@ struct FFolderView
 class FAssetRegistry
 {
 private:
-
 	TMap<FName, UAsset*> AssetMap;
 
 	mutable TMap<std::filesystem::path, FFolderView> DirectoryCache;
 
 public:
-
 	static FAssetRegistry& GetInstance();
 
 	void Register(const FName& Name, UAsset* Pipeline);
 	void Clear();
-	
+
 	template <typename T>
 	T* Get(const FName& Name);
 
 	const TMap<FName, UAsset*>& GetAssetMap() const { return AssetMap; }
 
 	FFolderView GetAssetDirectory(const std::filesystem::path& ParentPath) const;
-	
 };
 
-template<typename T>
+template <typename T>
 inline T* FAssetRegistry::Get(const FName& Name)
 {
 	auto It = AssetMap.find(Name);

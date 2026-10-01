@@ -13,15 +13,13 @@ struct FAxisAlignedBoundingBox
 	FVector Center{};
 	FVector Extent{};
 
-	FVector Min
-	{
+	FVector Min{
 		std::numeric_limits<float>::max(),
 		std::numeric_limits<float>::max(),
 		std::numeric_limits<float>::max(),
 	};
 
-	FVector Max
-	{
+	FVector Max{
 		std::numeric_limits<float>::lowest(),
 		std::numeric_limits<float>::lowest(),
 		std::numeric_limits<float>::lowest(),

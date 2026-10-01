@@ -73,34 +73,34 @@ EGizmoHandle FGizmo::HitTest(const FTransform& Transform, const FRay& Ray, const
 	float HitDistance, Dummyfloat = (std::numeric_limits<float>::max)();
 	FVector ImpactPoint;
 	if (FRayCastingManager::RayIntersectsMesh(
-			Ray,
-			*GizmoMesh,
-			Scale * ObjectRotation * Translation,
-			HitDistance,
-			ImpactPoint, Dummyfloat) &&
-		HitDistance < ClosestDistance)
+	        Ray,
+	        *GizmoMesh,
+	        Scale * ObjectRotation * Translation,
+	        HitDistance,
+	        ImpactPoint, Dummyfloat) &&
+	    HitDistance < ClosestDistance)
 	{
 		ClosestDistance = HitDistance;
 		ClosestHandle = EGizmoHandle::XAxis;
 	}
 	if (FRayCastingManager::RayIntersectsMesh(
-		Ray,
-		*GizmoMesh,
-		Scale * YAxisRotation * ObjectRotation * Translation,
-		HitDistance,
-		ImpactPoint, Dummyfloat) &&
-		HitDistance < ClosestDistance)
+	        Ray,
+	        *GizmoMesh,
+	        Scale * YAxisRotation * ObjectRotation * Translation,
+	        HitDistance,
+	        ImpactPoint, Dummyfloat) &&
+	    HitDistance < ClosestDistance)
 	{
 		ClosestDistance = HitDistance;
 		ClosestHandle = EGizmoHandle::YAxis;
 	}
 	if (FRayCastingManager::RayIntersectsMesh(
-		Ray,
-		*GizmoMesh,
-		Scale * ZAxisRotation * ObjectRotation * Translation,
-		HitDistance,
-		ImpactPoint, Dummyfloat) &&
-		HitDistance < ClosestDistance)
+	        Ray,
+	        *GizmoMesh,
+	        Scale * ZAxisRotation * ObjectRotation * Translation,
+	        HitDistance,
+	        ImpactPoint, Dummyfloat) &&
+	    HitDistance < ClosestDistance)
 	{
 		ClosestDistance = HitDistance;
 		ClosestHandle = EGizmoHandle::ZAxis;
@@ -170,7 +170,7 @@ void FGizmo::UpdateInteraction(FEditor& Editor, const FVector2& MousePosition)
 	case EGizmoMode::Translate:
 		Editor.SelectedTransform.SetLocation(InteractionStartTransform.GetLocation() + InteractionAxisWorld * WorldDistance);
 		break;
-		
+
 	case EGizmoMode::Rotate:
 	{
 		FVector2 BA = InteractionStartMouse - InteractionOriginViewport;
@@ -212,8 +212,8 @@ void FGizmo::DrawAxis(FRenderer& Renderer, EGizmoHandle Handle, const FMatrix& W
 		{ 0.0f, 0.0f, 0.8f, 1.0f },
 	};
 
-	constexpr FVector4 ActiveColor { 1.0f, 1.0f, 0.1f, 1.0f };
-	constexpr FVector4 HoverColor { 0.7f, 0.7f, 0.0f, 1.0f };
+	constexpr FVector4 ActiveColor{ 1.0f, 1.0f, 0.1f, 1.0f };
+	constexpr FVector4 HoverColor{ 0.7f, 0.7f, 0.0f, 1.0f };
 
 	TSharedPtr<FMesh> GizmoMesh;
 	TSharedPtr<FMaterial> GizmoMaterial;
@@ -270,7 +270,7 @@ float FGizmo::CalculateGizmoScale(const FVector& GizmoLocation, const FCamera& C
 }
 
 FVector2 FGizmo::WorldToViewport(const FVector& WorldPosition, const FCamera& Camera,
-	const FVector2& ViewportSize) const
+    const FVector2& ViewportSize) const
 {
 	FMatrix VP = Camera.GetViewProjectionMatrix();
 
@@ -281,4 +281,3 @@ FVector2 FGizmo::WorldToViewport(const FVector& WorldPosition, const FCamera& Ca
 		(1.0f - Projected.Z) * 0.5f * ViewportSize.Y
 	};
 }
-

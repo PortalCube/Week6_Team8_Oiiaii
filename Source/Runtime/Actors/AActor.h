@@ -36,11 +36,14 @@ public:
 	USceneComponent* GetRootComponent() const { return RootComponent; }
 	const TArray<USceneComponent*>& GetAttachedComponents() const { return AttachedComp; }
 
-
 	FTransform GetTransform() const { return RootComponent ? RootComponent->GetRelativeTransform() : FTransform{}; }
-	void SetTransform(const FTransform& NewTransform) { if (RootComponent) RootComponent->SetRelativeTransform(NewTransform); }
+	void SetTransform(const FTransform& NewTransform)
+	{
+		if (RootComponent)
+			RootComponent->SetRelativeTransform(NewTransform);
+	}
 
-	//하위 컴포넌트 월드 Tranform도 바뀐다.
+	// 하위 컴포넌트 월드 Tranform도 바뀐다.
 	void MarkComponentsTransformDirty();
 
 	void AddComponent(USceneComponent* Addcomp);

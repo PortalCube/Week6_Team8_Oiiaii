@@ -1,10 +1,10 @@
 #pragma once
 
 // 기본 타입
-#include "Runtime/Core/IntTypes.h"      // int8 ~ uint64
+#include "Runtime/Core/IntTypes.h" // int8 ~ uint64
 
 // 문자열
-#include "Runtime/Core/FString.h"       // FString, FWString, FStringView, WideToUTF8
+#include "Runtime/Core/FString.h" // FString, FWString, FStringView, WideToUTF8
 #include "Runtime/Core/FName.h"
 
 // 컨테이너

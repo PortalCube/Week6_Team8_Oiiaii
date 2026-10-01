@@ -10,14 +10,11 @@ class UClass;
 class FVisualizerRegistry
 {
 private:
-
 	TArray<TUniquePtr<IVisualizer>> Visualizers;
 	TMap<UClass*, IVisualizer*> Map;
 
 public:
-	
 	FVisualizerRegistry();
 
 	IVisualizer* FindVisualizer(UClass* ClassType);
-
 };

@@ -22,12 +22,10 @@ class UFont : public UAsset
 	DECLARE_UCLASS(UFont, UAsset)
 
 private:
-
 	UTexture* Texture = nullptr;
 	FFont* Font = nullptr;
 
 public:
-
 	void Load(UFontDesc& Desc);
 
 	FFont* Get() const { return Font; }

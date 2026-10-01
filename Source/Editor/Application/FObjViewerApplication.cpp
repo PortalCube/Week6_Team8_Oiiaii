@@ -23,11 +23,10 @@ void FObjViewerApplication::Initialize(HWND hWnd, ID3D11Device* Device, ID3D11De
 	ImGui::CreateContext();
 	auto& IO = ImGui::GetIO();
 	IO.Fonts->AddFontFromFileTTF(
-		"C:/Windows/Fonts/malgun.ttf",
-		18.0f,
-		nullptr,
-		IO.Fonts->GetGlyphRangesKorean()
-	);
+	    "C:/Windows/Fonts/malgun.ttf",
+	    18.0f,
+	    nullptr,
+	    IO.Fonts->GetGlyphRangesKorean());
 	IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	ImFontConfig Config;
 	Config.SizePixels = 16.0f;
@@ -37,8 +36,8 @@ void FObjViewerApplication::Initialize(HWND hWnd, ID3D11Device* Device, ID3D11De
 	ImGui_ImplDX11_Init(Device, Context);
 
 	// TEMP : test
-	//ImportBinary("Resources/test.bin");
-	//OpenMtl("Resources/test.mtl");
+	// ImportBinary("Resources/test.bin");
+	// OpenMtl("Resources/test.mtl");
 }
 
 void FObjViewerApplication::Update(float DeltaTime)
@@ -47,7 +46,7 @@ void FObjViewerApplication::Update(float DeltaTime)
 	{
 		// Camera Update
 		CameraController.UpdateMouseInput(Camera);
-	}	
+	}
 }
 
 void FObjViewerApplication::Render()
@@ -68,14 +67,12 @@ void FObjViewerApplication::Render()
 	if (CurrentMesh)
 	{
 		FMatrix World = FMatrix::GetIdentity();
-		FViewConstants ViewConstants
-		{
+		FViewConstants ViewConstants{
 			.View = Camera.GetViewMatrix(),
 			.Projection = Camera.GetProjectionMatrix(),
-			.ViewportSize = FVector2
-			{
-				static_cast<float>(Renderer->GetWidth()),
-				static_cast<float>(Renderer->GetHeight()),
+			.ViewportSize = FVector2{
+			    static_cast<float>(Renderer->GetWidth()),
+			    static_cast<float>(Renderer->GetHeight()),
 			},
 		};
 		Renderer->UpdateViewConstants(ViewConstants);
@@ -157,7 +154,7 @@ void FObjViewerApplication::RenderUI()
 	}
 
 	// UI Render
-	RenderSideBar();	
+	RenderSideBar();
 	RenderConsole();
 	RenderToolbar();
 
@@ -168,7 +165,6 @@ void FObjViewerApplication::RenderUI()
 
 void FObjViewerApplication::Shutdown()
 {
-	
 }
 
 void FObjViewerApplication::OpenObj(const char* InPath)
@@ -189,14 +185,14 @@ void FObjViewerApplication::OpenObj(const char* InPath)
 		{
 			AddLog("Done Convert Obj");
 			FMeshDesc MeshDesc{
-			.VertexData = Vertices.data(),
-			.VertexDataSize = static_cast<uint32>(sizeof(FVertexData) * Vertices.size()),
-			.VertexStride = static_cast<uint32>(sizeof(FVertexData)),
-			.VertexCount = static_cast<uint32>(Vertices.size()),
-			.IndexData = Indices.data(),
-			.IndexDataSize = static_cast<uint32>(sizeof(uint32) * Indices.size()),
-			.IndexCount = static_cast<uint32>(Indices.size()),
-			.Sections = Sections
+				.VertexData = Vertices.data(),
+				.VertexDataSize = static_cast<uint32>(sizeof(FVertexData) * Vertices.size()),
+				.VertexStride = static_cast<uint32>(sizeof(FVertexData)),
+				.VertexCount = static_cast<uint32>(Vertices.size()),
+				.IndexData = Indices.data(),
+				.IndexDataSize = static_cast<uint32>(sizeof(uint32) * Indices.size()),
+				.IndexCount = static_cast<uint32>(Indices.size()),
+				.Sections = Sections
 			};
 
 			CurrentObjHash = FObjParser::ComputeFileHash(InPath);
@@ -216,14 +212,14 @@ void FObjViewerApplication::ImportBinary(const char* InPath)
 	if (FObjParser::LoadMeshFromBinary(InPath, Vertices, Indices, Sections))
 	{
 		FMeshDesc MeshDesc{
-		.VertexData = Vertices.data(),
-		.VertexDataSize = static_cast<uint32>(sizeof(FVertexData) * Vertices.size()),
-		.VertexStride = static_cast<uint32>(sizeof(FVertexData)),
-		.VertexCount = static_cast<uint32>(Vertices.size()),
-		.IndexData = Indices.data(),
-		.IndexDataSize = static_cast<uint32>(sizeof(uint32) * Indices.size()),
-		.IndexCount = static_cast<uint32>(Indices.size()),
-		.Sections = Sections,
+			.VertexData = Vertices.data(),
+			.VertexDataSize = static_cast<uint32>(sizeof(FVertexData) * Vertices.size()),
+			.VertexStride = static_cast<uint32>(sizeof(FVertexData)),
+			.VertexCount = static_cast<uint32>(Vertices.size()),
+			.IndexData = Indices.data(),
+			.IndexDataSize = static_cast<uint32>(sizeof(uint32) * Indices.size()),
+			.IndexCount = static_cast<uint32>(Indices.size()),
+			.Sections = Sections,
 		};
 
 		CurrentMesh = Renderer->CreateMesh(MeshDesc);
@@ -284,7 +280,7 @@ void FObjViewerApplication::RenderSideBar()
 		ImGui::Text("Triangles :	%zu", Indices.size() / 3);
 		ImGui::Text("Sections  :	%zu", Sections.size());
 	}
-	
+
 	if (ImGui::CollapsingHeader("Environment"), ImGuiTreeNodeFlags_DefaultOpen)
 	{
 		ImGui::ColorEdit4("Background Color", BackgroundColor);
@@ -346,11 +342,10 @@ void FObjViewerApplication::RenderToolbar()
 				OpenMtl(MtlPath.c_str());
 
 				auto End = std::chrono::high_resolution_clock::now();
-				float Elapsed = std::chrono::duration<float, std::milli>(End - Start).count();				
+				float Elapsed = std::chrono::duration<float, std::milli>(End - Start).count();
 
 				AddLog("[Open Obj]" + Path + " " + std::to_string(Elapsed) + "ms");
 			}
-			
 		}
 		if (ImGui::Button("Import(Bin)"))
 		{
@@ -406,13 +401,12 @@ bool FObjViewerApplication::PickFile(FString& OutPath, const wchar_t* InFileFilt
 	Desc.nMaxFile = MAX_PATH;
 	Desc.lpstrDefExt = InlpstrDefExt;
 
-	Desc.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR
-		| (bSave ? OFN_OVERWRITEPROMPT : (OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST));
+	Desc.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR | (bSave ? OFN_OVERWRITEPROMPT : (OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST));
 
 	if (!(bSave ? GetSaveFileNameW(&Desc) : GetOpenFileNameW(&Desc)))
 	{
 		return false;
-	}		
+	}
 
 	OutPath = std::filesystem::path(Buffer).string();
 	return true;

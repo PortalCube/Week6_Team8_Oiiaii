@@ -4,7 +4,6 @@
 #include "Runtime/Core/Globals.h"
 #include <numbers>
 
-
 IMPLEMENT_UCLASS(UStaticMeshComponent, UMeshComponent)
 
 float UStaticMeshComponent::ComputeScreenSize(const FCamera& Camera) const
@@ -44,7 +43,10 @@ float UStaticMeshComponent::ComputeScreenSizeSquared(const FAxisAlignedBoundingB
 {
 	// 매 프레임 오브젝트마다 도는 코드라, 함수 호출(IsValid, std::max, FVector 연산자) 없이 float로만 계산한다.
 	// 월드 바운드의 Center/Extent는 바운드가 갱신될 때 이미 계산되어 있다.
-	if (Bounds.Min.X > Bounds.Max.X || Bounds.Min.Y > Bounds.Max.Y || Bounds.Min.Z > Bounds.Max.Z) { return 1.0f; }
+	if (Bounds.Min.X > Bounds.Max.X || Bounds.Min.Y > Bounds.Max.Y || Bounds.Min.Z > Bounds.Max.Z)
+	{
+		return 1.0f;
+	}
 
 	// 바운딩 박스를 감싸는 구로 근사한다. 반지름 = Extent의 길이.
 	const float EX = Bounds.Extent.X, EY = Bounds.Extent.Y, EZ = Bounds.Extent.Z;
@@ -76,11 +78,20 @@ uint32 UStaticMeshComponent::SelectLOD(const UStaticMesh* Mesh, const FAxisAlign
 
 uint32 UStaticMeshComponent::SelectLOD(const UStaticMesh* Mesh, const FAxisAlignedBoundingBox& WorldBounds, const FLODView& View)
 {
-	if (!Globals::bEnableLOD) { return 0; }
-	if (!Mesh) { return 0; }
+	if (!Globals::bEnableLOD)
+	{
+		return 0;
+	}
+	if (!Mesh)
+	{
+		return 0;
+	}
 
 	const uint32 LODCount = Mesh->GetLODCount();
-	if (LODCount <= 1) { return 0; }
+	if (LODCount <= 1)
+	{
+		return 0;
+	}
 
 	if (Globals::ForcedLOD >= 0)
 	{
@@ -127,7 +138,10 @@ const UMaterial* UStaticMeshComponent::GetMaterial(int Index) const
 
 const FMaterialInstance* UStaticMeshComponent::GetMaterialInstance(int Index) const
 {
-	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size()) { return nullptr; }
+	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size())
+	{
+		return nullptr;
+	}
 	return &RenderData.Materials[static_cast<size_t>(Index)];
 }
 
@@ -144,7 +158,10 @@ int32 UStaticMeshComponent::GetMaterialSlotLength() const
 
 void UStaticMeshComponent::SetMaterialInstance(const FMaterialInstance& Instance, int Index)
 {
-	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size()) { return; }
+	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size())
+	{
+		return;
+	}
 	RenderData.Materials[static_cast<size_t>(Index)] = Instance;
 	UpdateMaterialCache();
 	UpdateSortKey();
@@ -152,7 +169,10 @@ void UStaticMeshComponent::SetMaterialInstance(const FMaterialInstance& Instance
 
 void UStaticMeshComponent::SetPipeline(UPipeline* Pipeline, int Index)
 {
-	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size()) { return; }
+	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size())
+	{
+		return;
+	}
 	FMaterialInstance& Instance = RenderData.Materials[static_cast<size_t>(Index)];
 
 	Instance.Pipeline = Pipeline;
@@ -162,7 +182,10 @@ void UStaticMeshComponent::SetPipeline(UPipeline* Pipeline, int Index)
 
 void UStaticMeshComponent::SetTexture(UTexture* Texture, int Index)
 {
-	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size()) { return; }
+	if (Index < 0 || static_cast<size_t>(Index) >= RenderData.Materials.size())
+	{
+		return;
+	}
 	FMaterialInstance& Instance = RenderData.Materials[static_cast<size_t>(Index)];
 
 	Instance.Texture = Texture;
@@ -284,7 +307,7 @@ void UStaticMeshComponent::Deserialize(const FArchive& Archive)
 		{
 			Instance.Texture = Texture;
 		}
-		
+
 		Instance.bDisableShading = Item.GetBool("DisableShading");
 
 		Instance.Color = Item.GetVector4("Color");
@@ -294,4 +317,3 @@ void UStaticMeshComponent::Deserialize(const FArchive& Archive)
 		SetMaterialInstance(Instance, i);
 	}
 }
-

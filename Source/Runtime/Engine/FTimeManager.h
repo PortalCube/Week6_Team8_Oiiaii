@@ -13,7 +13,6 @@ public:
 	static void Update();
 
 private:
-
 	using SteadyClock = std::chrono::steady_clock;
 	using TimePoint = std::chrono::steady_clock::time_point;
 	using Duration = std::chrono::duration<float>;

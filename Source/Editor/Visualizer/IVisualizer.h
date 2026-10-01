@@ -13,10 +13,9 @@ class IVisualizer
 public:
 	virtual ~IVisualizer() = default;
 
-    virtual void Draw(
-        const UPrimitiveComponent& Component,
-        FRenderView& RenderView,
-        const FCamera& Camera,
-        const FVector4& Color = FVector4{ 1.0f, 1.0f, 1.0f, 1.0f }
-    ) const = 0;
+	virtual void Draw(
+	    const UPrimitiveComponent& Component,
+	    FRenderView& RenderView,
+	    const FCamera& Camera,
+	    const FVector4& Color = FVector4{ 1.0f, 1.0f, 1.0f, 1.0f }) const = 0;
 };

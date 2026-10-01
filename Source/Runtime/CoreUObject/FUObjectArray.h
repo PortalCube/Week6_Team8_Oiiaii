@@ -10,7 +10,8 @@ class UObject;
 class FUObjectArray final
 {
 public:
-	static FUObjectArray& Get() {
+	static FUObjectArray& Get()
+	{
 		static FUObjectArray Instance;
 		return Instance;
 	}
@@ -30,19 +31,29 @@ public:
 	class TIterator
 	{
 	public:
-		explicit TIterator( uint32 InIndex) : Index(InIndex) {}
-		TIterator& operator++() { ++Index; return *this;}
-		TIterator operator++(int) { TIterator Temp = *this; ++Index; return Temp; }
+		explicit TIterator(uint32 InIndex) : Index(InIndex) {}
+		TIterator& operator++()
+		{
+			++Index;
+			return *this;
+		}
+		TIterator operator++(int)
+		{
+			TIterator Temp = *this;
+			++Index;
+			return Temp;
+		}
 		bool operator==(const TIterator& Other) const { return Index == Other.Index; }
 		bool operator!=(const TIterator& Other) const { return Index != Other.Index; }
 		UObject* operator*() const { return FUObjectArray::Get().GetObjectByIndex(Index); }
 		UObject* operator->() const { return FUObjectArray::Get().GetObjectByIndex(Index); }
+
 	private:
 		uint32 Index;
 	};
 
 	TIterator begin() { return TIterator(0); }
-	TIterator end() { return TIterator( GetNumObjects());} 
+	TIterator end() { return TIterator(GetNumObjects()); }
 
 private:
 	FUObjectArray() = default;
@@ -56,8 +67,8 @@ private:
 	TArray<UObject*> Objects;
 	uint32 NextUUID = 1u;
 
-	template <typename TObject, typename ... TArgs>
-		requires std::derived_from<TObject, UObject>
+	template <typename TObject, typename... TArgs>
+	    requires std::derived_from<TObject, UObject>
 	friend TObject* NewObject(TArgs&&... Args);
 	friend UObject* NewObject(UClass* ClassType);
 	friend void DestroyObject(UObject* Object);

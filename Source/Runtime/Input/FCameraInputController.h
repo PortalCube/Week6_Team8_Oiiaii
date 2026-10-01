@@ -15,8 +15,8 @@ public:
 	float CameraRotateSpeed = 0.5f;
 
 	// 가속·감속
-	float Acceleration = 40.0f;   // 최대 속도까지 걸리는 정도. 클수록 빨리 붙음
-	float Damping = 8.0f;    // 감속 강도. 클수록 빨리 멈춤
+	float Acceleration = 40.0f; // 최대 속도까지 걸리는 정도. 클수록 빨리 붙음
+	float Damping = 8.0f;       // 감속 강도. 클수록 빨리 멈춤
 
 private:
 	FVector Velocity;

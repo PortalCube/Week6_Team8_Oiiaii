@@ -8,41 +8,44 @@
 // 메시 BVH 빌드(Binned SAH)에서만 쓰는 도우미. 이 파일 밖으로 이름이 새지 않게 한다.
 namespace
 {
-constexpr int BinCount = 12;
+	constexpr int BinCount = 12;
 
-// SAH 비용 상수. 노드 하나를 더 방문하는 비용(자식 AABB 검사)과 삼각형 하나를 검사하는 비용의 비율.
-// TraversalCost가 없으면 분할 비용이 항상 리프 비용 이하가 되어 SAH가 리프에서 멈추지 못한다.
-constexpr float TraversalCost = 2.0f;
-constexpr float IntersectCost = 1.0f;
+	// SAH 비용 상수. 노드 하나를 더 방문하는 비용(자식 AABB 검사)과 삼각형 하나를 검사하는 비용의 비율.
+	// TraversalCost가 없으면 분할 비용이 항상 리프 비용 이하가 되어 SAH가 리프에서 멈추지 못한다.
+	constexpr float TraversalCost = 2.0f;
+	constexpr float IntersectCost = 1.0f;
 
-struct FBin
-{
-	FVector Min{ std::numeric_limits<float>::max(),
-				 std::numeric_limits<float>::max(),
-				 std::numeric_limits<float>::max() };
-	FVector Max{ std::numeric_limits<float>::lowest(),
-				 std::numeric_limits<float>::lowest(),
-				 std::numeric_limits<float>::lowest() };
-	uint32 Count = 0;
-};
-
-// 박스 표면적. 빈 박스(Min > Max)는 0으로 본다.
-float SurfaceArea(const FVector& Min, const FVector& Max)
-{
-	const FVector D = Max - Min;
-	if (D.X < 0.0f || D.Y < 0.0f || D.Z < 0.0f) { return 0.0f; }
-	return 2.0f * (D.X * D.Y + D.Y * D.Z + D.Z * D.X);
-}
-
-// 박스 A를 B까지 포함하도록 키운다.
-void GrowBox(FVector& AMin, FVector& AMax, const FVector& BMin, const FVector& BMax)
-{
-	for (int a = 0; a < 3; ++a)
+	struct FBin
 	{
-		AMin[a] = std::min(AMin[a], BMin[a]);
-		AMax[a] = std::max(AMax[a], BMax[a]);
+		FVector Min{ std::numeric_limits<float>::max(),
+			std::numeric_limits<float>::max(),
+			std::numeric_limits<float>::max() };
+		FVector Max{ std::numeric_limits<float>::lowest(),
+			std::numeric_limits<float>::lowest(),
+			std::numeric_limits<float>::lowest() };
+		uint32 Count = 0;
+	};
+
+	// 박스 표면적. 빈 박스(Min > Max)는 0으로 본다.
+	float SurfaceArea(const FVector& Min, const FVector& Max)
+	{
+		const FVector D = Max - Min;
+		if (D.X < 0.0f || D.Y < 0.0f || D.Z < 0.0f)
+		{
+			return 0.0f;
+		}
+		return 2.0f * (D.X * D.Y + D.Y * D.Z + D.Z * D.X);
 	}
-}
+
+	// 박스 A를 B까지 포함하도록 키운다.
+	void GrowBox(FVector& AMin, FVector& AMax, const FVector& BMin, const FVector& BMax)
+	{
+		for (int a = 0; a < 3; ++a)
+		{
+			AMin[a] = std::min(AMin[a], BMin[a]);
+			AMax[a] = std::max(AMax[a], BMax[a]);
+		}
+	}
 } // namespace
 
 FMesh::~FMesh()
@@ -78,11 +81,11 @@ void FMesh::BuildTriangleVertices()
 		TriangleVertices.reserve(Indices.size());
 		for (size_t i = 0; i + 2 < Indices.size(); i += 3)
 		{
-			if (Indices[i] < PositionSize && Indices[i+1] < PositionSize && Indices[i+2] < PositionSize)
+			if (Indices[i] < PositionSize && Indices[i + 1] < PositionSize && Indices[i + 2] < PositionSize)
 			{
 				TriangleVertices.push_back(Positions[Indices[i]]);
-				TriangleVertices.push_back(Positions[Indices[i+1]]);
-				TriangleVertices.push_back(Positions[Indices[i+2]]);
+				TriangleVertices.push_back(Positions[Indices[i + 1]]);
+				TriangleVertices.push_back(Positions[Indices[i + 2]]);
 			}
 		}
 	}
@@ -91,8 +94,9 @@ void FMesh::BuildTriangleVertices()
 		TriangleVertices = Positions;
 	}
 
-	//BVH Build
-	TArray<FTriRef> Tris; BVHNodes.clear();
+	// BVH Build
+	TArray<FTriRef> Tris;
+	BVHNodes.clear();
 	Tris.reserve(TriangleVertices.size() / 3);
 
 	for (size_t i = 0; i + 2 < TriangleVertices.size(); i += 3)
@@ -112,7 +116,10 @@ void FMesh::BuildTriangleVertices()
 	}
 
 	// 삼각형이 없으면 트리를 만들지 않는다. 빈 루트는 내부 노드로 오인될 수 있다.
-	if (Tris.empty()) { return; }
+	if (Tris.empty())
+	{
+		return;
+	}
 
 	BVHNodes.reserve(Tris.size() * 2 / LeafSize);
 	BVHNodes.push_back({});
@@ -134,7 +141,7 @@ void FMesh::BuildTriangleVertices()
 	TriangleVertices = std::move(Reordered);
 }
 
-void FMesh::BuildRecursive(uint32 NodeIdx, uint32 Start, uint32 Count, TArray<FTriRef> &Tris, uint32 Depth)
+void FMesh::BuildRecursive(uint32 NodeIdx, uint32 Start, uint32 Count, TArray<FTriRef>& Tris, uint32 Depth)
 {
 	FAxisAlignedBoundingBox Bounds;
 	FAxisAlignedBoundingBox CentroidBounds;
@@ -168,12 +175,15 @@ void FMesh::BuildRecursive(uint32 NodeIdx, uint32 Start, uint32 Count, TArray<FT
 	// (원래 식을 부모 표면적으로 나누지 않은 형태. 리프 비용도 같은 배율로 계산하므로 비교 결과는 같다.)
 	const float ParentArea = SurfaceArea(Bounds.Min, Bounds.Max);
 	int BestAxis = -1;
-	int BestSplit = -1;          // 이 bin까지가 왼쪽
+	int BestSplit = -1; // 이 bin까지가 왼쪽
 	float BestCost = (std::numeric_limits<float>::max)();
 
 	for (int Axis = 0; Axis < 3; ++Axis)
 	{
-		if (CentroidBounds.Max[Axis] - CentroidBounds.Min[Axis] < 1e-6f) { continue; }   // 이 축으로는 못 나눔
+		if (CentroidBounds.Max[Axis] - CentroidBounds.Min[Axis] < 1e-6f)
+		{
+			continue;
+		} // 이 축으로는 못 나눔
 
 		FBin Bins[BinCount];
 		for (uint32 i = Start; i < Start + Count; ++i)
@@ -204,10 +214,12 @@ void FMesh::BuildRecursive(uint32 NodeIdx, uint32 Start, uint32 Count, TArray<FT
 			Acc.Count += Bins[i].Count;
 
 			const int Split = i - 1;
-			if (LeftCount[Split] == 0 || Acc.Count == 0) { continue; }   // 한쪽이 비면 후보가 아니다
+			if (LeftCount[Split] == 0 || Acc.Count == 0)
+			{
+				continue;
+			} // 한쪽이 비면 후보가 아니다
 
-			const float Cost = TraversalCost * ParentArea
-				+ IntersectCost * (LeftArea[Split] * LeftCount[Split] + SurfaceArea(Acc.Min, Acc.Max) * Acc.Count);
+			const float Cost = TraversalCost * ParentArea + IntersectCost * (LeftArea[Split] * LeftCount[Split] + SurfaceArea(Acc.Min, Acc.Max) * Acc.Count);
 			if (Cost < BestCost)
 			{
 				BestCost = Cost;
@@ -222,7 +234,7 @@ void FMesh::BuildRecursive(uint32 NodeIdx, uint32 Start, uint32 Count, TArray<FT
 	// - 순회 스택(64칸)을 넘지 않도록 깊이가 너무 깊으면 리프로 끝낸다.
 	// 리프 비용 = IntersectCost x 부모 표면적 x 개수 (나누지 않고 전부 검사)
 	const float LeafCost = IntersectCost * ParentArea * Count;
-	const bool bNoSplit = (BestAxis < 0);                        // 세 축 모두 중심점 범위가 0
+	const bool bNoSplit = (BestAxis < 0); // 세 축 모두 중심점 범위가 0
 	const bool bLeafIsCheaper = (BestCost >= LeafCost && Count <= LeafSize);
 	constexpr uint32 MaxDepth = 60;
 
@@ -237,9 +249,10 @@ void FMesh::BuildRecursive(uint32 NodeIdx, uint32 Start, uint32 Count, TArray<FT
 	if (!bNoSplit)
 	{
 		auto It = std::partition(
-			Tris.begin() + Start,
-			Tris.begin() + Start + Count,
-			[&](const FTriRef& T) { return BinIndex(BestAxis, T.Centroid[BestAxis]) <= BestSplit; });
+		    Tris.begin() + Start,
+		    Tris.begin() + Start + Count,
+		    [&](const FTriRef& T)
+		    { return BinIndex(BestAxis, T.Centroid[BestAxis]) <= BestSplit; });
 		Mid = static_cast<uint32>(It - Tris.begin());
 	}
 
@@ -248,22 +261,25 @@ void FMesh::BuildRecursive(uint32 NodeIdx, uint32 Start, uint32 Count, TArray<FT
 	{
 		const FVector Extent = CentroidBounds.Max - CentroidBounds.Min;
 		int Axis = 0;
-		if (Extent.Y > Extent[Axis]) Axis = 1;
-		if (Extent.Z > Extent[Axis]) Axis = 2;
+		if (Extent.Y > Extent[Axis])
+			Axis = 1;
+		if (Extent.Z > Extent[Axis])
+			Axis = 2;
 
 		Mid = Start + Count / 2;
 		std::nth_element(
-			Tris.begin() + Start,
-			Tris.begin() + Mid,
-			Tris.begin() + Start + Count,
-			[Axis](const FTriRef& A, const FTriRef& B) { return A.Centroid[Axis] < B.Centroid[Axis]; });
+		    Tris.begin() + Start,
+		    Tris.begin() + Mid,
+		    Tris.begin() + Start + Count,
+		    [Axis](const FTriRef& A, const FTriRef& B)
+		    { return A.Centroid[Axis] < B.Centroid[Axis]; });
 	}
 
 	const uint32 LeftIdx = (uint32)BVHNodes.size();
 	BVHNodes.push_back({});
 	BVHNodes.push_back({});
 
-	//리프 노드가 아니면 TriCount = 0
+	// 리프 노드가 아니면 TriCount = 0
 	BVHNodes[NodeIdx].LeftOrFirst = LeftIdx;
 	BVHNodes[NodeIdx].TriCount = 0;
 
@@ -370,5 +386,3 @@ bool FMesh::UpdateBuffers(ID3D11Device* Device, ID3D11DeviceContext* Context, co
 	LocalBounds = FAxisAlignedBoundingBox{ *this };
 	return true;
 }
-
-

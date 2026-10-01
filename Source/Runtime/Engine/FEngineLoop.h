@@ -11,13 +11,11 @@ class FTimeManager;
 class FEngineLoop
 {
 private:
-
 	TUniquePtr<FWindowsApplication> WindowsApplication;
 
 	TUniquePtr<FEngine> Engine{ nullptr };
 
 public:
-
 	void Init(HINSTANCE Instance);
 
 	void Tick();
@@ -27,7 +25,5 @@ public:
 	HWND GetMainWindowHandle() const;
 
 private:
-
 	bool CheckWindowMessage();
-
 };

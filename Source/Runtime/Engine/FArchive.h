@@ -63,7 +63,7 @@ public:
 
 	FVector4 GetVector4(const FString& Key) const;
 	void SetVector4(const FString& Key, const FVector4& Value);
-	
+
 	template <typename T>
 	TArray<T> GetArray(const FString& Key) const;
 
@@ -83,7 +83,7 @@ public:
 	void SetEnum(const FString& Key, T Value, TMap<T, FString>& EnumMap);
 };
 
-template<typename T>
+template <typename T>
 inline TArray<T> FArchive::GetArray(const FString& Key) const
 {
 	TArray<T> Array;
@@ -97,7 +97,7 @@ inline TArray<T> FArchive::GetArray(const FString& Key) const
 	return Array;
 }
 
-template<typename T>
+template <typename T>
 inline void FArchive::SetArray(const FString& Key, const TArray<T>& Value)
 {
 	Object[Key] = nlohmann::json::array();
@@ -108,7 +108,7 @@ inline void FArchive::SetArray(const FString& Key, const TArray<T>& Value)
 	}
 }
 
-template<typename T>
+template <typename T>
 inline T FArchive::GetEnum(const FString& Key, TMap<FString, T>& EnumMap)
 {
 	FString Value = GetString(Key);
@@ -122,7 +122,7 @@ inline T FArchive::GetEnum(const FString& Key, TMap<FString, T>& EnumMap)
 	return It->second;
 }
 
-template<typename T>
+template <typename T>
 inline void FArchive::SetEnum(const FString& Key, T Value, TMap<T, FString>& EnumMap)
 {
 	auto It = EnumMap.find(Value);
@@ -130,8 +130,8 @@ inline void FArchive::SetEnum(const FString& Key, T Value, TMap<T, FString>& Enu
 	if (It == EnumMap.end())
 	{
 		throw EngineUtil::CreateError(
-			"[FArchive::SetEnum] 키 {}에서 대해서 EnumMap에 없는 값이 있습니다. ({})",
-			Key, static_cast<int>(Value));
+		    "[FArchive::SetEnum] 키 {}에서 대해서 EnumMap에 없는 값이 있습니다. ({})",
+		    Key, static_cast<int>(Value));
 	}
 
 	SetString(Key, It->second);

@@ -27,193 +27,211 @@
 #include <Runtime/CoreUObject/FStatsManager.h>
 #include "Runtime/Core/Globals.h"
 
-
 void FEditorApplication::Initialize_ImguiWin32DX11(
-    HWND &Window, ID3D11Device *Device, ID3D11DeviceContext *Context) {
-  ImguiManager.Initialize_ImplWin32DX11(Window, Device, Context);
+    HWND& Window, ID3D11Device* Device, ID3D11DeviceContext* Context)
+{
+	ImguiManager.Initialize_ImplWin32DX11(Window, Device, Context);
 }
 
-void FEditorApplication::Initialize_Runtime(USceneManager *SceneManager,
-                                            FRenderView *RenderView) {
-  this->RenderView = RenderView;
-  this->SceneManager = SceneManager;
-  this->CurrentScene = SceneManager->CurrentScene;
+void FEditorApplication::Initialize_Runtime(USceneManager* SceneManager,
+    FRenderView* RenderView)
+{
+	this->RenderView = RenderView;
+	this->SceneManager = SceneManager;
+	this->CurrentScene = SceneManager->CurrentScene;
 
-  Editor.Initialize(SceneManager);
-  Editor.InitMultiViewport(FEditorViewportClient{});
-  Editor.LoadState();
-  Editor.SetViewLayout(Editor.State.GetSplitMode());
+	Editor.Initialize(SceneManager);
+	Editor.InitMultiViewport(FEditorViewportClient{});
+	Editor.LoadState();
+	Editor.SetViewLayout(Editor.State.GetSplitMode());
 
-  // TEMP: 당분간 기본값으로 활성화
-  EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Unit);
-  EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::FPS);
+	// TEMP: 당분간 기본값으로 활성화
+	EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Unit);
+	EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::FPS);
 }
 
-void FEditorApplication::Shutdown() { Editor.Shutdown(); }
+void FEditorApplication::Shutdown()
+{
+	Editor.Shutdown();
+}
 
-void FEditorApplication::Update(float DeltaTime) {
-  BeginFrame();
-  Tick(DeltaTime);
+void FEditorApplication::Update(float DeltaTime)
+{
+	BeginFrame();
+	Tick(DeltaTime);
 }
 
 void FEditorApplication::BeginFrame()
-{ 
-    ImguiManager.NewFrame();
+{
+	ImguiManager.NewFrame();
 }
 
-void FEditorApplication::Tick(float DeltaTime) {
-  ToolBar.Process(Editor, ConsoleWindow, ControlPanelWindow, PropertyWindow);
-  EditorViewportWindow.Process(Editor, DeltaTime);
-  WorldOutliner.Process(Editor);
-  ControlPanelWindow.Process(Editor);
-  PropertyWindow.Process(Editor);
-  ConsoleWindow.Process(Editor, [this](const char* Command) {ExecuteCommand(Command);});
-  ContentsDrawer.Process(Editor);
-  Editor.Process();
+void FEditorApplication::Tick(float DeltaTime)
+{
+	ToolBar.Process(Editor, ConsoleWindow, ControlPanelWindow, PropertyWindow);
+	EditorViewportWindow.Process(Editor, DeltaTime);
+	WorldOutliner.Process(Editor);
+	ControlPanelWindow.Process(Editor);
+	PropertyWindow.Process(Editor);
+	ConsoleWindow.Process(Editor, [this](const char* Command)
+	    { ExecuteCommand(Command); });
+	ContentsDrawer.Process(Editor);
+	Editor.Process();
 }
 
-void FEditorApplication::Render() {
-  TArray<FEditorViewportClient> &EditorViewports = Editor.GetViewports();
-  
-  // 렌더 준비
-  RenderView->PrepareRender();
+void FEditorApplication::Render()
+{
+	TArray<FEditorViewportClient>& EditorViewports = Editor.GetViewports();
 
-  {
-      //컬링 준비 시간 기록?
-      // 
-      //이동한 오브젝트는 월드 AABB 재계산
-      SceneManager->CurrentScene->UpdateDirtyBounds();
-  }
+	// 렌더 준비
+	RenderView->PrepareRender();
 
-  //Active인 ViewportClient만 렌더링
-  for (SWindow& Leaf : Editor.Leaf)
-  {
-      if (!Leaf.bisActive) continue;
-      FEditorViewportClient& EditorViewport = EditorViewports[Leaf.ViewportIndex];
+	{
+		// 컬링 준비 시간 기록?
+		//
+		// 이동한 오브젝트는 월드 AABB 재계산
+		SceneManager->CurrentScene->UpdateDirtyBounds();
+	}
 
-          // 뷰포트 렌더링 명세 구성
-          FSceneView sceneview{
-              .Camera = EditorViewport.ViewportCamera,
-              .ViewProj = EditorViewport.ViewportCamera.GetViewProjectionMatrix(),
-              .TopLeftUV = EditorViewport.TopLeftUV,
-              .LengthUV = EditorViewport.LengthUV,
-              .ViewMode = EditorViewport.ViewMode,
-              .ShowFlags = EditorViewport.ShowFlags,
-              .LightConstants = Editor.GlobalLight
-          };
+	// Active인 ViewportClient만 렌더링
+	for (SWindow& Leaf : Editor.Leaf)
+	{
+		if (!Leaf.bisActive)
+			continue;
+		FEditorViewportClient& EditorViewport = EditorViewports[Leaf.ViewportIndex];
 
-          // 에디터 렌더링 컨텍스트 구성
-          FEditorRenderContext EditorCtx;
-          EditorCtx.SelectedActor = Editor.GetSelectedActor();
-          EditorCtx.SelectedTransform = Editor.SelectedTransform;
-          EditorCtx.Gizmo = Editor.ObjectSelected() ? &Editor.GetGizmo() : nullptr;
-          EditorCtx.TextComp = Editor.ObjectSelected() ? Editor.GetTextcomp() : nullptr;
-          EditorCtx.Grid = &EditorViewport.GetGrid();
-          EditorCtx.VisualizerRegistry = &VisualizerRegistry;
+		// 뷰포트 렌더링 명세 구성
+		FSceneView sceneview{
+			.Camera = EditorViewport.ViewportCamera,
+			.ViewProj = EditorViewport.ViewportCamera.GetViewProjectionMatrix(),
+			.TopLeftUV = EditorViewport.TopLeftUV,
+			.LengthUV = EditorViewport.LengthUV,
+			.ViewMode = EditorViewport.ViewMode,
+			.ShowFlags = EditorViewport.ShowFlags,
+			.LightConstants = Editor.GlobalLight
+		};
 
-          if (EditorCtx.SelectedActor) {
-              if (USceneComponent* RootComp = EditorCtx.SelectedActor->GetRootComponent()) {
-                  EditorCtx.SelectedPrimitive = RootComp->Cast<UPrimitiveComponent>();
-              }
-          }
+		// 에디터 렌더링 컨텍스트 구성
+		FEditorRenderContext EditorCtx;
+		EditorCtx.SelectedActor = Editor.GetSelectedActor();
+		EditorCtx.SelectedTransform = Editor.SelectedTransform;
+		EditorCtx.Gizmo = Editor.ObjectSelected() ? &Editor.GetGizmo() : nullptr;
+		EditorCtx.TextComp = Editor.ObjectSelected() ? Editor.GetTextcomp() : nullptr;
+		EditorCtx.Grid = &EditorViewport.GetGrid();
+		EditorCtx.VisualizerRegistry = &VisualizerRegistry;
 
-          // 뷰포트 렌더링 일괄 수행
-          RenderView->RenderView(sceneview, *SceneManager->CurrentScene, EditorCtx);
+		if (EditorCtx.SelectedActor)
+		{
+			if (USceneComponent* RootComp = EditorCtx.SelectedActor->GetRootComponent())
+			{
+				EditorCtx.SelectedPrimitive = RootComp->Cast<UPrimitiveComponent>();
+			}
+		}
 
-  }
+		// 뷰포트 렌더링 일괄 수행
+		RenderView->RenderView(sceneview, *SceneManager->CurrentScene, EditorCtx);
+	}
 
-  //기즈모 그리기
-  if (Editor.ObjectSelected())
-  {
-      for (const SWindow& Leaf : Editor.Leaf)
-      {
-          if (!Leaf.bisActive)
-              continue;
+	// 기즈모 그리기
+	if (Editor.ObjectSelected())
+	{
+		for (const SWindow& Leaf : Editor.Leaf)
+		{
+			if (!Leaf.bisActive)
+				continue;
 
-          const auto& Viewport = EditorViewports[Leaf.ViewportIndex];
+			const auto& Viewport = EditorViewports[Leaf.ViewportIndex];
 
-          FSceneView SceneView{
-    .Camera = Viewport.ViewportCamera,
-    .ViewProj = Viewport.ViewportCamera.GetViewProjectionMatrix(),
-    .TopLeftUV = Viewport.TopLeftUV,
-    .LengthUV = Viewport.LengthUV,
-    .ViewMode = Viewport.ViewMode,
-    .ShowFlags = Viewport.ShowFlags,
-    .LightConstants = Editor.GlobalLight
-          };
+			FSceneView SceneView{
+				.Camera = Viewport.ViewportCamera,
+				.ViewProj = Viewport.ViewportCamera.GetViewProjectionMatrix(),
+				.TopLeftUV = Viewport.TopLeftUV,
+				.LengthUV = Viewport.LengthUV,
+				.ViewMode = Viewport.ViewMode,
+				.ShowFlags = Viewport.ShowFlags,
+				.LightConstants = Editor.GlobalLight
+			};
 
-          RenderView->RenderOverlayPass(Viewport.ViewportCamera, SceneView, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
-          // 마지막으로 그린 뷰의 렌더 모드가 남지 않도록 설정
+			RenderView->RenderOverlayPass(Viewport.ViewportCamera, SceneView, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
+			// 마지막으로 그린 뷰의 렌더 모드가 남지 않도록 설정
 
-          RenderView->SetRenderMode(Viewport.ViewMode);
-          RenderView->RenderGizmo(
-              Editor.SelectedTransform,
-              Viewport.ViewportCamera,
-              Viewport.TopLeftUV,
-              Viewport.LengthUV,
-              Editor.GetGizmo());
-      }
-  }
+			RenderView->SetRenderMode(Viewport.ViewMode);
+			RenderView->RenderGizmo(
+			    Editor.SelectedTransform,
+			    Viewport.ViewportCamera,
+			    Viewport.TopLeftUV,
+			    Viewport.LengthUV,
+			    Editor.GetGizmo());
+		}
+	}
 
-  ImguiManager.RenderUI();
+	ImguiManager.RenderUI();
 }
 
-void FEditorApplication::OnWindowSize(UINT Width, UINT Height) {
-  // 뷰포트 종횡비 갱신
-  for (auto &Viewport : Editor.GetViewports()) {
-    const FVector2 SizePixels =
-        Viewport.LengthUV *
-        FVector2{static_cast<float>(Width), static_cast<float>(Height)};
+void FEditorApplication::OnWindowSize(UINT Width, UINT Height)
+{
+	// 뷰포트 종횡비 갱신
+	for (auto& Viewport : Editor.GetViewports())
+	{
+		const FVector2 SizePixels =
+		    Viewport.LengthUV *
+		    FVector2{ static_cast<float>(Width), static_cast<float>(Height) };
 
-    auto &Camera = Viewport.ViewportCamera;
-    Camera.SetAspectRatio(SizePixels.X / SizePixels.Y);
-  }
+		auto& Camera = Viewport.ViewportCamera;
+		Camera.SetAspectRatio(SizePixels.X / SizePixels.Y);
+	}
 }
 
-void FEditorApplication::ExecuteCommand(const char* Command) {
-    if (!Command) return;
+void FEditorApplication::ExecuteCommand(const char* Command)
+{
+	if (!Command)
+		return;
 
-    FString lowerCmd = Command;
-    unsigned int NumberArg = 0;
+	FString lowerCmd = Command;
+	unsigned int NumberArg = 0;
 
-    std::transform(lowerCmd.begin(), lowerCmd.end(), lowerCmd.begin(), ::tolower);
+	std::transform(lowerCmd.begin(), lowerCmd.end(), lowerCmd.begin(), ::tolower);
 
-    if (lowerCmd.compare("stat memory") == 0) {
-        UE_LOG("Stat Memory Command is executed!");
-        EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Memory);
-    }
+	if (lowerCmd.compare("stat memory") == 0)
+	{
+		UE_LOG("Stat Memory Command is executed!");
+		EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Memory);
+	}
 
-    else if (lowerCmd.compare("stat fps") == 0) {
-        UE_LOG("Stat FPS Command is executed!");
-        EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::FPS);
-    }
+	else if (lowerCmd.compare("stat fps") == 0)
+	{
+		UE_LOG("Stat FPS Command is executed!");
+		EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::FPS);
+	}
 
-    else if (lowerCmd.compare("stat unit") == 0) {
-        UE_LOG("Stat unit Command is executed!");
-        EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Unit);
-    }
+	else if (lowerCmd.compare("stat unit") == 0)
+	{
+		UE_LOG("Stat unit Command is executed!");
+		EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Unit);
+	}
 
-    else if (lowerCmd.compare("stat none") == 0) {
-        UE_LOG("Stat Window is closed!");
-        EditorViewportWindow.SetClose();
-    }
+	else if (lowerCmd.compare("stat none") == 0)
+	{
+		UE_LOG("Stat Window is closed!");
+		EditorViewportWindow.SetClose();
+	}
 
-    else if (lowerCmd.compare("stat cull") == 0)
-    {
-        UE_LOG("Stat Cull Command is executed!");
-        //EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Cull);
-    }
+	else if (lowerCmd.compare("stat cull") == 0)
+	{
+		UE_LOG("Stat Cull Command is executed!");
+		// EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Cull);
+	}
 
-    else if (lowerCmd.compare("cull") == 0)
-    {
-        //컬링 토글
-        Globals::bEnableFrustumCulling = !Globals::bEnableFrustumCulling;
-        UE_LOG("Culling : %s", Globals::bEnableFrustumCulling ? "ON" : "OFF");
-    }    
+	else if (lowerCmd.compare("cull") == 0)
+	{
+		// 컬링 토글
+		Globals::bEnableFrustumCulling = !Globals::bEnableFrustumCulling;
+		UE_LOG("Culling : %s", Globals::bEnableFrustumCulling ? "ON" : "OFF");
+	}
 
-    else {
-        UE_LOG("Unknown command: '%s'\n", Command);
-        return;
-    }
+	else
+	{
+		UE_LOG("Unknown command: '%s'\n", Command);
+		return;
+	}
 }
-

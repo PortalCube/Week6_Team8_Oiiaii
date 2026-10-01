@@ -25,7 +25,7 @@ void FViewerCameraController::UpdateMouseInput(FCamera& Camera)
 		// clamp
 		TargetDistance = std::clamp(TargetDistance, MinDistace, MaxDistance);
 	}
-	
+
 	FMatrix Rotation = FMatrix::MakeRotation(FVector(0.0f, Pitch, Yaw));
 
 	FVector Forward{ Rotation.M[0][0], Rotation.M[0][1], Rotation.M[0][2] };

@@ -8,17 +8,20 @@
 #include "Runtime/Math/FMatrix.h"
 
 void FPrimitiveVisualizer::Draw(
-	const UPrimitiveComponent& Component,
-	FRenderView& RenderView,
-	const FCamera& Camera,
-	const FVector4& Color
-) const
+    const UPrimitiveComponent& Component,
+    FRenderView& RenderView,
+    const FCamera& Camera,
+    const FVector4& Color) const
 {
-    if (Component.IsA<UPrimitiveComponent>() == false) { return; }
+	if (Component.IsA<UPrimitiveComponent>() == false)
+	{
+		return;
+	}
 
-    UStaticMesh* Mesh = Component.GetRenderData(Camera).Mesh;
-    if (!Mesh) return;
-    const FMatrix ModelMatrix = Component.GetRenderMatrix(Camera);
-    FAxisAlignedBoundingBox AABB{ *Mesh->Get(), ModelMatrix};
-    RenderView.RenderBoxMinMax(AABB.Min, AABB.Max, Color);
+	UStaticMesh* Mesh = Component.GetRenderData(Camera).Mesh;
+	if (!Mesh)
+		return;
+	const FMatrix ModelMatrix = Component.GetRenderMatrix(Camera);
+	FAxisAlignedBoundingBox AABB{ *Mesh->Get(), ModelMatrix };
+	RenderView.RenderBoxMinMax(AABB.Min, AABB.Max, Color);
 }

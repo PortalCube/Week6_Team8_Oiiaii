@@ -34,18 +34,27 @@ namespace Converter
 		OutCamera->SetPosition(CameraArchive.GetVector("Location"));
 		OutCamera->SetRotation(Rotation.Y * RadToDeg, Rotation.Z * RadToDeg);
 
-		if (!FOV.empty()) { OutCamera->SetFOV(FOV[0]); }
-		if (!NearClip.empty()) { OutCamera->SetNearPlane(NearClip[0]); }
-		if (!FarClip.empty()) { OutCamera->SetFarPlane(FarClip[0]); }
+		if (!FOV.empty())
+		{
+			OutCamera->SetFOV(FOV[0]);
+		}
+		if (!NearClip.empty())
+		{
+			OutCamera->SetNearPlane(NearClip[0]);
+		}
+		if (!FarClip.empty())
+		{
+			OutCamera->SetFarPlane(FarClip[0]);
+		}
 
 		OutCamera->SetYaw(45.0f);
 		OutCamera->SetPitch(-25.0f);
 	}
 
 	inline FArchive GetStandardArchive(
-		const FArchive& Archive,
-		const std::filesystem::path& SceneFilePath,
-		FCamera* OutCamera = nullptr)
+	    const FArchive& Archive,
+	    const std::filesystem::path& SceneFilePath,
+	    FCamera* OutCamera = nullptr)
 	{
 		ApplyPerspectiveCamera(Archive, OutCamera);
 
@@ -121,4 +130,4 @@ namespace Converter
 		NewArchive.SetArchive("Scene", SceneArchive);
 		return NewArchive;
 	}
-}
+} // namespace Converter

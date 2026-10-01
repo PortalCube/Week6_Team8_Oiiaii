@@ -73,7 +73,7 @@ const FCharacterInfo& FFont::GetCharInfo(char32_t InCharacter) const
 	{
 		return fallbackIt->second;
 	}
-		
+
 	static const FCharacterInfo defaultInfo{};
 	return defaultInfo;
 }

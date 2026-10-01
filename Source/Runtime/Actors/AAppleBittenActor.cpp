@@ -9,7 +9,7 @@ IMPLEMENT_UCLASS(AAppleBittenActor, AActor)
 UCLASS_META(AAppleBittenActor, DisplayName, "Apple Bitten Actor")
 
 AAppleBittenActor::AAppleBittenActor()
-{	
+{
 	AppleStaticMeshComp = NewObject<UStaticMeshComponent>();
 	SetRootComponent(AppleStaticMeshComp);
 

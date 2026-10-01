@@ -16,7 +16,7 @@ class UTextInstanceComponent;
 struct FSceneView
 {
 	const FCamera& Camera;
-	FMatrix  ViewProj;
+	FMatrix ViewProj;
 	FVector2 TopLeftUV;
 	FVector2 LengthUV;
 	EViewModeIndex ViewMode = EViewModeIndex::VMI_Lit;

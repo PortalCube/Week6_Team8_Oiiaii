@@ -12,9 +12,10 @@ public:
 	[[nodiscard]] uint32 GetWidth() const { return Width; }
 	[[nodiscard]] uint32 GetHeight() const { return Height; }
 	[[nodiscard]] size_t GetMemorySize() const;
+
 private:
 	FTexture() = default;
-	
+
 	uint32 Width = 0u;
 	uint32 Height = 0u;
 	uint32 MipLevels = 0u;

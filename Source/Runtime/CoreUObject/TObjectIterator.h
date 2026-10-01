@@ -2,8 +2,8 @@
 
 #include "Runtime/CoreUObject/FUObjectArray.h"
 
-template<typename TObject>
-	requires std::derived_from<TObject, UObject>
+template <typename TObject>
+    requires std::derived_from<TObject, UObject>
 class TObjectIterator
 {
 public:
@@ -14,7 +14,7 @@ public:
 
 	TObjectIterator& operator++()
 	{
-		if (Iterator != FUObjectArray::Get().end()) 
+		if (Iterator != FUObjectArray::Get().end())
 		{
 			++Iterator;
 			SkipInvalid();
@@ -29,7 +29,7 @@ public:
 		return Temp;
 	}
 
-	explicit operator bool() const 
+	explicit operator bool() const
 	{
 		return Iterator != FUObjectArray::Get().end();
 	}
@@ -44,15 +44,15 @@ public:
 		return static_cast<TObject*>(*Iterator);
 	}
 
-	TObject* operator->() const 
+	TObject* operator->() const
 	{
 		return operator*();
 	}
 
 private:
-	void SkipInvalid() 
+	void SkipInvalid()
 	{
-		while (Iterator != FUObjectArray::Get().end()) 
+		while (Iterator != FUObjectArray::Get().end())
 		{
 			UObject* Object = *Iterator;
 			if (Object && Object->IsA(TObject::StaticClass()))
@@ -65,4 +65,3 @@ private:
 
 	FUObjectArray::TIterator Iterator;
 };
-

@@ -16,7 +16,7 @@ FVisualizerRegistry::FVisualizerRegistry()
 	// 기본 프리미티브 비주얼라이저 등록
 	Visualizers.push_back(MakeUnique<FPrimitiveVisualizer>());
 	Map[UPrimitiveComponent::StaticClass()] = Visualizers.back().get();
-	
+
 	Visualizers.push_back(MakeUnique<FSpotlightVisualizer>());
 	Map[USpotLightComponent::StaticClass()] = Visualizers.back().get();
 

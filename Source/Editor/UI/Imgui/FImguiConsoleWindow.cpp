@@ -7,7 +7,8 @@
 #include <string.h>
 #include <ctime>
 
-namespace {
+namespace
+{
 	struct FVisibleConsoleLine
 	{
 		const char* Begin;
@@ -15,7 +16,8 @@ namespace {
 		const char* OriginalLog;
 	};
 
-	void ButtonHelper(bool& bShow, int type) {
+	void ButtonHelper(bool& bShow, int type)
+	{
 		ImVec4 BaseColor;
 		if (bShow)
 			BaseColor = ImGui::GetStyleColorVec4(ImGuiCol_Header);
@@ -26,38 +28,85 @@ namespace {
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, HoverColor);
 
 		const char* name = nullptr;
-		switch (type) {
-		case 0: name = "Log"; break;
-		case 1: name = "Warning"; break;
-		case 2: name = "Error"; break;
-		default: break;
+		switch (type)
+		{
+		case 0:
+			name = "Log";
+			break;
+		case 1:
+			name = "Warning";
+			break;
+		case 2:
+			name = "Error";
+			break;
+		default:
+			break;
 		}
 		auto SelectableWidth = [](const char* Text)
-			{
-				return ImGui::CalcTextSize(Text).x;
-			};
-		if (ImGui::Selectable(name, bShow, 0, ImVec2(SelectableWidth(name), 0.0f))) {
+		{
+			return ImGui::CalcTextSize(Text).x;
+		};
+		if (ImGui::Selectable(name, bShow, 0, ImVec2(SelectableWidth(name), 0.0f)))
+		{
 			bShow = !bShow;
 		}
 		ImGui::PopStyleColor();
 	}
-}
+} // namespace
 
-static int   Stricmp(const char* s1, const char* s2) { int d; while ((d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; } return d; }
-static int   Strnicmp(const char* s1, const char* s2, int n) { int d = 0; while (n > 0 && (d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; n--; } return d; }
-static char* Strdup(const char* s) { IM_ASSERT(s); size_t len = strlen(s) + 1; void* buf = ImGui::MemAlloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)s, len); }
-static void  Strtrim(char* s) { char* str_end = s + strlen(s); while (str_end > s && str_end[-1] == ' ') str_end--; *str_end = 0; }
+static int Stricmp(const char* s1, const char* s2)
+{
+	int d;
+	while ((d = toupper(*s2) - toupper(*s1)) == 0 && *s1)
+	{
+		s1++;
+		s2++;
+	}
+	return d;
+}
+static int Strnicmp(const char* s1, const char* s2, int n)
+{
+	int d = 0;
+	while (n > 0 && (d = toupper(*s2) - toupper(*s1)) == 0 && *s1)
+	{
+		s1++;
+		s2++;
+		n--;
+	}
+	return d;
+}
+static char* Strdup(const char* s)
+{
+	IM_ASSERT(s);
+	size_t len = strlen(s) + 1;
+	void* buf = ImGui::MemAlloc(len);
+	IM_ASSERT(buf);
+	return (char*)memcpy(buf, (const void*)s, len);
+}
+static void Strtrim(char* s)
+{
+	char* str_end = s + strlen(s);
+	while (str_end > s && str_end[-1] == ' ')
+		str_end--;
+	*str_end = 0;
+}
 
 // 대소문자 구분 없는 부분 문자열 검색. 후보를 접두사가 아니라 포함으로 찾는다.
 static const char* Stristr(const char* haystack, const char* needle)
 {
-	if (!*needle) return haystack;
+	if (!*needle)
+		return haystack;
 	for (; *haystack; haystack++)
 	{
 		const char* h = haystack;
 		const char* n = needle;
-		while (*h && *n && toupper((unsigned char)*h) == toupper((unsigned char)*n)) { h++; n++; }
-		if (!*n) return haystack;
+		while (*h && *n && toupper((unsigned char)*h) == toupper((unsigned char)*n))
+		{
+			h++;
+			n++;
+		}
+		if (!*n)
+			return haystack;
 	}
 	return nullptr;
 }
@@ -88,11 +137,15 @@ bool FImguiConsoleWindow::ShowMenuBar()
 {
 	bool bCopyToClipboard = false;
 
-	if (ImGui::BeginMenuBar()) {
+	if (ImGui::BeginMenuBar())
+	{
 		if (ImGui::BeginMenu("Actions"))
 		{
 			bCopyToClipboard = ImGui::MenuItem("Copy");
-			if (ImGui::MenuItem("Clear")) { FLogManager::Get().Clear(); }
+			if (ImGui::MenuItem("Clear"))
+			{
+				FLogManager::Get().Clear();
+			}
 			ImGui::EndMenu();
 		}
 
@@ -100,8 +153,8 @@ bool FImguiConsoleWindow::ShowMenuBar()
 		ButtonHelper(bShowWarn, 1);
 		ButtonHelper(bShowError, 2);
 
-		//Filter.Draw();
-		if (ImGui::InputTextWithHint("##Filter","Filter (inc,-exc)",Filter.InputBuf,IM_ARRAYSIZE(Filter.InputBuf)))
+		// Filter.Draw();
+		if (ImGui::InputTextWithHint("##Filter", "Filter (inc,-exc)", Filter.InputBuf, IM_ARRAYSIZE(Filter.InputBuf)))
 			Filter.Build();
 
 		ImGui::EndMenuBar();
@@ -114,10 +167,12 @@ void FImguiConsoleWindow::ShowLogRegion(bool bCopyToClipboard)
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 	const float footer_height_to_reserve = style.SeparatorSize + style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-	if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_HorizontalScrollbar)) {
+	if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_HorizontalScrollbar))
+	{
 		if (ImGui::BeginPopupContextWindow())
 		{
-			if (ImGui::Selectable("Clear")) FLogManager::Get().Clear();
+			if (ImGui::Selectable("Clear"))
+				FLogManager::Get().Clear();
 			ImGui::EndPopup();
 		}
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
@@ -151,10 +206,10 @@ void FImguiConsoleWindow::ShowLogRegion(bool bCopyToClipboard)
 		}
 
 		auto DrawLine = [this, &VisibleLines](int32 LineIndex)
-			{
-				const FVisibleConsoleLine& Line = VisibleLines[LineIndex];
-				ShowLogLine(Line.Begin, Line.End, Line.OriginalLog);
-			};
+		{
+			const FVisibleConsoleLine& Line = VisibleLines[LineIndex];
+			ShowLogLine(Line.Begin, Line.End, Line.OriginalLog);
+		};
 
 		if (bCopyToClipboard)
 		{
@@ -199,19 +254,27 @@ bool FImguiConsoleWindow::ShouldShowLog(const char* Log) const
 }
 
 void FImguiConsoleWindow::ShowLogLine(
-	const char* LineBegin,
-	const char* LineEnd,
-	const char* OriginalLog) const
+    const char* LineBegin,
+    const char* LineEnd,
+    const char* OriginalLog) const
 {
 	ImVec4 color;
 	bool has_color = false;
-	if (strstr(OriginalLog, "[ERROR]")) {
-		color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true;
+	if (strstr(OriginalLog, "[ERROR]"))
+	{
+		color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+		has_color = true;
 	}
-	else if (strstr(OriginalLog, "[Warning]")) {
-		color = ImVec4(0.6f, 0.8f, 0.4f, 1.0f); has_color = true;
+	else if (strstr(OriginalLog, "[Warning]"))
+	{
+		color = ImVec4(0.6f, 0.8f, 0.4f, 1.0f);
+		has_color = true;
 	}
-	else if (strncmp(OriginalLog, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+	else if (strncmp(OriginalLog, "# ", 2) == 0)
+	{
+		color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f);
+		has_color = true;
+	}
 
 	if (has_color)
 		ImGui::PushStyleColor(ImGuiCol_Text, color);
@@ -240,8 +303,7 @@ void FImguiConsoleWindow::UpdateSuggestions()
 	// 중간에 끼어 있기만 한 후보는 그 뒤로 밀어둔다. 안 그러면 "st" 를 쳤을 때
 	// HI(ST)ORY 가 Stat 들보다 먼저 잡혀 엉뚱한 항목이 선택된다.
 	for (int i = 0; i < Commands.Size; i++)
-		if (Strnicmp(Commands[i], InputBuf, Length) != 0
-			&& Stristr(Commands[i], InputBuf) != nullptr)
+		if (Strnicmp(Commands[i], InputBuf, Length) != 0 && Stristr(Commands[i], InputBuf) != nullptr)
 			Suggestions.push_back(Commands[i]);
 
 	// 목록이 뜨는 순간 첫 항목을 골라 둔다. -1 로 두면 첫 방향키가 선택을
@@ -264,9 +326,9 @@ void FImguiConsoleWindow::DrawSuggestionPopup(const ImVec2& InputMin)
 	ImGui::SetNextWindowSize(PopupSize);
 
 	constexpr ImGuiWindowFlags PopupFlags =
-		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
-		ImGuiWindowFlags_NoNav;
+	    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+	    ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
+	    ImGuiWindowFlags_NoNav;
 
 	ImGui::Begin("##ConsoleSuggestions", nullptr, PopupFlags);
 
@@ -371,7 +433,7 @@ FImguiConsoleWindow::~FImguiConsoleWindow()
 
 int FImguiConsoleWindow::TextEditCallback(ImGuiInputTextCallbackData* data)
 {
-	//AddLog("cursor: %d, selection: %d-%d", data->CursorPos, data->SelectionStart, data->SelectionEnd);
+	// AddLog("cursor: %d, selection: %d-%d", data->CursorPos, data->SelectionStart, data->SelectionEnd);
 	switch (data->EventFlag)
 	{
 	case ImGuiInputTextFlags_CallbackCompletion:
@@ -526,4 +588,3 @@ void FImguiConsoleWindow::ExecCommand(const char* command_line)
 	// On command input, we scroll to bottom even if AutoScroll==false
 	ScrollToBottom = true;
 }
-

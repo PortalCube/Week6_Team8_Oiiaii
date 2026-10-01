@@ -9,7 +9,7 @@ IMPLEMENT_UCLASS(AAppleNormalActor, AActor)
 UCLASS_META(AAppleNormalActor, DisplayName, "Apple Normal Actor")
 
 AAppleNormalActor::AAppleNormalActor()
-{	
+{
 	AppleStaticMeshComp = NewObject<UStaticMeshComponent>();
 	SetRootComponent(AppleStaticMeshComp);
 

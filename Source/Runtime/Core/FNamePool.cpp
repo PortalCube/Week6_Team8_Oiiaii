@@ -1,6 +1,5 @@
 #include "FNamePool.h"
 
-
 // 해시 함수
 // 어쩌면 그냥 이미 있는 해시 함수 라이브러리를 쓰는게 편하고 더 좋을지도..
 
@@ -24,7 +23,7 @@ namespace
 
 		return Result;
 	}
-}
+} // namespace
 
 FNameEntry FNamePool::AddEntry(const FString& Item)
 {
@@ -66,7 +65,6 @@ FNameEntry FNamePool::AddEntry(const FString& Item)
 		Entry.ComparisonIndex = static_cast<int32>(ComparisonBucket.size());
 		ComparisonBucket.push_back(LowerItem);
 	}
-
 
 	bFound = false;
 	for (int i = 0; i < DisplayBucket.size(); ++i)

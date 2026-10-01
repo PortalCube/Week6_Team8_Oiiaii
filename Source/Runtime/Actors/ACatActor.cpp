@@ -10,7 +10,7 @@ IMPLEMENT_UCLASS(ACatActor, AActor)
 UCLASS_META(ACatActor, DisplayName, "Cat Actor")
 
 ACatActor::ACatActor()
-{	
+{
 	CatStaticMeshComp = NewObject<UStaticMeshComponent>();
 	SetRootComponent(CatStaticMeshComp);
 
@@ -32,7 +32,7 @@ void ACatActor::Update(float DeltaTime)
 	if (ElapsedTime >= SpinRate)
 	{
 		ElapsedTime = 0.0f;
-		
+
 		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 		if (bIsSpin)
 		{

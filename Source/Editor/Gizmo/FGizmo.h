@@ -42,7 +42,7 @@ public:
 	void Draw(FRenderer& Renderer, const FTransform& Transform, const FCamera& Camera) const;
 
 	[[nodiscard]] EGizmoHandle HitTest(const FTransform& Transform, const FRay& Ray, const FCamera& Camera) const;
-	
+
 	void BeginInteraction(const FTransform& Transform, EGizmoHandle Handle, const FVector2& MousePosition, const FCamera& Camera, const FVector2& ViewportSize);
 	void UpdateInteraction(FEditor& Editor, const FVector2& MousePosition);
 	void EndInteraction();

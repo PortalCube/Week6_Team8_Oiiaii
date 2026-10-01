@@ -11,7 +11,10 @@ void UStaticMesh::Load(UStaticMeshDesc& Desc)
 	LODs.push_back({ .Mesh = Desc.Mesh, .ScreenSize = 0.0f });
 	for (const FStaticMeshLOD& LOD : Desc.AdditionalLODs)
 	{
-		if (LOD.Mesh) { LODs.push_back(LOD); }
+		if (LOD.Mesh)
+		{
+			LODs.push_back(LOD);
+		}
 	}
 }
 
@@ -19,7 +22,10 @@ FMesh* UStaticMesh::Get(uint32 LODIndex) const
 {
 	// 매 프레임 호출되므로 Debug 빌드의 vector 범위 검사를 피하려고 포인터로 접근한다.
 	const size_t Count = LODs.size();
-	if (Count == 0) { return nullptr; }
+	if (Count == 0)
+	{
+		return nullptr;
+	}
 	return LODs.data()[LODIndex < Count ? LODIndex : Count - 1].Mesh;
 }
 
@@ -36,7 +42,10 @@ uint32 UStaticMesh::SelectLODSquared(float ScreenSizeSq) const
 	for (size_t i = LODs.size(); i-- > 1;)
 	{
 		const float Threshold = LODData[i].ScreenSize;
-		if (ScreenSizeSq < Threshold * Threshold) { return static_cast<uint32>(i); }
+		if (ScreenSizeSq < Threshold * Threshold)
+		{
+			return static_cast<uint32>(i);
+		}
 	}
 	return 0;
 }

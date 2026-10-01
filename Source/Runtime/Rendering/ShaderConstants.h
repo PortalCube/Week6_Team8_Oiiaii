@@ -6,7 +6,8 @@
 #include "Runtime/Math/FVector4.h"
 
 // Register = b0
-struct FFrameConstants {
+struct FFrameConstants
+{
 	float Time;
 	float DeltaTime;
 	FVector2 Padding;
@@ -14,7 +15,8 @@ struct FFrameConstants {
 static_assert(sizeof(FFrameConstants) % 16 == 0);
 
 // Register = b1
-struct FViewConstants {
+struct FViewConstants
+{
 	FMatrix View;
 	FMatrix Projection;
 	FVector2 ViewportSize;
@@ -23,14 +25,15 @@ struct FViewConstants {
 static_assert(sizeof(FViewConstants) % 16 == 0);
 
 // Register = b2
-struct FObjectConstants {
-  //FMatrix MVP;
-  FVector4 Color{0.0f, 0.0f, 0.0f, 0.0f};
-  FVector2 UVScale{1.0f, 1.0f};
-  FVector2 UVOffset{0.0f, 0.0f};
-  FMatrix World = FMatrix::GetIdentity();
-  float DisableShading = 0.0f;
-  FVector Padding;
+struct FObjectConstants
+{
+	// FMatrix MVP;
+	FVector4 Color{ 0.0f, 0.0f, 0.0f, 0.0f };
+	FVector2 UVScale{ 1.0f, 1.0f };
+	FVector2 UVOffset{ 0.0f, 0.0f };
+	FMatrix World = FMatrix::GetIdentity();
+	float DisableShading = 0.0f;
+	FVector Padding;
 };
 static_assert(sizeof(FObjectConstants) % 16 == 0);
 
@@ -38,8 +41,7 @@ static constexpr uint32 ConstantRangeAlignment = 256u;
 
 static constexpr uint32 AlignConstantRange(uint32 Size)
 {
-	return (Size + ConstantRangeAlignment - 1u)
-		& ~(ConstantRangeAlignment - 1u);
+	return (Size + ConstantRangeAlignment - 1u) & ~(ConstantRangeAlignment - 1u);
 }
 
 static constexpr uint32 ObjectConstantStride = AlignConstantRange(sizeof(FObjectConstants));
@@ -52,43 +54,45 @@ static constexpr uint32 MaxObjectDrawCount = 16384u;
 static constexpr uint32 ObjectConstantUploadBufferSize = ObjectConstantStride * MaxObjectDrawCount;
 
 // Register = b3
-//struct FShaderConstants {
+// struct FShaderConstants {
 //
 //};
-//static_assert(sizeof(FShaderConstants) % 16 == 0);
-
+// static_assert(sizeof(FShaderConstants) % 16 == 0);
 
 // Register = b2 / ObjectConstants Override
-struct FGridConstants {
-  FMatrix MVP;
-  FMatrix World;
-  float CellSize;
-  FVector Padding;
+struct FGridConstants
+{
+	FMatrix MVP;
+	FMatrix World;
+	float CellSize;
+	FVector Padding;
 };
 
 static_assert(sizeof(FGridConstants) % 16 == 0);
 
 // Register = b2 / ObjectConstants Override
 // LINE_LIST 기반 에디터 그리드용 상수 버퍼
-struct FGridLineConstants {
-  FMatrix MVP;
-  FVector CameraPosition;
-  float FadeStartDistance;
-  float FadeEndDistance;
-  FVector Padding;
+struct FGridLineConstants
+{
+	FMatrix MVP;
+	FVector CameraPosition;
+	float FadeStartDistance;
+	float FadeEndDistance;
+	FVector Padding;
 };
 
 static_assert(sizeof(FGridLineConstants) % 16 == 0);
 
 // 나중에 수정 필요
 // Register = b4
-struct FLightConstants {
-  // 기본 조명 파라미터
-  FVector LightDirection{-0.5f, -0.5f, -1.0f};
-  float Intensity = 1.0f;
+struct FLightConstants
+{
+	// 기본 조명 파라미터
+	FVector LightDirection{ -0.5f, -0.5f, -1.0f };
+	float Intensity = 1.0f;
 
-  FVector LightColor{1.0f, 1.0f, 1.0f};
-  float AmbientIntensity = 0.2f;
+	FVector LightColor{ 1.0f, 1.0f, 1.0f };
+	float AmbientIntensity = 0.2f;
 };
 
 static_assert(sizeof(FLightConstants) % 16 == 0);

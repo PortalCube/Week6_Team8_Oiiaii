@@ -9,10 +9,10 @@ ASpotlightActor::ASpotlightActor()
 {
 	CreateRootComponent(USpotLightComponent::StaticClass());
 
-    FTransform DefaultTransform;
-    DefaultTransform.SetScale3D(FVector(5.0f, 5.0f, 5.0f));
-    DefaultTransform.SetRotation(FQuaternion::FromEulerXYZDeg(FVector(0.0f, 90.0f, 0.0f)));
-    SetTransform(DefaultTransform);
+	FTransform DefaultTransform;
+	DefaultTransform.SetScale3D(FVector(5.0f, 5.0f, 5.0f));
+	DefaultTransform.SetRotation(FQuaternion::FromEulerXYZDeg(FVector(0.0f, 90.0f, 0.0f)));
+	SetTransform(DefaultTransform);
 }
 
 USpotLightComponent* ASpotlightActor::GetSpotlightComponent() const

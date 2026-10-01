@@ -29,8 +29,6 @@ public:
 
 	bool IsNone() const;
 
-
-
 	/// <summary>
 	/// 두 FName의 문자열을 사전식으로 비교합니다.
 	/// 두 문자열이 같지 않다면 전체 문자열 비교를 수행합니다.
@@ -80,4 +78,4 @@ namespace std
 			return Name.GetHash();
 		}
 	};
-}
+} // namespace std

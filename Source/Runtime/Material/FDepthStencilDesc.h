@@ -4,15 +4,15 @@
 
 enum class EDepthWriteMode : uint8
 {
-	Disable	= 0,
-	Enable	= 1,
+	Disable = 0,
+	Enable = 1,
 };
 
 struct FDepthStencilDesc
 {
-	bool bDepthEnable			= true;
-	bool bStencilEnable			= true;
-	EDepthWriteMode DepthWrite	= EDepthWriteMode::Enable;
+	bool bDepthEnable = true;
+	bool bStencilEnable = true;
+	EDepthWriteMode DepthWrite = EDepthWriteMode::Enable;
 
 	bool operator==(const FDepthStencilDesc&) const = default;
 };
@@ -24,9 +24,7 @@ namespace std
 	{
 		size_t operator()(const FDepthStencilDesc& Desc) const noexcept
 		{
-			return static_cast<size_t>(Desc.bDepthEnable)
-				| (static_cast<size_t>(Desc.bStencilEnable) << 1)
-				| (static_cast<size_t>(Desc.DepthWrite) << 8);
+			return static_cast<size_t>(Desc.bDepthEnable) | (static_cast<size_t>(Desc.bStencilEnable) << 1) | (static_cast<size_t>(Desc.DepthWrite) << 8);
 		}
 	};
-}
+} // namespace std

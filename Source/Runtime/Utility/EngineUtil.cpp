@@ -26,5 +26,5 @@ size_t EngineUtil::HashCombine(size_t FirstHash, size_t SecondHash)
 	return FirstHash ^ (SecondHash + 0x9e3779b9u + (FirstHash << 6) + (FirstHash >> 2));
 
 	// Note: 위 코드는 32비트 호환성을 위한건데, 그냥 64비트 강제할거면 엄청 간단하게 아래로 해도 됨...
-	//return (Bucket << 32) ^ Index;
+	// return (Bucket << 32) ^ Index;
 }

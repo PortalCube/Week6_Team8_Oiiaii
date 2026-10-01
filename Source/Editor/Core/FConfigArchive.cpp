@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <format>
 
-
 FString GetValue(const mINI::INIStructure& Object, const FString& Section, const FString& Key)
 {
 	if (!Object.has(Section))
@@ -23,12 +22,12 @@ FString GetValue(const mINI::INIStructure& Object, const FString& Section, const
 }
 
 FConfigArchive::FConfigArchive()
-	: Object()
+    : Object()
 {
 }
 
 FConfigArchive::FConfigArchive(const mINI::INIStructure& InObject)
-	: Object(InObject)
+    : Object(InObject)
 {
 }
 
@@ -79,8 +78,14 @@ void FConfigArchive::SetDouble(const FString& Section, const FString& Key, doubl
 bool FConfigArchive::GetBool(const FString& Section, const FString& Key) const
 {
 	const FString Value = GetValue(Object, Section, Key);
-	if (Value == "0" || Value == "") { return false; }
-	else { return true; }
+	if (Value == "0" || Value == "")
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
 void FConfigArchive::SetBool(const FString& Section, const FString& Key, bool Value)
@@ -100,13 +105,22 @@ void FConfigArchive::SetString(const FString& Section, const FString& Key, const
 
 bool FConfigArchive::IsEmpty(const FString& Section, const FString& Key) const
 {
-	if (!Object.has(Section)) { return true; }
+	if (!Object.has(Section))
+	{
+		return true;
+	}
 
 	const auto SectionObject = Object.get(Section);
 
-	if (!SectionObject.has(Key)) { return true; }
-	if (SectionObject.get(Key).empty()) { return true; }
-	
+	if (!SectionObject.has(Key))
+	{
+		return true;
+	}
+	if (SectionObject.get(Key).empty())
+	{
+		return true;
+	}
+
 	return false;
 }
 
@@ -117,7 +131,10 @@ FVector FConfigArchive::GetVector(const FString& Section, const FString& Key) co
 	for (int i = 0; i < 3; ++i)
 	{
 		FString ItemKey = std::format("{}.{}", Key, i);
-		if (IsEmpty(Section, ItemKey)) { return FVector{}; }
+		if (IsEmpty(Section, ItemKey))
+		{
+			return FVector{};
+		}
 
 		Value[i] = GetFloat(Section, ItemKey);
 	}
@@ -141,7 +158,10 @@ FVector2 FConfigArchive::GetVector2(const FString& Section, const FString& Key) 
 	for (int i = 0; i < 2; ++i)
 	{
 		FString ItemKey = std::format("{}.{}", Key, i);
-		if (IsEmpty(Section, ItemKey)) { return FVector2{}; }
+		if (IsEmpty(Section, ItemKey))
+		{
+			return FVector2{};
+		}
 
 		Value[i] = GetFloat(Section, ItemKey);
 	}

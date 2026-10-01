@@ -9,43 +9,44 @@
 #include "Runtime/Rendering/FRenderResourceLibrary.h"
 
 void FTextVisualizer::Draw(
-	const UPrimitiveComponent& Component,
-	FRenderView& RenderView,
-	const FCamera& Camera,
-	const FVector4& Color
-) const
+    const UPrimitiveComponent& Component,
+    FRenderView& RenderView,
+    const FCamera& Camera,
+    const FVector4& Color) const
 {
-	if (Component.IsA<UTextInstanceComponent>() == false) { return; }
+	if (Component.IsA<UTextInstanceComponent>() == false)
+	{
+		return;
+	}
 
+	const UTextInstanceComponent& TextComponent =
+	    *Component.Cast<UTextInstanceComponent>();
 
+	float Width = TextComponent.GetWidth();
+	float Height = TextComponent.GetHeight();
 
-  const UTextInstanceComponent &TextComponent =
-      *Component.Cast<UTextInstanceComponent>();
+	UStaticMesh* MeshPtr = TextComponent.GetRenderData(Camera).Mesh;
+	if (!MeshPtr)
+		return;
+	const FMesh& Mesh = *MeshPtr->Get();
+	const FMatrix ModelMatrix = TextComponent.GetRenderMatrix(Camera);
 
-  float Width = TextComponent.GetWidth();
-  float Height = TextComponent.GetHeight();
+	if (Mesh.GetPositions().size() != 4)
+	{
+		return;
+	}
 
-  UStaticMesh* MeshPtr = TextComponent.GetRenderData(Camera).Mesh;
-  if (!MeshPtr)
-    return;
-  const FMesh &Mesh = *MeshPtr->Get();
-  const FMatrix ModelMatrix = TextComponent.GetRenderMatrix(Camera);
-
-  if (Mesh.GetPositions().size() != 4) {
-    return;
-  }
-
-  TArray<FVector> Array;
-  for (int i = 0; i < 4; ++i) {
-    FVector WorldVector = ModelMatrix.TransformPointRow(Mesh.GetPositions()[i]);
-    Array.push_back(WorldVector);
-  }
+	TArray<FVector> Array;
+	for (int i = 0; i < 4; ++i)
+	{
+		FVector WorldVector = ModelMatrix.TransformPointRow(Mesh.GetPositions()[i]);
+		Array.push_back(WorldVector);
+	}
 
 	RenderView.RenderQuad(
-		Array[0],
-		Array[1],
-		Array[2],
-		Array[3],
-		Color
-	);
+	    Array[0],
+	    Array[1],
+	    Array[2],
+	    Array[3],
+	    Color);
 }

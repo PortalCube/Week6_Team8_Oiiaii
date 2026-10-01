@@ -31,9 +31,6 @@ public:
 
 	bool operator==(const FTransform& Other) const
 	{
-		return Location == Other.Location
-			&& Scale3D == Other.Scale3D
-			&& Rotation.X == Other.Rotation.X && Rotation.Y == Other.Rotation.Y
-			&& Rotation.Z == Other.Rotation.Z && Rotation.W == Other.Rotation.W;
+		return Location == Other.Location && Scale3D == Other.Scale3D && Rotation.X == Other.Rotation.X && Rotation.Y == Other.Rotation.Y && Rotation.Z == Other.Rotation.Z && Rotation.W == Other.Rotation.W;
 	}
 };

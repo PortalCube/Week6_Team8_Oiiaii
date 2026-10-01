@@ -13,7 +13,6 @@ class FEngineLoop;
 class FEngine
 {
 private:
-
 	FRenderer Renderer;
 	FRenderView RenderView{ Renderer };
 	FEngineLoop& EngineLoop;

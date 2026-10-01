@@ -9,7 +9,7 @@ FCameraProjection::FCameraProjection()
 void FCameraProjection::UpdateProjectionMatrix()
 {
 	ProjectionMatrix = FMatrix{};
-	
+
 	if (ProjectionType == EProjectionType::Perspective)
 	{
 		const float Phi = FOV * std::numbers::pi_v<float> / 180.0f;

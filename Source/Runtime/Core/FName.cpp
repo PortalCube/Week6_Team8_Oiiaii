@@ -3,18 +3,17 @@
 #include "Runtime/Utility/EngineUtil.h"
 
 FName::FName()
-	: FName{ FString{ "None" } }
+    : FName{ FString{ "None" } }
 {
 }
 
 FName::FName(const char* CharPtr)
-	: FName{ FString{ CharPtr } }
+    : FName{ FString{ CharPtr } }
 {
 }
 
 FName::FName(const FString& Str)
-	: Entry{ FNamePool::AddEntry(Str) }
-	, Name{ Str }
+    : Entry{ FNamePool::AddEntry(Str) }, Name{ Str }
 {
 }
 
@@ -25,7 +24,10 @@ bool FName::IsNone() const
 
 int32 FName::Compare(const FName& Other) const
 {
-	if (*this == Other) { return 0; }
+	if (*this == Other)
+	{
+		return 0;
+	}
 
 	const FString& ThisStr = FNamePool::GetComparisonString(Entry);
 	const FString& OtherStr = FNamePool::GetComparisonString(Other.Entry);
@@ -36,9 +38,8 @@ int32 FName::Compare(const FName& Other) const
 int32 FName::CompareSensitive(const FName& Other) const
 {
 	if (
-		Entry.DisplayBucketIndex == Other.Entry.DisplayBucketIndex &&
-		Entry.DisplayIndex == Other.Entry.DisplayIndex
-		)
+	    Entry.DisplayBucketIndex == Other.Entry.DisplayBucketIndex &&
+	    Entry.DisplayIndex == Other.Entry.DisplayIndex)
 	{
 
 		return 0;
@@ -53,11 +54,10 @@ int32 FName::CompareSensitive(const FName& Other) const
 bool FName::operator==(const FName& Other) const
 {
 	if (
-		Entry.ComparisonBucketIndex == Other.Entry.ComparisonBucketIndex &&
-		Entry.ComparisonIndex == Other.Entry.ComparisonIndex
-		)
+	    Entry.ComparisonBucketIndex == Other.Entry.ComparisonBucketIndex &&
+	    Entry.ComparisonIndex == Other.Entry.ComparisonIndex)
 	{
-		
+
 		return true;
 	}
 	else
@@ -74,9 +74,9 @@ FString FName::ToString() const
 size_t FName::GetHash() const
 {
 	const size_t Bucket =
-		static_cast<size_t>(Entry.ComparisonBucketIndex);
+	    static_cast<size_t>(Entry.ComparisonBucketIndex);
 	const size_t Index =
-		static_cast<size_t>(Entry.ComparisonIndex);
-	
+	    static_cast<size_t>(Entry.ComparisonIndex);
+
 	return EngineUtil::HashCombine(Bucket, Index);
 }

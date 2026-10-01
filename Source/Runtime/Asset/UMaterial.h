@@ -23,17 +23,14 @@ class UMaterial : public UAsset
 	DECLARE_UCLASS(UMaterial, UAsset)
 
 private:
-
 	UPipeline* Pipeline = nullptr;
 	UTexture* Texture = nullptr;
 	FTextureSamplerDesc SamplerDesc{};
 
 public:
-
 	void Load(UMaterialDesc& Desc);
 
 	UPipeline* GetPipeline() const { return Pipeline; }
 	UTexture* GetTexture() const { return Texture; }
 	FTextureSamplerDesc GetSamplerDesc() const { return SamplerDesc; }
-
 };

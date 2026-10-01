@@ -28,4 +28,4 @@ namespace std
 			return static_cast<size_t>(Desc.BlendMode);
 		}
 	};
-}
+} // namespace std

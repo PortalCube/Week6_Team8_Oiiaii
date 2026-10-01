@@ -40,22 +40,17 @@ FTransform FTransform::operator*(const FTransform& Child) const
 	FTransform Result;
 
 	Result.SetScale3D(
-		FVector
-		(
-			Scale3D.X * Child.Scale3D.X,
-			Scale3D.Y * Child.Scale3D.Y,
-			Scale3D.Z * Child.Scale3D.Z
-		)
-	);
+	    FVector(
+	        Scale3D.X * Child.Scale3D.X,
+	        Scale3D.Y * Child.Scale3D.Y,
+	        Scale3D.Z * Child.Scale3D.Z));
 
 	Result.SetRotation((Rotation * Child.Rotation).Normalized());
 
-	const FVector ScaledChildLocation
-	(
-		Child.Location.X * Scale3D.X,
-		Child.Location.Y * Scale3D.Y,
-		Child.Location.Z * Scale3D.Z
-	);
+	const FVector ScaledChildLocation(
+	    Child.Location.X * Scale3D.X,
+	    Child.Location.Y * Scale3D.Y,
+	    Child.Location.Z * Scale3D.Z);
 
 	Result.SetLocation(Location + Rotation.RotateVector(ScaledChildLocation));
 

@@ -3,11 +3,12 @@
 #include "Runtime/Rendering/FRenderer.h"
 #include "ThirdParty/Imgui/imgui.h"
 
-//상속을 막는 final
+// 상속을 막는 final
 class FImguiManager final
 {
 private:
-	enum class EImplType {
+	enum class EImplType
+	{
 		Win32DX11,
 		NOT_IMPLEMENTED
 	};

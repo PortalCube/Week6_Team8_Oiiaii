@@ -28,8 +28,10 @@ void FUObjectArray::RemoveObject(UObject* Object)
 	Objects.pop_back();
 }
 
-void FUObjectArray::DestroyObject(UObject* Object) {
-	if (Object == nullptr) return;
+void FUObjectArray::DestroyObject(UObject* Object)
+{
+	if (Object == nullptr)
+		return;
 
 	Object->Release();
 	RemoveObject(Object);
@@ -38,7 +40,8 @@ void FUObjectArray::DestroyObject(UObject* Object) {
 
 bool FUObjectArray::IsValid(const UObject* Object, uint32 UUID) const
 {
-	if (Object == nullptr || UUID == 0) return false;
+	if (Object == nullptr || UUID == 0)
+		return false;
 
 	const auto It = std::find(Objects.begin(), Objects.end(), Object);
 	return It != Objects.end() && (*It)->UUID == UUID;

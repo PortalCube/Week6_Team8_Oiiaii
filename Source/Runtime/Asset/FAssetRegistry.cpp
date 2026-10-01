@@ -17,14 +17,17 @@ namespace
 
 		fs::path Relative = ChildNormal.lexically_relative(ParentNormal);
 
-		if (Relative.empty() || *Relative.begin() == ".." || *Relative.begin() == ".") { return false; }
-		
+		if (Relative.empty() || *Relative.begin() == ".." || *Relative.begin() == ".")
+		{
+			return false;
+		}
+
 		auto RelativeIt = Relative.begin();
 		OutTargetPath = *RelativeIt;
 		bOutIsDirectChild = ++RelativeIt == Relative.end();
 		return true;
 	}
-}
+} // namespace
 
 FAssetRegistry& FAssetRegistry::GetInstance()
 {
@@ -83,7 +86,7 @@ FFolderView FAssetRegistry::GetAssetDirectory(const fs::path& ParentPath) const
 	{
 		const FString AssetIDString = AssetID.ToString();
 		if (ParentPath == InternalStaticMeshPath ||
-			(!AssetIDString.empty() && AssetIDString.front() == '#'))
+		    (!AssetIDString.empty() && AssetIDString.front() == '#'))
 		{
 			continue;
 		}
@@ -109,12 +112,10 @@ FFolderView FAssetRegistry::GetAssetDirectory(const fs::path& ParentPath) const
 
 	Result.Folders.assign(FolderSet.begin(), FolderSet.end());
 	std::sort(Result.Folders.begin(), Result.Folders.end(), [](const fs::path& Left, const fs::path& Right)
-	{
-		return Left.generic_string() < Right.generic_string();
-	});
+	    { return Left.generic_string() < Right.generic_string(); });
 
 	std::sort(Result.Assets.begin(), Result.Assets.end(), [](const UAsset* Left, const UAsset* Right)
-	{
+	    {
 		const FString LeftName = Left->GetName().ToString();
 		const FString RightName = Right->GetName().ToString();
 		if (LeftName != RightName)
@@ -122,8 +123,7 @@ FFolderView FAssetRegistry::GetAssetDirectory(const fs::path& ParentPath) const
 			return LeftName < RightName;
 		}
 
-		return Left->GetID().ToString() < Right->GetID().ToString();
-	});
+		return Left->GetID().ToString() < Right->GetID().ToString(); });
 
 	DirectoryCache[ParentPath] = Result;
 

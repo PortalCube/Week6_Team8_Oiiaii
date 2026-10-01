@@ -8,12 +8,12 @@
 #include <utility>
 
 FArchive::FArchive()
-	: Object()
+    : Object()
 {
 }
 
 FArchive::FArchive(const nlohmann::json& InObject)
-	: Object(InObject)
+    : Object(InObject)
 {
 }
 
@@ -92,10 +92,16 @@ void FArchive::SetWString(const FString& Key, const FWString& Value)
 bool FArchive::IsNull(const FString& Key) const
 {
 	// 주어진 키 자체가 존재하지 않음
-	if (!Object.contains(Key)) { return true; }
+	if (!Object.contains(Key))
+	{
+		return true;
+	}
 
 	// 주어진 키의 value가 null 값임
-	if (Object.at(Key).is_null()) { return true; }
+	if (Object.at(Key).is_null())
+	{
+		return true;
+	}
 
 	// 값이 있음
 	return false;
@@ -111,8 +117,7 @@ FVector FArchive::GetVector(const FString& Key) const
 {
 	TArray<float> Array = GetArray<float>(Key);
 
-	return FVector
-	{
+	return FVector{
 		Array[0],
 		Array[1],
 		Array[2],
@@ -121,8 +126,7 @@ FVector FArchive::GetVector(const FString& Key) const
 
 void FArchive::SetVector(const FString& Key, const FVector& Value)
 {
-	TArray<float> Array
-	{
+	TArray<float> Array{
 		Value.X,
 		Value.Y,
 		Value.Z,
@@ -135,8 +139,7 @@ FVector2 FArchive::GetVector2(const FString& Key) const
 {
 	TArray<float> Array = GetArray<float>(Key);
 
-	return FVector2
-	{
+	return FVector2{
 		Array[0],
 		Array[1],
 	};
@@ -144,8 +147,7 @@ FVector2 FArchive::GetVector2(const FString& Key) const
 
 void FArchive::SetVector2(const FString& Key, const FVector2& Value)
 {
-	TArray<float> Array
-	{
+	TArray<float> Array{
 		Value.X,
 		Value.Y,
 	};
@@ -157,8 +159,7 @@ FVector4 FArchive::GetVector4(const FString& Key) const
 {
 	TArray<float> Array = GetArray<float>(Key);
 
-	return FVector4
-	{
+	return FVector4{
 		Array[0],
 		Array[1],
 		Array[2],
@@ -168,8 +169,7 @@ FVector4 FArchive::GetVector4(const FString& Key) const
 
 void FArchive::SetVector4(const FString& Key, const FVector4& Value)
 {
-	TArray<float> Array
-	{
+	TArray<float> Array{
 		Value.X,
 		Value.Y,
 		Value.Z,

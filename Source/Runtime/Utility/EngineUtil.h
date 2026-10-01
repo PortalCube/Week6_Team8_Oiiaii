@@ -26,4 +26,4 @@ namespace EngineUtil
 	{
 		return std::runtime_error(std::format(Format, std::forward<Args>(Arguments)...));
 	}
-}
+} // namespace EngineUtil

@@ -8,9 +8,9 @@
 #if (false)
 
 template <typename T>
- using TUniquePtr = std::unique_ptr<T>;
+using TUniquePtr = std::unique_ptr<T>;
 
-template <typename T, typename ...Args>
+template <typename T, typename... Args>
 TUniquePtr<T> MakeUnique(Args&&... InArgs)
 {
 	return std::make_unique<T>(std::forward<Args>(InArgs)...);
@@ -19,7 +19,7 @@ TUniquePtr<T> MakeUnique(Args&&... InArgs)
 template <typename T>
 using TSharedPtr = std::shared_ptr<T>;
 
-template <typename T, typename ...Args>
+template <typename T, typename... Args>
 TSharedPtr<T> MakeShared(Args&&... InArgs)
 {
 	return std::make_shared<T>(std::forward<Args>(InArgs)...);
@@ -30,366 +30,378 @@ using TWeakPtr = std::weak_ptr<T>;
 
 #else
 
-template<typename T>
+template <typename T>
 struct TSharedControlBlock
 {
-    T* Ptr = nullptr;
-    size_t StrongCount = 1;
-    size_t WeakCount = 0;
+	T* Ptr = nullptr;
+	size_t StrongCount = 1;
+	size_t WeakCount = 0;
 };
 
-template<typename T>
+template <typename T>
 class TUniquePtr
 {
 public:
-    TUniquePtr() = default;
-    explicit TUniquePtr(T* InPtr) : Ptr(InPtr) {}
-    ~TUniquePtr() { Reset();}
+	TUniquePtr() = default;
+	explicit TUniquePtr(T* InPtr) : Ptr(InPtr) {}
+	~TUniquePtr() { Reset(); }
 
-    // 복사 금지
-    TUniquePtr(const TUniquePtr&) = delete;
-    TUniquePtr& operator=(const TUniquePtr&) = delete;
+	// 복사 금지
+	TUniquePtr(const TUniquePtr&) = delete;
+	TUniquePtr& operator=(const TUniquePtr&) = delete;
 
-    // 이동 허용
-    TUniquePtr(TUniquePtr&& Other) noexcept : Ptr(Other.Ptr) { Other.Ptr = nullptr; }
+	// 이동 허용
+	TUniquePtr(TUniquePtr&& Other) noexcept : Ptr(Other.Ptr) { Other.Ptr = nullptr; }
 
-    template<typename U>
-        requires std::derived_from<U, T>
-    TUniquePtr(TUniquePtr<U>&& Other) noexcept : Ptr(Other.Release()) {}
+	template <typename U>
+	    requires std::derived_from<U, T>
+	TUniquePtr(TUniquePtr<U>&& Other) noexcept : Ptr(Other.Release())
+	{
+	}
 
-    TUniquePtr& operator=(TUniquePtr&& Other) noexcept
-    {
-        if (this != &Other)
-        {
-            Reset();
+	TUniquePtr& operator=(TUniquePtr&& Other) noexcept
+	{
+		if (this != &Other)
+		{
+			Reset();
 
-            Ptr = Other.Ptr;
-            Other.Ptr = nullptr;
-        }
+			Ptr = Other.Ptr;
+			Other.Ptr = nullptr;
+		}
 
-        return *this;
-    }
+		return *this;
+	}
 
 public:
-    T* get() const { return Ptr; }
-    T& operator*() const { return *Ptr; }
-    T* operator->() const { return Ptr; }
-    explicit operator bool() const { return Ptr != nullptr; }
+	T* get() const { return Ptr; }
+	T& operator*() const { return *Ptr; }
+	T* operator->() const { return Ptr; }
+	explicit operator bool() const { return Ptr != nullptr; }
 
-    void Reset(T* InPtr = nullptr)
-    {
-        if (Ptr)
-        {
-            Ptr->~T();
-            FMemory::Free(Ptr);
-        }
+	void Reset(T* InPtr = nullptr)
+	{
+		if (Ptr)
+		{
+			Ptr->~T();
+			FMemory::Free(Ptr);
+		}
 
-        Ptr = InPtr;
-    }
+		Ptr = InPtr;
+	}
 
-    T* Release()
-    {
-        T* Result = Ptr;
-        Ptr = nullptr;
-        return Result;
-    }
+	T* Release()
+	{
+		T* Result = Ptr;
+		Ptr = nullptr;
+		return Result;
+	}
 
 private:
-    T* Ptr = nullptr;
+	T* Ptr = nullptr;
 };
 
-template<typename T, typename... Args>
+template <typename T, typename... Args>
 TUniquePtr<T> MakeUnique(Args&&... InArgs)
 {
-    void* Memory = FMemory::Malloc(sizeof(T), alignof(T));
+	void* Memory = FMemory::Malloc(sizeof(T), alignof(T));
 
-    if (!Memory)
-    {
-        return TUniquePtr<T>();
-    }
+	if (!Memory)
+	{
+		return TUniquePtr<T>();
+	}
 
-    T* Object = new (Memory) T( std::forward<Args>(InArgs)... );
+	T* Object = new (Memory) T(std::forward<Args>(InArgs)...);
 
-    return TUniquePtr<T>(Object);
+	return TUniquePtr<T>(Object);
 }
 
-template<typename T>
+template <typename T>
 class TSharedPtr
 {
-    template<typename U>
-    friend class TSharedPtr;
+	template <typename U>
+	friend class TSharedPtr;
 
-    template<typename U>
-    friend class TWeakPtr;
-
-public:
-    TSharedPtr() = default;
-    explicit TSharedPtr(T* InPtr)
-    {
-        if (!InPtr) { return; }
-        Ptr = InPtr;
-        void* Memory = FMemory::Malloc( sizeof(TSharedControlBlock<T>));
-        
-        if (!Memory)
-        {
-            InPtr->~T();
-            FMemory::Free(InPtr);
-            return;
-        }
-        
-        ControlBlock = new (Memory)TSharedControlBlock<T>();
-        ControlBlock->Ptr = InPtr;
-    }
-
-    TSharedPtr(T* InPtr, TSharedControlBlock<T>* InControlBlock) : Ptr(InPtr), ControlBlock(InControlBlock) {}
-
-    // Copy
-    TSharedPtr(const TSharedPtr& Other) : Ptr(Other.Ptr), ControlBlock(Other.ControlBlock)
-    {
-        if (ControlBlock) { ++ControlBlock->StrongCount;}
-    }
-
-    TSharedPtr(std::nullptr_t) : Ptr(nullptr), ControlBlock(nullptr) {}
-
-    template<typename U>
-        requires std::derived_from<U, T>
-    TSharedPtr(TSharedPtr<U>&& Other) noexcept : Ptr(Other.Release()), ControlBlock(Other.ControlBlock) 
-    {
-        Other.Ptr = nullptr;
-        Other.ControlBlock = nullptr;
-    }
-
-    ~TSharedPtr() { Release(); }
-
-    TSharedPtr& operator=(const TSharedPtr& Other)
-    {
-        if (this != &Other)
-        {
-            Release();
-
-            Ptr = Other.Ptr;
-            ControlBlock = Other.ControlBlock;
-
-            if (ControlBlock)
-            {
-                ++ControlBlock->StrongCount;
-            }
-        }
-
-        return *this;
-    }
-
-    // Move
-    TSharedPtr(TSharedPtr&& Other) noexcept : Ptr(Other.Ptr), ControlBlock(Other.ControlBlock)
-    {
-        Other.Ptr = nullptr;
-        Other.ControlBlock = nullptr;
-    }
-
-    TSharedPtr& operator=(TSharedPtr&& Other) noexcept
-    {
-        if (this != &Other)
-        {
-            Release();
-
-            Ptr = Other.Ptr;
-            ControlBlock = Other.ControlBlock;
-
-            Other.Ptr = nullptr;
-            Other.ControlBlock = nullptr;
-        }
-
-        return *this;
-    }
-
-    bool operator==(std::nullptr_t) const { return Ptr == nullptr; }
-    bool operator!=(std::nullptr_t) const { return Ptr != nullptr; }
+	template <typename U>
+	friend class TWeakPtr;
 
 public:
-    T* get() const { return Ptr; }
-    T& operator*() const { return *Ptr; }
-    T* operator->() const { return Ptr; }
-    explicit operator bool() const { return Ptr != nullptr; }
+	TSharedPtr() = default;
+	explicit TSharedPtr(T* InPtr)
+	{
+		if (!InPtr)
+		{
+			return;
+		}
+		Ptr = InPtr;
+		void* Memory = FMemory::Malloc(sizeof(TSharedControlBlock<T>));
 
-    size_t UseCount() const
-    {
-        return ControlBlock ? ControlBlock->StrongCount : 0;
-    }
+		if (!Memory)
+		{
+			InPtr->~T();
+			FMemory::Free(InPtr);
+			return;
+		}
 
-    void Reset()
-    {
-        Release();
-    }
+		ControlBlock = new (Memory) TSharedControlBlock<T>();
+		ControlBlock->Ptr = InPtr;
+	}
+
+	TSharedPtr(T* InPtr, TSharedControlBlock<T>* InControlBlock) : Ptr(InPtr), ControlBlock(InControlBlock) {}
+
+	// Copy
+	TSharedPtr(const TSharedPtr& Other) : Ptr(Other.Ptr), ControlBlock(Other.ControlBlock)
+	{
+		if (ControlBlock)
+		{
+			++ControlBlock->StrongCount;
+		}
+	}
+
+	TSharedPtr(std::nullptr_t) : Ptr(nullptr), ControlBlock(nullptr) {}
+
+	template <typename U>
+	    requires std::derived_from<U, T>
+	TSharedPtr(TSharedPtr<U>&& Other) noexcept : Ptr(Other.Release()), ControlBlock(Other.ControlBlock)
+	{
+		Other.Ptr = nullptr;
+		Other.ControlBlock = nullptr;
+	}
+
+	~TSharedPtr() { Release(); }
+
+	TSharedPtr& operator=(const TSharedPtr& Other)
+	{
+		if (this != &Other)
+		{
+			Release();
+
+			Ptr = Other.Ptr;
+			ControlBlock = Other.ControlBlock;
+
+			if (ControlBlock)
+			{
+				++ControlBlock->StrongCount;
+			}
+		}
+
+		return *this;
+	}
+
+	// Move
+	TSharedPtr(TSharedPtr&& Other) noexcept : Ptr(Other.Ptr), ControlBlock(Other.ControlBlock)
+	{
+		Other.Ptr = nullptr;
+		Other.ControlBlock = nullptr;
+	}
+
+	TSharedPtr& operator=(TSharedPtr&& Other) noexcept
+	{
+		if (this != &Other)
+		{
+			Release();
+
+			Ptr = Other.Ptr;
+			ControlBlock = Other.ControlBlock;
+
+			Other.Ptr = nullptr;
+			Other.ControlBlock = nullptr;
+		}
+
+		return *this;
+	}
+
+	bool operator==(std::nullptr_t) const { return Ptr == nullptr; }
+	bool operator!=(std::nullptr_t) const { return Ptr != nullptr; }
+
+public:
+	T* get() const { return Ptr; }
+	T& operator*() const { return *Ptr; }
+	T* operator->() const { return Ptr; }
+	explicit operator bool() const { return Ptr != nullptr; }
+
+	size_t UseCount() const
+	{
+		return ControlBlock ? ControlBlock->StrongCount : 0;
+	}
+
+	void Reset()
+	{
+		Release();
+	}
 
 private:
-    void Release()
-    {
-        if (!ControlBlock)
-        {
-            return;
-        }
+	void Release()
+	{
+		if (!ControlBlock)
+		{
+			return;
+		}
 
-        --ControlBlock->StrongCount;
+		--ControlBlock->StrongCount;
 
-        if (ControlBlock->StrongCount == 0)
-        {
-            Ptr->~T();
-            FMemory::Free(Ptr);
+		if (ControlBlock->StrongCount == 0)
+		{
+			Ptr->~T();
+			FMemory::Free(Ptr);
 
-            ControlBlock->Ptr = nullptr;
-        }
+			ControlBlock->Ptr = nullptr;
+		}
 
-        if (ControlBlock->StrongCount == 0 && ControlBlock->WeakCount == 0)
-        {
-            ControlBlock->~TSharedControlBlock<T>();
-            FMemory::Free(ControlBlock);
-        }
+		if (ControlBlock->StrongCount == 0 && ControlBlock->WeakCount == 0)
+		{
+			ControlBlock->~TSharedControlBlock<T>();
+			FMemory::Free(ControlBlock);
+		}
 
-        Ptr = nullptr;
-        ControlBlock = nullptr;
-    }
+		Ptr = nullptr;
+		ControlBlock = nullptr;
+	}
 
 private:
-    T* Ptr = nullptr;
-    TSharedControlBlock<T>* ControlBlock = nullptr;
+	T* Ptr = nullptr;
+	TSharedControlBlock<T>* ControlBlock = nullptr;
 };
 
-template<typename T, typename... Args>
+template <typename T, typename... Args>
 TSharedPtr<T> MakeShared(Args&&... InArgs)
 {
-    void* Memory =
-        FMemory::Malloc(sizeof(T), alignof(T));
+	void* Memory =
+	    FMemory::Malloc(sizeof(T), alignof(T));
 
-    if (!Memory)
-    {
-        return TSharedPtr<T>();
-    }
+	if (!Memory)
+	{
+		return TSharedPtr<T>();
+	}
 
-    T* Object =
-        new (Memory) T(
-            std::forward<Args>(InArgs)...
-        );
+	T* Object =
+	    new (Memory) T(
+	        std::forward<Args>(InArgs)...);
 
-    return TSharedPtr<T>(Object);
+	return TSharedPtr<T>(Object);
 }
 
-template<typename T>
+template <typename T>
 class TWeakPtr
 {
 public:
-    TWeakPtr() = default;
+	TWeakPtr() = default;
 
-    // Copy
-    TWeakPtr(const TSharedPtr<T>& Other) : Ptr(Other.Ptr), ControlBlock(Other.ControlBlock)
-    {
-        if (ControlBlock) { ++ControlBlock->WeakCount; }
-    }
+	// Copy
+	TWeakPtr(const TSharedPtr<T>& Other) : Ptr(Other.Ptr), ControlBlock(Other.ControlBlock)
+	{
+		if (ControlBlock)
+		{
+			++ControlBlock->WeakCount;
+		}
+	}
 
-    TWeakPtr(std::nullptr_t) : Ptr(nullptr), ControlBlock(nullptr) {}
+	TWeakPtr(std::nullptr_t) : Ptr(nullptr), ControlBlock(nullptr) {}
 
-    template<typename U>
-        requires std::derived_from<U, T>
-    TWeakPtr(TWeakPtr<U>&& Other) noexcept : Ptr(Other.Release()) {}
+	template <typename U>
+	    requires std::derived_from<U, T>
+	TWeakPtr(TWeakPtr<U>&& Other) noexcept : Ptr(Other.Release())
+	{
+	}
 
-    ~TWeakPtr() { Release(); }
+	~TWeakPtr() { Release(); }
 
-    TWeakPtr& operator=(const TWeakPtr& Other)
-    {
-        if (this != &Other)
-        {
-            Release();
+	TWeakPtr& operator=(const TWeakPtr& Other)
+	{
+		if (this != &Other)
+		{
+			Release();
 
-            Ptr = Other.Ptr;
-            ControlBlock = Other.ControlBlock;
+			Ptr = Other.Ptr;
+			ControlBlock = Other.ControlBlock;
 
-            if (ControlBlock)
-            {
-                ++ControlBlock->WeakCount;
-            }
-        }
+			if (ControlBlock)
+			{
+				++ControlBlock->WeakCount;
+			}
+		}
 
-        return *this;
-    }
+		return *this;
+	}
 
-    // Move
-    TWeakPtr(TWeakPtr&& Other) noexcept : Ptr(Other.Ptr), ControlBlock(Other.ControlBlock)
-    {
-        Other.Ptr = nullptr;
-        Other.ControlBlock = nullptr;
-    }
+	// Move
+	TWeakPtr(TWeakPtr&& Other) noexcept : Ptr(Other.Ptr), ControlBlock(Other.ControlBlock)
+	{
+		Other.Ptr = nullptr;
+		Other.ControlBlock = nullptr;
+	}
 
-    TWeakPtr& operator=(TWeakPtr&& Other) noexcept
-    {
-        if (this != &Other)
-        {
-            Release();
+	TWeakPtr& operator=(TWeakPtr&& Other) noexcept
+	{
+		if (this != &Other)
+		{
+			Release();
 
-            Ptr = Other.Ptr;
-            ControlBlock = Other.ControlBlock;
+			Ptr = Other.Ptr;
+			ControlBlock = Other.ControlBlock;
 
-            Other.Ptr = nullptr;
-            Other.ControlBlock = nullptr;
-        }
+			Other.Ptr = nullptr;
+			Other.ControlBlock = nullptr;
+		}
 
-        return *this;
-    }
+		return *this;
+	}
 
-    bool operator==(std::nullptr_t) const { return Ptr == nullptr; }
-    bool operator!=(std::nullptr_t) const { return Ptr != nullptr; }
+	bool operator==(std::nullptr_t) const { return Ptr == nullptr; }
+	bool operator!=(std::nullptr_t) const { return Ptr != nullptr; }
 
-    TSharedPtr<T> Lock() const
-    {
-        if (!ControlBlock || ControlBlock->StrongCount == 0)
-        {
-            return TSharedPtr<T>();
-        }
+	TSharedPtr<T> Lock() const
+	{
+		if (!ControlBlock || ControlBlock->StrongCount == 0)
+		{
+			return TSharedPtr<T>();
+		}
 
-        ++ControlBlock->StrongCount;
+		++ControlBlock->StrongCount;
 
-        return TSharedPtr<T>(Ptr, ControlBlock);
-    }
+		return TSharedPtr<T>(Ptr, ControlBlock);
+	}
 
 public:
-    T* get() const { return Ptr; }
-    T& operator*() const { return *Ptr; }
-    T* operator->() const { return Ptr; }
-    explicit operator bool() const { return Ptr != nullptr; }
+	T* get() const { return Ptr; }
+	T& operator*() const { return *Ptr; }
+	T* operator->() const { return Ptr; }
+	explicit operator bool() const { return Ptr != nullptr; }
 
-    size_t UseCount() const
-    {
-        return ControlBlock ? ControlBlock->StrongCount : 0;
-    }
+	size_t UseCount() const
+	{
+		return ControlBlock ? ControlBlock->StrongCount : 0;
+	}
 
-    void Reset()
-    {
-        Release();
-    }
-
-private:
-    void Release()
-    {
-        if (!ControlBlock)
-        {
-            return;
-        }
-
-        --ControlBlock->WeakCount;
-
-        if (ControlBlock->StrongCount == 0 && ControlBlock->WeekCount == 0)
-        {
-            Ptr->~T();
-            FMemory::Free(Ptr);
-            ControlBlock->~TSharedControlBlock<T>();
-            FMemory::Free(ControlBlock);
-        }
-
-        Ptr = nullptr;
-        ControlBlock = nullptr;
-    }
+	void Reset()
+	{
+		Release();
+	}
 
 private:
-    T* Ptr = nullptr;
-    TSharedControlBlock<T>* ControlBlock = nullptr;
+	void Release()
+	{
+		if (!ControlBlock)
+		{
+			return;
+		}
+
+		--ControlBlock->WeakCount;
+
+		if (ControlBlock->StrongCount == 0 && ControlBlock->WeekCount == 0)
+		{
+			Ptr->~T();
+			FMemory::Free(Ptr);
+			ControlBlock->~TSharedControlBlock<T>();
+			FMemory::Free(ControlBlock);
+		}
+
+		Ptr = nullptr;
+		ControlBlock = nullptr;
+	}
+
+private:
+	T* Ptr = nullptr;
+	TSharedControlBlock<T>* ControlBlock = nullptr;
 };
 
 #endif

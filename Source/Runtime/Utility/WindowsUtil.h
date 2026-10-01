@@ -9,4 +9,4 @@ namespace WindowsUtil
 	FString ToString(FWStringView WStr);
 
 	FWString ToWString(FStringView Str);
-};
+}; // namespace WindowsUtil

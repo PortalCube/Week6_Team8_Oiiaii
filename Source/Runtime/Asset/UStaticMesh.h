@@ -30,7 +30,6 @@ private:
 	TArray<FStaticMeshLOD> LODs;
 
 public:
-
 	void Load(UStaticMeshDesc& Desc);
 
 	// LOD를 지정하지 않으면 원본(LOD0)을 반환한다. 피킹, 바운드 계산은 LOD0를 사용한다.
@@ -43,5 +42,4 @@ public:
 
 	// 화면 점유율의 제곱으로 LOD를 고른다. 제곱근 없이 매 프레임 호출할 수 있다.
 	uint32 SelectLODSquared(float ScreenSizeSq) const;
-
 };
