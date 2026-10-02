@@ -4,7 +4,7 @@
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FArchive.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
 
 IMPLEMENT_UCLASS(AActor, UObject)
 
@@ -18,7 +18,7 @@ void AActor::Initialize()
 
 void AActor::Release()
 {
-	UScene* RegisteredScene = Owner;
+	ULevel* RegisteredScene = Owner;
 	if (bHasBegunPlay)
 	{
 		EndPlay();
@@ -213,7 +213,7 @@ void AActor::AddComponent(USceneComponent* Addcomp)
 	}
 }
 
-void AActor::Register(UScene& Scene)
+void AActor::Register(ULevel& Scene)
 {
 	if (Owner == &Scene)
 	{

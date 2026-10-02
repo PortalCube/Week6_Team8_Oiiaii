@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Runtime/Components/Mesh/UMeshComponent.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
 #include "Runtime/Engine/ShowFlags.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Material/FMaterialInstance.h"

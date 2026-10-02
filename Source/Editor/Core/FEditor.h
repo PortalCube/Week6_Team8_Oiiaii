@@ -80,7 +80,7 @@ public:
 	{
 		return EditorViewports;
 	}
-	[[nodiscard]] UScene* GetCurrentScene() const
+	[[nodiscard]] ULevel* GetCurrentScene() const
 	{
 		return SceneManager ? SceneManager->CurrentScene : nullptr;
 	}

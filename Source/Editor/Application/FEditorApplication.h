@@ -21,7 +21,7 @@ class FEditorApplication final : public IApplication
 	FEditor Editor;
 
 	USceneManager* SceneManager = nullptr;
-	UScene* CurrentScene = nullptr;
+	ULevel* CurrentScene = nullptr;
 
 	FImguiManager ImguiManager;
 

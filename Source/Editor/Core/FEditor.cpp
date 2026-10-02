@@ -126,7 +126,7 @@ void FEditor::LoadState()
 void FEditor::NewScene()
 {
 	UnSelectActor();
-	SceneManager->SetScene(NewObject<UScene>());
+	SceneManager->SetScene(NewObject<ULevel>());
 	State.ResetToDefaults();
 	LoadState();
 }
@@ -146,7 +146,7 @@ void FEditor::LoadScene(const FString& Path)
 	// 로드된 컴포넌트는 대기열에만 쌓이므로, 트랜스폼이 모두 설정된 지금 트리를 만든다.
 	if (SceneManager->CurrentScene)
 	{
-		UScene* Scene = SceneManager->CurrentScene;
+		ULevel* Scene = SceneManager->CurrentScene;
 		Scene->GetSceneBVH().Build(Scene->GetRenderComponents());
 	}
 }

@@ -7,7 +7,7 @@
 #include "Runtime/Engine/FEngineLoop.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Engine/USceneManager.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Resource/FResourceLoader.h"
 #include "Runtime/CoreUObject/UClass.h"
@@ -29,7 +29,7 @@ void FEngine::Init()
 	FStatsManager::Get().Initialize(Renderer.GetDevice());
 	FMemory::Init();
 
-	FRenderResourceLibrary& RenderResources = FRenderResourceLibrary::Get();
+	FRenderResourceLibrary& RenderResources = FRenderResourceLibrary::Get(); // 로딩 스크린
 	if (!RenderResources.Initialize(Renderer))
 	{
 		throw EngineUtil::CreateError("FRenderResourceLibrary 초기화에 실패했습니다.");
@@ -37,7 +37,7 @@ void FEngine::Init()
 
 	UClass::ResolveTypeBitsets();
 
-	FResourceLoader::LoadAssets();
+	FResourceLoader::LoadAssets(); // 로딩 스크린
 
 #if defined(_OBJVIEWER)
 	ID3D11Device* Device = nullptr;
@@ -50,7 +50,7 @@ void FEngine::Init()
 
 #else
 	// 새씬 생성
-	SceneManager.SetScene(NewObject<UScene>());
+	SceneManager.SetScene(NewObject<ULevel>());
 
 	TUniquePtr<FEditorApplication> EditorApp = MakeUnique<FEditorApplication>();
 	{

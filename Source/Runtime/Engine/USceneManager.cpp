@@ -81,7 +81,7 @@ void USceneManager::LoadScene(const FString& path, FCamera* OutCamera)
 
 	FArchive SceneArchive = Archive.GetArchive("Scene");
 
-	UScene* Scene = NewObject<UScene>();
+	ULevel* Scene = NewObject<ULevel>();
 	Scene->Initialize();
 	Scene->SetRenderResourceLibrary(&FRenderResourceLibrary::Get());
 	Scene->Deserialize(SceneArchive);
@@ -89,7 +89,7 @@ void USceneManager::LoadScene(const FString& path, FCamera* OutCamera)
 	SetScene(Scene);
 }
 
-void USceneManager::SetScene(UScene* scene)
+void USceneManager::SetScene(ULevel* scene)
 {
 	if (scene == nullptr)
 	{

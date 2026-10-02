@@ -4,7 +4,7 @@
 #include "ThirdParty/Json/json.hpp"
 #include "Runtime/CoreUObject/UObject.h"
 
-class UScene;
+class ULevel;
 class AActor;
 class FArchive;
 
@@ -15,24 +15,40 @@ class USceneComponent : public UObject
 	friend class AActor;
 
 public:
+
+	////////////////////////////////////////////////////////////
+	// 생명 주기 함수들
+	////////////////////////////////////////////////////////////
+
 	virtual void Initialize() override;
 	virtual void Release() override;
-
-	AActor* GetActorOwner() const { return ActorOwner; }
-	USceneComponent* GetSceneOwner() const { return SceneOwner; }
-	void SetActorOwner(AActor* Owner) { ActorOwner = Owner; } // selectedacotor 한테 textcomponent 바로 붙여야해서 만듦
-
-	virtual void Register(UScene& InScene);
+	virtual void Register(ULevel& InScene);
 	virtual void BeginPlay();
 	virtual void Update(float DeltaTime) {}
 	virtual void EndPlay();
 	virtual void Unregister();
 
-	void SetupAttachment(USceneComponent* InParent);
-
-	[[nodiscard]] bool IsRegistered() const { return Scene != nullptr; }
+	[[nodiscard]] bool IsRegistered() const { return Level != nullptr; }
 	[[nodiscard]] bool HasBegunPlay() const { return bHasBegunPlay; }
 	[[nodiscard]] bool IsTickEnabled() const { return bTickEnabled; }
+
+	
+
+	////////////////////////////////////////////////////////////
+	// Get Owner
+	////////////////////////////////////////////////////////////
+
+	AActor* GetActorOwner() const { return ActorOwner; }
+	USceneComponent* GetSceneOwner() const { return SceneOwner; }
+	void SetActorOwner(AActor* Owner) { ActorOwner = Owner; } // selectedacotor 한테 textcomponent 바로 붙여야해서 만듦
+
+	void SetupAttachment(USceneComponent* InParent);
+
+
+
+	////////////////////////////////////////////////////////////
+	// 직렬화, 역직렬화
+	////////////////////////////////////////////////////////////
 
 	virtual void Serialize(FArchive& Archive) const override;
 	virtual void Deserialize(const FArchive& Archive) override;
@@ -78,7 +94,7 @@ public:
 protected:
 	AActor* ActorOwner = nullptr;
 	USceneComponent* SceneOwner = nullptr;
-	UScene* Scene = nullptr;
+	ULevel* Level = nullptr;
 	bool bHasBegunPlay = false;
 	bool bTickEnabled = false;
 	bool bInheritRotation = true;

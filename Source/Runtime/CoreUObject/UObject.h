@@ -5,11 +5,13 @@
 #include <cstddef>
 #include <new>
 #include <concepts>
-// #include "Runtime/CoreUObject/UObjectGlobals.h"
 
 class UObjectGlobals;
 class UClass;
 class FArchive;
+
+// 참고자료
+// https://dev.epicgames.com/documentation/unreal-engine/objects-in-unreal-engine
 
 /*
  * UObject를 상속받는 클래스는 반드시 GENERATED_BODY() 매크로를 사용해야 한다.

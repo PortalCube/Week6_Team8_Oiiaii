@@ -14,9 +14,9 @@
 
 #include "ThirdParty/Json/json.hpp"
 
-class UScene final : public UObject
+class ULevel final : public UObject
 {
-	DECLARE_UCLASS(UScene, UObject)
+	DECLARE_UCLASS(ULevel, UObject)
 	GENERATED_BODY()
 
 public:

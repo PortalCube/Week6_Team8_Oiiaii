@@ -2,7 +2,7 @@
 #include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Rendering/FRenderResourceLibrary.h"
 #include "Runtime/Rendering/ShaderConstants.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Asset/UStaticMesh.h"
 
@@ -67,9 +67,9 @@ void UPrimitiveComponent::SetColor(const FVector4& Color, int32 Index)
 
 void UPrimitiveComponent::MarkBoundDirty()
 {
-	if (Scene)
+	if (Level)
 	{
-		Scene->MarkBoundsDirty(this);
+		Level->MarkBoundsDirty(this);
 	}
 }
 
@@ -99,7 +99,7 @@ FAxisAlignedBoundingBox UPrimitiveComponent::GetViewBounds(const FCamera& Camera
 	return FAxisAlignedBoundingBox(GetWorldBounds(), Camera.GetViewMatrix());
 }
 
-void UPrimitiveComponent::Register(UScene& InScene)
+void UPrimitiveComponent::Register(ULevel& InScene)
 {
 	if (RenderData.Type == ERenderType::None)
 	{
@@ -112,9 +112,9 @@ void UPrimitiveComponent::Register(UScene& InScene)
 
 void UPrimitiveComponent::Unregister()
 {
-	if (Scene)
+	if (Level)
 	{
-		Scene->RemoveRenderComponent(this);
+		Level->RemoveRenderComponent(this);
 	}
 	Super::Unregister();
 }
