@@ -7,13 +7,13 @@
 class UScene;
 class FArchive;
 
-class UBillBoardComp : public UPrimitiveComponent
+class UBillboardComponent : public UPrimitiveComponent
 {
-	DECLARE_UCLASS(UBillBoardComp, UPrimitiveComponent)
+	DECLARE_UCLASS(UBillboardComponent, UPrimitiveComponent)
 	GENERATED_BODY()
 
 protected:
-	explicit UBillBoardComp() = default;
+	explicit UBillboardComponent() = default;
 
 	virtual void Serialize(FArchive& Archive) const;
 	virtual void Deserialize(const FArchive& Archive);

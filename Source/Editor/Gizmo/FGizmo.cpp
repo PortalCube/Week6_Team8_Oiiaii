@@ -1,7 +1,7 @@
 #include "FGizmo.h"
 
 #include "Runtime/Core/IntTypes.h"
-#include "Runtime/CoreUObject/USceneComponent.h"
+#include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Rendering/FRenderResourceLibrary.h"

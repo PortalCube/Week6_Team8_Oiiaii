@@ -1,13 +1,13 @@
 #pragma once
 
-#include "UBillBoardComp.h"
+#include "UBillboardComponent.h"
 
 class FArchive;
 
 // 애니메이션 빌보드 컴포넌트
-class UAnimatedBillboardComp : public UBillBoardComp
+class UAnimatedBillboardComp : public UBillboardComponent
 {
-	DECLARE_UCLASS(UAnimatedBillboardComp, UBillBoardComp)
+	DECLARE_UCLASS(UAnimatedBillboardComp, UBillboardComponent)
 	GENERATED_BODY()
 
 protected:

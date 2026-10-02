@@ -1,10 +1,10 @@
 #include "UAnimatedBillboardComp.h"
 #include "Runtime/Engine/UScene.h"
 #include "Runtime/Engine/FArchive.h"
-#include "UClass.h"
+#include "Runtime/CoreUObject/UClass.h"
 #include <algorithm>
 
-IMPLEMENT_UCLASS(UAnimatedBillboardComp, UBillBoardComp)
+IMPLEMENT_UCLASS(UAnimatedBillboardComp, UBillboardComponent)
 UCLASS_META(UAnimatedBillboardComp, DisplayName, "AnimatedBillboard")
 
 void UAnimatedBillboardComp::Initialize()

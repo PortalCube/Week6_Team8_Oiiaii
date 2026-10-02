@@ -3,7 +3,7 @@
 #include "AActor.h"
 #include "Runtime/Math/FVector.h"
 
-class UBillBoardComp;
+class UBillboardComponent;
 
 // 큐브 액터 정의
 class ABillboardActor : public AActor
@@ -14,5 +14,5 @@ class ABillboardActor : public AActor
 public:
 	explicit ABillboardActor();
 
-	UBillBoardComp* GetBillboardComponent() const;
+	UBillboardComponent* GetBillboardComponent() const;
 };

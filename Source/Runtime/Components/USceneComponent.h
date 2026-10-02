@@ -2,7 +2,7 @@
 
 #include "Runtime/Geometry/FTransform.h"
 #include "ThirdParty/Json/json.hpp"
-#include "UObject.h"
+#include "Runtime/CoreUObject/UObject.h"
 
 class UScene;
 class AActor;

@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Runtime/CoreUObject/UInstancePrimitiveComponent.h"
+#include "Runtime/Components/UInstancePrimitiveComponent.h"
 #include "Runtime/Rendering/FFont.h"
 #include "Runtime/Rendering/FRenderQueue.h"
 
 class FArchive;
 class UFont;
 
-class UTextInstanceComponent : public UInstancePrimitiveComponent
+class UTextComponent : public UInstancePrimitiveComponent
 {
 	GENERATED_BODY()
-	DECLARE_UCLASS(UTextInstanceComponent, UInstancePrimitiveComponent)
+	DECLARE_UCLASS(UTextComponent, UInstancePrimitiveComponent)
 
 public:
 	void Initialize() override;

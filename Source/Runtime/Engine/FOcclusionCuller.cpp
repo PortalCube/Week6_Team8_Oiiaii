@@ -1,14 +1,14 @@
 #include "FOcclusionCuller.h"
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Geometry/FAxisAlignedBoundingBox.h"
 #include "Runtime/Engine/UScene.h"
 #include "Runtime/Engine/FSceneView.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Engine/FCameraProjection.h"
 #include "Runtime/Engine/FRayCastingManager.h"
-#include "Runtime/CoreUObject/UBillBoardComp.h"
-#include "Runtime/CoreUObject/UInstancePrimitiveComponent.h"
-#include "Runtime/CoreUObject/USpotLightComponent.h"
+#include "Runtime/Components/UBillboardComponent.h"
+#include "Runtime/Components/UInstancePrimitiveComponent.h"
+#include "Runtime/Components/USpotLightComponent.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Rendering/FMesh.h"
 #include "Runtime/Asset/UStaticMesh.h"
@@ -275,7 +275,7 @@ namespace
 		{
 			return false;
 		}
-		if (Prim.Cast<UBillBoardComp>() || Prim.Cast<UInstancePrimitiveComponent>() || Prim.Cast<USpotLightComponent>())
+		if (Prim.Cast<UBillboardComponent>() || Prim.Cast<UInstancePrimitiveComponent>() || Prim.Cast<USpotLightComponent>())
 		{
 			return false;
 		}

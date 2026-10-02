@@ -1,6 +1,6 @@
 #include "FPrimitiveVisualizer.h"
 
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Geometry/FAxisAlignedBoundingBox.h"
 #include "Runtime/Engine/FRenderView.h"
 #include "Runtime/Rendering/FMesh.h"

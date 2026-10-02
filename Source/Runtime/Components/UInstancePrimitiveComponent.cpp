@@ -3,7 +3,7 @@
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Engine/UScene.h"
-#include "UClass.h"
+#include "Runtime/CoreUObject/UClass.h"
 
 IMPLEMENT_UCLASS(UInstancePrimitiveComponent, UPrimitiveComponent)
 

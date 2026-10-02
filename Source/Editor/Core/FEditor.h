@@ -10,7 +10,7 @@
 #include "Runtime/Actors/AActor.h"
 #include "Runtime/Engine/USceneManager.h"
 #include "Runtime/Rendering/ShaderConstants.h"
-#include "Runtime/CoreUObject/UTextInstanceComponent.h"
+#include "Runtime/Components/UTextComponent.h"
 
 #include "Runtime/UI/SSplitter.h"
 enum class EEditorPrimitiveType : uint8
@@ -95,7 +95,7 @@ public:
 	void SaveState();
 	void LoadState();
 	void SetViewLayout(FEditorState::SplitViewMode mode);
-	UTextInstanceComponent* GetTextcomp() { return SelectedActorTextComp; }
+	UTextComponent* GetTextcomp() { return SelectedActorTextComp; }
 
 	// Viewport관련
 	int32 ActiveViewportIndex = 0;
@@ -111,5 +111,5 @@ private:
 	TArray<FEditorViewportClient> EditorViewports;
 	FGizmo Gizmo;
 	TWeakObjectPtr<AActor> SelectedActor;
-	TWeakObjectPtr<UTextInstanceComponent> SelectedActorTextComp;
+	TWeakObjectPtr<UTextComponent> SelectedActorTextComp;
 };

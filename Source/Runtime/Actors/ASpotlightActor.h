@@ -1,5 +1,5 @@
 #include "AActor.h"
-#include "Runtime/CoreUObject/USpotLightComponent.h"
+#include "Runtime/Components/USpotLightComponent.h"
 
 class ASpotlightActor : public AActor
 {

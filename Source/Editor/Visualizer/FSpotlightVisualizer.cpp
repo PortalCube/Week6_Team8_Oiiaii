@@ -1,7 +1,7 @@
 #include "FSpotlightVisualizer.h"
 
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
-#include "Runtime/CoreUObject/USpotLightComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
+#include "Runtime/Components/USpotLightComponent.h"
 #include "Runtime/Geometry/FAxisAlignedBoundingBox.h"
 #include "Runtime/Engine/FRenderView.h"
 #include "Runtime/Rendering/FMesh.h"

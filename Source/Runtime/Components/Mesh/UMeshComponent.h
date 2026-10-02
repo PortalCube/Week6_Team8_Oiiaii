@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Rendering/FRenderQueue.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Engine/ShowFlags.h"

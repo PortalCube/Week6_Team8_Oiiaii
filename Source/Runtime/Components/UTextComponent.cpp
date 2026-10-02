@@ -1,4 +1,4 @@
-#include "UTextInstanceComponent.h"
+#include "UTextComponent.h"
 #include "Runtime/Asset/UFont.h"
 #include "Runtime/Engine/FArchive.h"
 #include "Runtime/Engine/UScene.h"
@@ -6,12 +6,12 @@
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "Runtime/Asset/FAssetRegistry.h"
-#include "UClass.h"
+#include "Runtime/CoreUObject/UClass.h"
 #include <algorithm>
 #include <limits>
 #include <windows.h>
 
-IMPLEMENT_UCLASS(UTextInstanceComponent, UInstancePrimitiveComponent)
+IMPLEMENT_UCLASS(UTextComponent, UInstancePrimitiveComponent)
 
 namespace
 {
@@ -37,7 +37,7 @@ namespace
 	}
 } // namespace
 
-void UTextInstanceComponent::Initialize()
+void UTextComponent::Initialize()
 {
 	Super::Initialize();
 
@@ -51,21 +51,21 @@ void UTextInstanceComponent::Initialize()
 	RebuildTextMesh();
 }
 
-void UTextInstanceComponent::Update(float delta) {}
+void UTextComponent::Update(float delta) {}
 
-void UTextInstanceComponent::SetText(const FWString& InText)
+void UTextComponent::SetText(const FWString& InText)
 {
 	Text = InText;
 	RebuildTextMesh();
 }
 
-// void UTextInstanceComponent::SetFont(TSharedPtr<FFont> InFont) {
+// void UTextComponent::SetFont(TSharedPtr<FFont> InFont) {
 //   Font = InFont;
 //   RenderData.TextureId = FName("bazziotf");
 //   RebuildTextMesh();
 // }
 
-void UTextInstanceComponent::SetFont(const FName& InName)
+void UTextComponent::SetFont(const FName& InName)
 {
 	Font = FRenderResourceLibrary::Get().GetFont(InName);
 	FontAsset = nullptr;
@@ -73,7 +73,7 @@ void UTextInstanceComponent::SetFont(const FName& InName)
 	RebuildTextMesh();
 }
 
-void UTextInstanceComponent::SetFont(UFont* InFont)
+void UTextComponent::SetFont(UFont* InFont)
 {
 	if (!InFont || !InFont->Get())
 	{
@@ -87,7 +87,7 @@ void UTextInstanceComponent::SetFont(UFont* InFont)
 	RebuildTextMesh();
 }
 
-void UTextInstanceComponent::RebuildTextMesh()
+void UTextComponent::RebuildTextMesh()
 {
 	Instances.clear();
 	Width = 0;
@@ -202,7 +202,7 @@ void UTextInstanceComponent::RebuildTextMesh()
 	}
 }
 
-FMatrix UTextInstanceComponent::GetRenderMatrix(const FCamera& Camera) const
+FMatrix UTextComponent::GetRenderMatrix(const FCamera& Camera) const
 {
 	FTransform Transform = GetGlobalTransform();
 
@@ -212,7 +212,7 @@ FMatrix UTextInstanceComponent::GetRenderMatrix(const FCamera& Camera) const
 	return ScaleTransform * ModelMatrix;
 }
 
-const FRenderData& UTextInstanceComponent::GetRenderData(const FCamera& Camera) const
+const FRenderData& UTextComponent::GetRenderData(const FCamera& Camera) const
 {
 
 	TArray<FInstanceData> Built;
@@ -233,7 +233,7 @@ const FRenderData& UTextInstanceComponent::GetRenderData(const FCamera& Camera) 
 	return RenderData;
 }
 
-void UTextInstanceComponent::Serialize(FArchive& Archive) const
+void UTextComponent::Serialize(FArchive& Archive) const
 {
 	Super::Serialize(Archive);
 
@@ -245,7 +245,7 @@ void UTextInstanceComponent::Serialize(FArchive& Archive) const
 	}
 }
 
-void UTextInstanceComponent::Deserialize(const FArchive& Archive)
+void UTextComponent::Deserialize(const FArchive& Archive)
 {
 	Super::Deserialize(Archive);
 

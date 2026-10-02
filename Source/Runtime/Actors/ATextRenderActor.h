@@ -3,7 +3,7 @@
 #include "AActor.h"
 #include "Runtime/Math/FVector.h"
 
-class UTextInstanceComponent;
+class UTextComponent;
 
 // 큐브 액터 정의
 class ATextRenderActor : public AActor
@@ -14,5 +14,5 @@ class ATextRenderActor : public AActor
 public:
 	explicit ATextRenderActor();
 
-	UTextInstanceComponent* GetTextComponent() const;
+	UTextComponent* GetTextComponent() const;
 };

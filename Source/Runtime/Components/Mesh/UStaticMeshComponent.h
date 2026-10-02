@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Runtime/CoreUObject/Mesh/UMeshComponent.h"
+#include "Runtime/Components/Mesh/UMeshComponent.h"
 #include "Runtime/Engine/UScene.h"
 #include "Runtime/Engine/ShowFlags.h"
 #include "Runtime/Core/TArray.h"

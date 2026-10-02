@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/CoreUObject/USceneComponent.h"
+#include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Core/IntTypes.h"
 #include "Runtime/Core/PointerTypes.h"
 #include "Runtime/Engine/FRayCastingManager.h"

@@ -23,7 +23,7 @@
 class FTexture;
 struct FTextureDesc;
 class FCamera;
-class UTextInstanceComponent;
+class UTextComponent;
 struct FDrawCommand;
 
 #include "Runtime/Engine/ShowFlags.h"

@@ -5,8 +5,8 @@ class AActor;
 class USceneComponent;
 class UStaticMeshComponent;
 class USpotLightComponent;
-class UTextInstanceComponent;
-class UBillBoardComp;
+class UTextComponent;
+class UBillboardComponent;
 class UAnimatedBillboardComp;
 
 // 선택된 액터의 컴포넌트 속성을 편집하는 창.
@@ -38,8 +38,8 @@ private:
 	void ShowTransform(FEditor& Editor, USceneComponent& Comp, bool bIsRoot) const;
 
 	// 컴포넌트 타입별 속성
-	void ShowTextSettings(UTextInstanceComponent& TextComp) const;
-	void ShowBillboardSettings(UBillBoardComp& BillboardComp) const;
+	void ShowTextSettings(UTextComponent& TextComp) const;
+	void ShowBillboardSettings(UBillboardComponent& BillboardComp) const;
 	void ShowAnimatedBillboardSettings(UAnimatedBillboardComp& BillboardComp) const;
 	void ShowSpotLightSettings(USpotLightComponent& LightComp) const;
 	void ShowStaticMeshSettings(AActor& Actor, UStaticMeshComponent& MeshComp, bool bIsRoot) const;
