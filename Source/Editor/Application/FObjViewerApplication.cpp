@@ -77,7 +77,7 @@ void FObjViewerApplication::Render()
 		};
 		Renderer->UpdateViewConstants(ViewConstants);
 
-		Renderer->UpdateLightConstants(Light, EViewModeIndex::VMI_Lit);
+		Renderer->UpdateLightConstants(Light);
 
 		FObjectConstants Constants;
 		Constants.World = World;
@@ -104,14 +104,14 @@ void FObjViewerApplication::Render()
 				{
 					TextureMaterial->SetTexture(TexIt->second.get());
 					Constants.Color = FVector4{ Mtl.Kd, 0.0f };
-					Renderer->DrawSection(*CurrentMesh, *TextureMaterial, Constants, Section.StartIndex, Section.IndexCount);
+					Renderer->DrawSection(*CurrentMesh, *TextureMaterial, Constants, TextureMaterial->GetPipeline(), Section.StartIndex, Section.IndexCount);
 				}
 
 				continue;
 			}
 
 			Constants.Color = FVector4{ Mtl.Kd, 1.0f };
-			Renderer->DrawSection(*CurrentMesh, *SimpleMaterial, Constants, Section.StartIndex, Section.IndexCount);
+			Renderer->DrawSection(*CurrentMesh, *SimpleMaterial, Constants, SimpleMaterial->GetPipeline(), Section.StartIndex, Section.IndexCount);
 		}
 	}
 

@@ -240,7 +240,7 @@ void FRenderView::RenderView(const FSceneView& View, const UScene& Scene, const 
 	}
 
 	// 기본 씬 오브젝트 패스
-	FlushBasePass(View.Camera);
+	FlushBasePass(View);
 
 	// BasePass 이후에 깊이 버퍼 기준으로 가시성 질의
 	if (bOracleRequested)
@@ -267,11 +267,7 @@ void FRenderView::RenderView(const FSceneView& View, const UScene& Scene, const 
 
 		if (Visualizer)
 		{
-			Visualizer->Draw(
-			    *EditorCtx.SelectedPrimitive,
-			    *this,
-			    View.Camera,
-			    FVector4{ 0.0f, 1.0f, 0.0f, 1.0f });
+			Visualizer->Draw(*EditorCtx.SelectedPrimitive, *this, View.Camera, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f });
 		}
 	}
 
@@ -280,7 +276,7 @@ void FRenderView::RenderView(const FSceneView& View, const UScene& Scene, const 
 	Renderer.ClearLastRenderState();
 
 	// 후처리 외곽선 패스
-	RenderPostProcessPass(View.Camera, EditorCtx.SelectedActor);
+	RenderPostProcessPass(View, EditorCtx.SelectedActor);
 
 	Renderer.ClearLastRenderState();
 }
@@ -290,8 +286,7 @@ void FRenderView::BeginView(const FSceneView& View)
 	// 에디터 뷰포트 렌더타겟 바인딩
 	Renderer.BindEditorViewportRenderTargets();
 	Renderer.SetViewportUV(View.TopLeftUV, View.LengthUV);
-	Renderer.SetRenderMode(View.ViewMode);
-	Renderer.UpdateLightConstants(View.LightConstants, View.ViewMode);
+	Renderer.UpdateLightConstants(View.LightConstants);
 
 	// ViewConstants 갱신
 	FViewConstants ViewConstants{
@@ -318,9 +313,9 @@ void FRenderView::DrawGrid(const FCamera& Camera, FGrid& Grid)
 	Renderer.FlushLineBatch(Constants, FName("Grid"));
 }
 
-void FRenderView::FlushBasePass(const FCamera& Camera)
+void FRenderView::FlushBasePass(const FSceneView& View)
 {
-	FlushQueue(Camera);
+	FlushQueue(View);
 }
 
 void FRenderView::FlushLinePass(const FCamera& Camera)
@@ -328,25 +323,20 @@ void FRenderView::FlushLinePass(const FCamera& Camera)
 	FlushLineBatch(Camera.GetViewProjectionMatrix());
 }
 
-void FRenderView::RenderPostProcessPass(const FCamera& Camera, const AActor* SelectedActor)
-{
-	RenderOutline(Camera, SelectedActor);
-}
-
-void FRenderView::RenderOverlayPass(const FCamera& Camera, const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp)
+void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp)
 {
 	// 뷰포트 영역 재설정
-	Renderer.SetViewportUV(SceneView.TopLeftUV, SceneView.LengthUV);
+	Renderer.SetViewportUV(View.TopLeftUV, View.LengthUV);
 
 	//// 기즈모 렌더링
 	// Renderer.ClearDepth();
 	// Gizmo.Draw(Renderer, SelectedTransform, Camera);
 
 	// 텍스트 오버레이 렌더링
-	if (TextComp && (SceneView.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
+	if (TextComp && (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
 	{
 		Renderer.ClearDepth();
-		FDrawCommand Command = GetDrawCommand(*TextComp, Camera, TextComp->GetWorldBounds(), UStaticMeshComponent::MakeLODView(Camera));
+		FDrawCommand Command = GetDrawCommand(*TextComp, View.Camera, TextComp->GetWorldBounds(), UStaticMeshComponent::MakeLODView(View.Camera));
 		if (!Command.Instances.empty())
 		{
 			Renderer.AddTextInstanceArray(Command);
@@ -356,9 +346,7 @@ void FRenderView::RenderOverlayPass(const FCamera& Camera, const FSceneView& Sce
 	}
 }
 
-void FRenderView::RenderGizmo(const FTransform& Transform,
-    const FCamera& Camera, FVector2 TopLeftUV,
-    FVector2 LengthUV, const FGizmo& Gizmo)
+void FRenderView::RenderGizmo(const FTransform& Transform, const FCamera& Camera, FVector2 TopLeftUV, FVector2 LengthUV, const FGizmo& Gizmo)
 {
 	Renderer.SetViewportUV(TopLeftUV, LengthUV);
 	Renderer.ClearDepth();
@@ -372,16 +360,13 @@ void FRenderView::RenderLine(const FVector& Start, const FVector& End,
 	LineBatcher.DrawLine(Start, End, Color);
 }
 
-void FRenderView::RenderBoxCenterExtent(const FVector& Center,
-    const FVector& Extent,
-    const FVector4& Color)
+void FRenderView::RenderBoxCenterExtent(const FVector& Center, const FVector& Extent, const FVector4& Color)
 {
 	FLineBatcher& LineBatcher = Renderer.GetLineBatcher();
 	LineBatcher.DrawBoxCenterExtent(Center, Extent, Color);
 }
 
-void FRenderView::RenderBoxMinMax(const FVector& Min, const FVector& Max,
-    const FVector4& Color)
+void FRenderView::RenderBoxMinMax(const FVector& Min, const FVector& Max, const FVector4& Color)
 {
 	FLineBatcher& LineBatcher = Renderer.GetLineBatcher();
 	LineBatcher.DrawBoxMinMax(Min, Max, Color);
@@ -398,22 +383,13 @@ void FRenderView::RenderQuad(
 	LineBatcher.DrawQuad(A, B, C, D, Color);
 }
 
-void FRenderView::RenderSphere(const FVector& Center, float Radius,
-    const FVector4& Color, uint32 Segments)
+void FRenderView::RenderSphere(const FVector& Center, float Radius, const FVector4& Color, uint32 Segments)
 {
 	FLineBatcher& LineBatcher = Renderer.GetLineBatcher();
 	LineBatcher.DrawSphere(Center, Radius, Color, Segments);
 }
 
-void FRenderView::RenderOutline(const FCamera& Camera,
-    const AActor* SelectedActor)
-{
-	DrawStencilMask(Camera, SelectedActor);
-	Renderer.RenderOutline();
-}
-
-void FRenderView::DrawStencilMask(const FCamera& Camera,
-    const AActor* SelectedActor)
+void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedActor)
 {
 	if (!SelectedActor)
 		return;
@@ -437,23 +413,34 @@ void FRenderView::DrawStencilMask(const FCamera& Camera,
 	{
 		OutlineMaterial->GetPipeline()->SetStencilRef(1);
 		DrawCommand.Materials = std::span<const FMaterial>(OutlineMaterial.get(), 1);
-		Renderer.Draw(DrawCommand, 2, false);
+		Renderer.Draw(DrawCommand, nullptr, 2);
 	}
 }
 
-void FRenderView::SetRenderMode(EViewModeIndex InMode)
+// Post Process Pass에서 렌더할 것들
+void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor)
 {
-	Renderer.SetRenderMode(InMode);
+	// Scene Depth 모드
+	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth) 
+	{
+		Renderer.RenderSceneDepth();
+	}
+	else
+	{
+		// 아웃라인을 Post Process에서 그림
+		DrawStencilMask(View.Camera, SelectedActor);
+		Renderer.RenderOutline();
+	}
 }
 
-void FRenderView::UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode)
+void FRenderView::UpdateLightConstants(const FLightConstants& Constants)
 {
-	Renderer.UpdateLightConstants(Constants, InMode);
+	Renderer.UpdateLightConstants(Constants);
 }
 
-void FRenderView::DrawInstances(const FCamera& Camera)
+void FRenderView::DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline)
 {
-	Renderer.DrawInstances(Camera);
+	Renderer.DrawInstances(View.Camera, Pipeline, View.ViewMode == EViewModeIndex::VMI_Unlit);
 }
 
 void FRenderView::ClearTextInstances()
@@ -469,13 +456,19 @@ void FRenderView::FlushLineBatch(const FMatrix& ViewProjection, const FName& Pip
 	Renderer.FlushLineBatch(Constants, PipelineId);
 }
 
-void FRenderView::FlushQueue(const FCamera& Camera)
+void FRenderView::FlushQueue(const FSceneView& View)
 {
 	auto& ResLib = FRenderResourceLibrary::Get();
 
+	// 와이어 프레임인 경우 와이어 프레임 파이프라인을 쓴다
+	FRenderPipeline* OverridePipeline = nullptr;
+	if (View.ViewMode == EViewModeIndex::VMI_Wireframe)
+	{
+		OverridePipeline = ResLib.GetPipeline(FName("#Simple_Wireframe")).get();
+	}
+
 	// Primitive 큐 처리
-	Renderer.DrawPrimitiveBatch(
-	    RenderQueue.GetPrimRenderQ());
+	Renderer.DrawPrimitiveBatch(RenderQueue.GetPrimRenderQ(), OverridePipeline);
 
 	// Instancing 큐
 	if (!RenderQueue.IsInstancingRQEmpty())
@@ -484,14 +477,15 @@ void FRenderView::FlushQueue(const FCamera& Camera)
 		{
 			Renderer.AddTextInstanceArray(Data);
 		}
-		Renderer.DrawInstances(Camera);
+		DrawInstances(View, OverridePipeline);
+
 		Renderer.ClearTextInstances();
 	}
 
 	// Spotlight 큐: 불투명 렌더링 후 가산 블렌딩 수행
 	for (const FDrawCommand& Data : RenderQueue.GetSpotlightRenderQ())
 	{
-		Renderer.Draw(Data);
+		Renderer.Draw(Data, OverridePipeline);
 	}
 
 	// Text 큐: BuildRenderData()에서 이미 계산된 Instances 배열 사용

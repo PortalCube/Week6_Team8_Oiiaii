@@ -26,8 +26,6 @@ class FCamera;
 class UTextComponent;
 struct FDrawCommand;
 
-#include "Runtime/Engine/ShowFlags.h"
-
 struct FFrameResource
 {
 	Microsoft::WRL::ComPtr<ID3D11Buffer> FrameConstantBuffer;
@@ -48,9 +46,6 @@ public:
 	void FlushDrawStats();
 	void OnWindowSize(UINT Width, UINT Height);
 
-	EViewModeIndex GetRenderMode() const { return CurrentRenderMode; }
-	void SetRenderMode(EViewModeIndex InMode) { CurrentRenderMode = InMode; }
-
 	[[nodiscard]]
 	TSharedPtr<FMesh> CreateMesh(const FMeshDesc& Desc);
 	[[nodiscard]]
@@ -62,7 +57,7 @@ public:
 
 	[[nodiscard]]
 	TSharedPtr<FRenderPipeline>
-	CreateRenderPipeline(const FRenderPipelineDesc& Desc, EViewModeIndex RenderMode = EViewModeIndex::VMI_Lit);
+	CreateRenderPipeline(const FRenderPipelineDesc& Desc);
 	[[nodiscard]]
 	TSharedPtr<FTexture> CreateTexture(const wchar_t* path);
 	TSharedPtr<FTexture> CreateSolidTexture(const FVector4& Color);
@@ -72,28 +67,29 @@ public:
 
 	FLineBatcher& GetLineBatcher() { return LineBatcher; }
 
-	void UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode);
+	void UpdateLightConstants(const FLightConstants& Constants);
 	void UpdateFrameConstants(const FFrameConstants& Constants);
 	void UpdateViewConstants(const FViewConstants& Constants);
 
 	// 텍스트 인스턴싱
 	void AddTextInstanceArray(const FDrawCommand& Command);
-	void DrawInstances(const FCamera& Camera);
+	void DrawInstances(const FCamera& Camera, FRenderPipeline* OverridePipeline, bool bDisableShading);
 	void DrawTextInstances(const FDrawCommand& Command);
 	void ClearTextInstances();
 
-	void Draw(const FDrawCommand& Command, uint32 Slot = 2, bool bApplyViewMode = true);
+	void Draw(const FDrawCommand& Command, FRenderPipeline* OverridePipeline, uint32 Slot = 2);
 
-	void DrawPrimitiveBatch(std::span<const FDrawCommand> Commands);
+	void DrawPrimitiveBatch(std::span<const FDrawCommand> Commands, FRenderPipeline* OverridePipeline);
 
 	bool UploadObjectConstants(std::span<const FDrawCommand> Commands);
 
 	void BindObjectConstantRange(uint32 Slot, uint32 ByteOffset);
-	void BindDrawResources( const FMesh& Mesh, const FMaterial& Material, bool bApplyViewMode);
+	void BindDrawResources(const FMesh& Mesh, const FMaterial& Material, FRenderPipeline* OverridePipeline);
 
-	void DrawUploadedCommand(const FDrawCommand& Command, bool bApplyViewMode = true);
+	void DrawUploadedCommand(const FDrawCommand& Command, FRenderPipeline* OverridePipeline);
 
 	void RenderOutline();
+	void RenderSceneDepth();
 	ID3D11RenderTargetView* GetBackBuffer() { return BackBufferRTV.Get(); }
 	ID3D11DepthStencilView* GetDepthStencilView() { return DepthStencilView.Get(); }
 
@@ -152,6 +148,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> EditorViewPortSRV;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> DepthStencilSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneDepthSRV;
 
 	TMap<FRasterizerDesc, Microsoft::WRL::ComPtr<ID3D11RasterizerState>> RasterizerStateMap;
 	TMap<FDepthStencilDesc, Microsoft::WRL::ComPtr<ID3D11DepthStencilState>> DepthStencilStateMap;
@@ -164,8 +161,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> InstanceBuffer;
 	UINT TextInstanceBufferSize = 0;
-
-	EViewModeIndex CurrentRenderMode = EViewModeIndex::VMI_Lit;
 
 	struct FGPUTimerQuery
 	{
@@ -209,13 +204,12 @@ public:
 		LineBatcher.Flush(*Context.Get(), GetPipeline(PipelineId));
 	}
 
-	// bApplyViewMode=false면 뷰모드(와이어프레임) 오버라이드를 건너뛴다
 	template <typename TConstants>
-	void Draw(const FMesh& Mesh, const FMaterial& Material, const TConstants& Constants, uint32 Slot = 2, bool bApplyViewMode = true)
+	void Draw(const FMesh& Mesh, const FMaterial& Material, const TConstants& Constants, FRenderPipeline* OverridePipeline, uint32 Slot = 2)
 	{
 		UpdateBuffer(Constants, 2);
 
-		BindDrawResources(Mesh, Material, bApplyViewMode);
+		BindDrawResources(Mesh, Material, OverridePipeline);
 
 		if (Mesh.HasIndices())
 		{
@@ -231,11 +225,11 @@ public:
 	}
 
 	template <typename TConstants>
-	void DrawSection(const FMesh& Mesh, const FMaterial& Material, const TConstants& Constants, uint32 StartIndex, uint32 IndexCount, uint32 Slot = 2, bool bApplyViewMode = true)
+	void DrawSection(const FMesh& Mesh, const FMaterial& Material, const TConstants& Constants, FRenderPipeline* OverridePipeline, uint32 StartIndex, uint32 IndexCount, uint32 Slot = 2)
 	{
 		UpdateBuffer(Constants, Slot);
 
-		BindDrawResources(Mesh, Material, bApplyViewMode);
+		BindDrawResources(Mesh, Material, OverridePipeline);
 
 		if (Mesh.HasIndices())
 		{

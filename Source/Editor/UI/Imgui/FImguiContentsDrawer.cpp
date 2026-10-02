@@ -66,7 +66,7 @@ void FImguiContentsDrawer::RenderContentView()
 
 	ImGui::Separator();
 
-	int Total = FolderView.Folders.size() + FolderView.Assets.size();
+	int32 Total = static_cast<uint32>(FolderView.Folders.size() + FolderView.Assets.size());
 	if (Total == 0)
 	{
 		ImGui::TextDisabled("비어 있습니다.");
@@ -84,7 +84,7 @@ void FImguiContentsDrawer::RenderContentView()
 	// 폴더 진입은 순회 중에 CurrentPath를 바꾸면 안 되므로 따로 모아 뒀다가 끝나고 적용한다.
 	std::filesystem::path PendingNavigate;
 
-	int Index = 0;
+	int32 Index = 0;
 
 	// GetAssetDirectory가 정렬한 폴더를 먼저, 에셋을 그 다음에 렌더링한다.
 	for (const fs::path& Item : FolderView.Folders)

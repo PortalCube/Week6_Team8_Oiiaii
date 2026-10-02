@@ -152,10 +152,8 @@ void FEditorApplication::Render()
 				.LightConstants = Editor.GlobalLight
 			};
 
-			RenderView->RenderOverlayPass(Viewport.ViewportCamera, SceneView, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
-			// 마지막으로 그린 뷰의 렌더 모드가 남지 않도록 설정
+			RenderView->RenderOverlayPass(SceneView, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
 
-			RenderView->SetRenderMode(Viewport.ViewMode);
 			RenderView->RenderGizmo(
 			    Editor.SelectedTransform,
 			    Viewport.ViewportCamera,

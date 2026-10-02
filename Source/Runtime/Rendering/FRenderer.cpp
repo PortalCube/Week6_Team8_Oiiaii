@@ -149,6 +149,7 @@ void FRenderer::OnWindowSize(UINT Width, UINT Height)
 	BackBufferRTV.Reset();
 	DepthStencilView.Reset();
 	DepthStencilSRV.Reset();
+	SceneDepthSRV.Reset();
 	DepthStencilBuffer.Reset();
 	EditorViewPortRTV.Reset();
 	EditorViewPortSRV.Reset();
@@ -327,19 +328,12 @@ void FRenderer::GetDeviceAndContext_ImplDX11(ID3D11Device*& DeviceOut,
 }
 
 TSharedPtr<FRenderPipeline>
-FRenderer::CreateRenderPipeline(const FRenderPipelineDesc& Desc, EViewModeIndex RenderMode)
+FRenderer::CreateRenderPipeline(const FRenderPipelineDesc& Desc)
 {
 	namespace fs = std::filesystem;
 
-	FRenderPipelineDesc ClonedDesc = Desc;
-
-	if (RenderMode == EViewModeIndex::VMI_Wireframe)
-	{
-		ClonedDesc.Rasterizer.FillMode = ERasterizerFillMode::Wireframe;
-	}
-
 	Microsoft::WRL::ComPtr<ID3DBlob> Blob;
-	const fs::path VertexShaderPath{ ClonedDesc.VertexShaderFilePath };
+	const fs::path VertexShaderPath{ Desc.VertexShaderFilePath };
 	HRESULT Result = D3DReadFileToBlob(VertexShaderPath.wstring().c_str(), &Blob);
 	if (FAILED(Result))
 	{
@@ -357,7 +351,7 @@ FRenderer::CreateRenderPipeline(const FRenderPipelineDesc& Desc, EViewModeIndex 
 	INC_MEMORY_STAT_BY("VertexShaderMemory", Blob->GetBufferSize());
 
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> InputLayout;
-	if (ClonedDesc.bIsInstancing)
+	if (Desc.bIsInstancing)
 	{
 		Result = Device->CreateInputLayout(FVertexInstanceLayouts::Layout, FVertexInstanceLayouts::NumElements, Blob->GetBufferPointer(), Blob->GetBufferSize(), &InputLayout);
 	}
@@ -371,7 +365,7 @@ FRenderer::CreateRenderPipeline(const FRenderPipelineDesc& Desc, EViewModeIndex 
 		return nullptr;
 	}
 
-	const fs::path PixelShaderPath{ ClonedDesc.PixelShaderFilePath };
+	const fs::path PixelShaderPath{ Desc.PixelShaderFilePath };
 	Result = D3DReadFileToBlob(PixelShaderPath.wstring().c_str(), &Blob);
 	if (FAILED(Result))
 	{
@@ -388,9 +382,9 @@ FRenderer::CreateRenderPipeline(const FRenderPipelineDesc& Desc, EViewModeIndex 
 	size_t PSSize = Blob->GetBufferSize();
 	INC_MEMORY_STAT_BY("PixelShaderMemory", Blob->GetBufferSize());
 
-	auto RasterizerState = GetOrCreateRasterizerState(ClonedDesc.Rasterizer);
-	auto DepthStencilState = GetOrCreateDepthStencilState(ClonedDesc.DepthStencil);
-	auto BlendState = GetOrCreateBlendState(ClonedDesc.Blend);
+	auto RasterizerState = GetOrCreateRasterizerState(Desc.Rasterizer);
+	auto DepthStencilState = GetOrCreateDepthStencilState(Desc.DepthStencil);
+	auto BlendState = GetOrCreateBlendState(Desc.Blend);
 	auto SamplerState = GetOrCreateSamplerState(FTextureSamplerDesc{});
 
 	if (!RasterizerState || !DepthStencilState || !BlendState || !SamplerState)
@@ -399,7 +393,7 @@ FRenderer::CreateRenderPipeline(const FRenderPipelineDesc& Desc, EViewModeIndex 
 	}
 
 	FRenderPipelineCreateInfo CreateInfo{
-		.Desc = std::move(ClonedDesc),
+		.Desc = std::move(Desc),
 		.VertexShader = std::move(VertexShader),
 		.PixelShader = std::move(PixelShader),
 		.InputLayout = std::move(InputLayout),
@@ -809,8 +803,19 @@ bool FRenderer::InitializeBackBufferAndDepthStencil()
 		.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
 		.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
 	};
-	Result = Device->CreateShaderResourceView(DepthStencilBuffer.Get(), &StencilSrvDesc,
-		&DepthStencilSRV);
+	Result = Device->CreateShaderResourceView(DepthStencilBuffer.Get(), &StencilSrvDesc, &DepthStencilSRV);
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	// Scene Depth Viwe Mode 용 SRV 생성
+	D3D11_SHADER_RESOURCE_VIEW_DESC SceneDepthSrvDesc{
+		.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS, // 포멧은 TYPELESS이어야함
+		.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
+		.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
+	};
+	Result = Device->CreateShaderResourceView(DepthStencilBuffer.Get(), &SceneDepthSrvDesc, &SceneDepthSRV);
 	if (FAILED(Result))
 	{
 		return false;
@@ -1084,7 +1089,7 @@ bool FRenderer::InitializeConstantBuffers()
 	return true;
 }
 
-void FRenderer::UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode)
+void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
 {
 	Context->UpdateSubresource(LightConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->PSSetConstantBuffers(4, 1, LightConstantBuffer.GetAddressOf());
@@ -1121,7 +1126,8 @@ void FRenderer::UpdateViewConstants(const FViewConstants& Constants)
 	Context->PSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
 }
 
-void FRenderer::Draw(const FDrawCommand& Command, uint32 Slot, bool bApplyViewMode)
+// OverridePipeline이 있으면 그 파이프라인을 쓰고 없으면 nullptr
+void FRenderer::Draw(const FDrawCommand& Command, FRenderPipeline* OverridePipeline, uint32 Slot)
 {
 	if (!Command.Mesh || Command.Materials.empty())
 	{
@@ -1136,16 +1142,16 @@ void FRenderer::Draw(const FDrawCommand& Command, uint32 Slot, bool bApplyViewMo
 
 			const FMaterial& Mat = (i < Command.Materials.size()) ? Command.Materials[i] : Command.Materials[0];
 
-			DrawSection(*Command.Mesh, Mat, Command.Constants, Section.StartIndex, Section.IndexCount, Slot, bApplyViewMode);
+			DrawSection(*Command.Mesh, Mat, Command.Constants, OverridePipeline, Section.StartIndex, Section.IndexCount, Slot);
 		}
 	}
 	else
 	{
-		Draw(*Command.Mesh, Command.Materials[0], Command.Constants, Slot, bApplyViewMode);
+		Draw(*Command.Mesh, Command.Materials[0], Command.Constants, OverridePipeline, Slot);
 	}
 }
 
-void FRenderer::DrawPrimitiveBatch(std::span<const FDrawCommand> Commands)
+void FRenderer::DrawPrimitiveBatch(std::span<const FDrawCommand> Commands, FRenderPipeline* OverridePipeline)
 {
 	size_t Begin = 0;
 
@@ -1164,7 +1170,7 @@ void FRenderer::DrawPrimitiveBatch(std::span<const FDrawCommand> Commands)
 		{
 			const uint32 ByteOffset = static_cast<uint32>(LocalIndex) * ObjectConstantStride;
 			BindObjectConstantRange(2, ByteOffset);
-			DrawUploadedCommand(Chunk[LocalIndex], true);
+			DrawUploadedCommand(Chunk[LocalIndex], OverridePipeline);
 		}
 		Begin += ChunkCount;
 	}
@@ -1217,16 +1223,11 @@ void FRenderer::BindObjectConstantRange(uint32 Slot, uint32 ByteOffset)
 	Context1->PSSetConstantBuffers1(Slot, 1, &Buffer, &FirstConstant, &NumConstants);
 }
 
-void FRenderer::BindDrawResources(const FMesh& Mesh, const FMaterial& Material, bool bApplyViewMode)
+void FRenderer::BindDrawResources(const FMesh& Mesh, const FMaterial& Material, FRenderPipeline* OverridePipeline)
 {
-	FRenderPipeline* Pipeline = Material.GetPipeline();
+	// OverridePipeline이 있으면 그걸 쓰고 없으면 Material의 파이프라인을 쓴다
+	FRenderPipeline* Pipeline = OverridePipeline ? OverridePipeline : Material.GetPipeline();
 	FTexture* Texture = Material.GetTexture();
-
-	if (bApplyViewMode && CurrentRenderMode == EViewModeIndex::VMI_Wireframe)
-	{
-		const TSharedPtr<FRenderPipeline> WireframePipeline = GetPipeline(FName("#Simple_Wireframe"));
-		Pipeline = WireframePipeline.get();
-	}
 
 	if (LastRenderPipeline != Pipeline)
 	{
@@ -1252,7 +1253,7 @@ void FRenderer::BindDrawResources(const FMesh& Mesh, const FMaterial& Material, 
 	}
 }
 
-void FRenderer::DrawUploadedCommand(const FDrawCommand& Command, bool bApplyViewMode)
+void FRenderer::DrawUploadedCommand(const FDrawCommand& Command, FRenderPipeline* OverridePipeline)
 {
 	if (!Command.Mesh || Command.Materials.empty())
 	{
@@ -1269,7 +1270,7 @@ void FRenderer::DrawUploadedCommand(const FDrawCommand& Command, bool bApplyView
 			const FMeshSection& Section = Mesh.Sections[SectionIndex];
 			const FMaterial& Material = SectionIndex < Command.Materials.size() ? Command.Materials[SectionIndex] : Command.Materials[0];
 
-			BindDrawResources(Mesh, Material, bApplyViewMode);
+			BindDrawResources(Mesh, Material, OverridePipeline);
 			Context->DrawIndexed(Section.IndexCount, Section.StartIndex, 0);
 
 			INC_DWORD_STAT_BY("Prims", Section.IndexCount / 3u);
@@ -1279,7 +1280,7 @@ void FRenderer::DrawUploadedCommand(const FDrawCommand& Command, bool bApplyView
 	else
 	{
 		const FMaterial& Material = Command.Materials[0];
-		BindDrawResources(Mesh, Material, bApplyViewMode);
+		BindDrawResources(Mesh, Material, OverridePipeline);
 
 		if (Mesh.HasIndices())
 		{
@@ -1309,7 +1310,7 @@ void FRenderer::AddTextInstanceArray(const FDrawCommand& Command)
 	TargetArray.insert(TargetArray.end(), Command.Instances.begin(), Command.Instances.end());
 }
 
-void FRenderer::DrawInstances(const FCamera& Camera)
+void FRenderer::DrawInstances(const FCamera& Camera, FRenderPipeline* OverridePipeline, bool bDisableShading)
 {
 	auto& ResLib = FRenderResourceLibrary::Get();
 
@@ -1322,7 +1323,7 @@ void FRenderer::DrawInstances(const FCamera& Camera)
 		if (InstanceData.empty())
 			continue;
 
-		SC.DisableShading = CurrentRenderMode == EViewModeIndex::VMI_Unlit ? 1.0f : 0.0f;
+		SC.DisableShading = bDisableShading ? 1.0f : 0.0f;
 		UpdateBuffer(SC, 2);
 
 		const UINT InstanceCount = static_cast<UINT>(InstanceData.size());
@@ -1365,7 +1366,7 @@ void FRenderer::DrawInstances(const FCamera& Camera)
 		const FMesh* Mesh = BatchKey.Mesh;
 		if (!Mesh)
 			continue;
-		BindDrawResources(*Mesh, *Material, false);
+		BindDrawResources(*Mesh, *Material, nullptr);
 
 		// 슬롯 1에 인스턴스 버퍼 바인딩
 		UINT Stride = sizeof(FInstanceData);
@@ -1439,7 +1440,7 @@ void FRenderer::DrawTextInstances(const FDrawCommand& Command)
 
 	// 메시 조회 및 바인딩
 	const FMesh* Mesh = Command.Mesh;
-	BindDrawResources(*Mesh, *Material, false);
+	BindDrawResources(*Mesh, *Material, nullptr);
 
 	// 슬롯 1에 인스턴스 버퍼 바인딩
 	UINT Stride = sizeof(FInstanceData);
@@ -1495,6 +1496,12 @@ void FRenderer::RenderOutline()
 	// 슬롯 해제
 	ID3D11ShaderResourceView* NullSRVs[] = { nullptr, nullptr };
 	Context->PSSetShaderResources(0, 2, NullSRVs);
+}
+
+// Scene Depth를 Full Screen Quad에 그린다
+void FRenderer::RenderSceneDepth()
+{
+	//Context->RS
 }
 
 bool FRenderer::InitializeGPUTimerQueries()

@@ -34,12 +34,16 @@ bool FRenderResourceLibrary::CreateWireframePipeline(FRenderer& Renderer)
 		return false;
 	}
 
+	FRasterizerDesc RasterizerDesc = {};
+	RasterizerDesc.FillMode = ERasterizerFillMode::Wireframe;
+
 	FRenderPipelineDesc Desc = {
 		.VertexShaderFilePath = std::filesystem::path(VsPath).string(),
 		.PixelShaderFilePath = std::filesystem::path(PsPath).string(),
+		.Rasterizer = RasterizerDesc,
 	};
 
-	TSharedPtr<FRenderPipeline> WireframePipeline = Renderer.CreateRenderPipeline(Desc, EViewModeIndex::VMI_Wireframe);
+	TSharedPtr<FRenderPipeline> WireframePipeline = Renderer.CreateRenderPipeline(Desc);
 	if (WireframePipeline)
 	{
 		AllPipelineMap[FName("#Simple_Wireframe")] = WireframePipeline;
