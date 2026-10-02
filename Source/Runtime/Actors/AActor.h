@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Runtime/CoreUObject/UObject.h"
-#include "Runtime/CoreUObject/USceneComponent.h"
+#include "Runtime/Components/USceneComponent.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include <type_traits>
 #include <concepts>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Engine/FRayCastingManager.h"
-#include "Runtime/CoreUObject/USceneComponent.h"
+#include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Actors/AActor.h"
 #include "Runtime/Geometry/FFrustum.h"
 #include <cstdint>

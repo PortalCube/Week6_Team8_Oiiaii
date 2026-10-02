@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Geometry/FTransform.h"
 #include "Runtime/Math/FVector2.h"
-#include "Runtime/CoreUObject/UTextInstanceComponent.h"
+#include "Runtime/Components/UTextComponent.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Rendering/FRenderQueue.h"
 #include "Runtime/Engine/FSceneView.h"
@@ -48,7 +48,7 @@ public:
 	void FlushBasePass(const FCamera& Camera);
 	void FlushLinePass(const FCamera& Camera);
 	void RenderPostProcessPass(const FCamera& Camera, const AActor* SelectedActor);
-	void RenderOverlayPass(const FCamera& Camera, const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextInstanceComponent* TextComp);
+	void RenderOverlayPass(const FCamera& Camera, const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp);
 
 	// 개별 렌더 및 디버그 라인
 	void RenderGizmo(const FTransform& Transform, const FCamera& Camera, FVector2 TopLeftUV, FVector2 LengthUV, const FGizmo& Gizmo);

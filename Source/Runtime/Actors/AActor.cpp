@@ -2,7 +2,7 @@
 #include "Runtime/Core/Log.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
-#include "Runtime/CoreUObject/USceneComponent.h"
+#include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FArchive.h"
 #include "Runtime/Engine/UScene.h"
 

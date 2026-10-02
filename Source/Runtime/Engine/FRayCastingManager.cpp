@@ -1,7 +1,7 @@
 #include "FRayCastingManager.h"
 #include "Runtime/Math/FMatrix.h"
 #include "Runtime/Rendering/FMesh.h"
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include <limits>
 #include <cmath>
 #include <algorithm>

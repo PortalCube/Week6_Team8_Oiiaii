@@ -10,7 +10,7 @@
 #include "Runtime/Engine/FRayCastingManager.h"
 #include "Runtime/Engine/UScene.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include <algorithm>
 #include <fstream>
 #include <iomanip>

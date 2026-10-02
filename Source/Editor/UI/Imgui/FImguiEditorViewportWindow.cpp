@@ -1,6 +1,6 @@
 #include "FImguiEditorViewportWindow.h"
 
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Engine/FRayCastingManager.h"
 #include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/UScene.h"

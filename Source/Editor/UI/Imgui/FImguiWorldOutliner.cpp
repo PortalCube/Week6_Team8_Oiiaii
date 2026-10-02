@@ -1,7 +1,7 @@
 #include "FImguiWorldOutliner.h"
 #include "Runtime/Actors/AActor.h"
 #include "Runtime/CoreUObject/UClass.h"
-#include "Runtime/CoreUObject/USceneComponent.h"
+#include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/UScene.h"
 #include "ThirdParty/Imgui/imgui.h"
 #include <string>

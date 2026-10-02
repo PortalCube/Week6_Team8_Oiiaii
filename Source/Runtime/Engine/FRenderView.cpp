@@ -5,8 +5,8 @@
 #include "Editor/Visualizer/FVisualizerRegistry.h"
 #include "Editor/Visualizer/IVisualizer.h"
 #include "Runtime/Actors/AActor.h"
-#include "Runtime/CoreUObject/UBillBoardComp.h"
-#include "Runtime/CoreUObject/Mesh/UStaticMeshComponent.h"
+#include "Runtime/Components/UBillboardComponent.h"
+#include "Runtime/Components/Mesh/UStaticMeshComponent.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Engine/FSceneView.h"
@@ -153,7 +153,7 @@ void FRenderView::CollectScenePrimitives(const UScene& Scene, const FSceneView& 
 
 		int32 Index = PrimitiveComponent->GetBatchIndex();
 
-		if (!PrimitiveComponent->Cast<UBillBoardComp>())
+		if (!PrimitiveComponent->Cast<UBillboardComponent>())
 		{
 			DrawCommand.Constants.World = PrimitiveComponent->GetGlobalTransformMatrix();
 		}
@@ -333,7 +333,7 @@ void FRenderView::RenderPostProcessPass(const FCamera& Camera, const AActor* Sel
 	RenderOutline(Camera, SelectedActor);
 }
 
-void FRenderView::RenderOverlayPass(const FCamera& Camera, const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextInstanceComponent* TextComp)
+void FRenderView::RenderOverlayPass(const FCamera& Camera, const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp)
 {
 	// 뷰포트 영역 재설정
 	Renderer.SetViewportUV(SceneView.TopLeftUV, SceneView.LengthUV);

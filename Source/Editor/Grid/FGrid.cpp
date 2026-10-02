@@ -2,7 +2,7 @@
 
 #include "Editor/Core/FEditor.h"
 #include "Runtime/Core/IntTypes.h"
-#include "Runtime/CoreUObject/USceneComponent.h"
+#include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Math/FMatrix.h"
 #include "Runtime/Math/FVector4.h"

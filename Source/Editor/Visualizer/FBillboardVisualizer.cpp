@@ -1,6 +1,6 @@
 #include "FBillboardVisualizer.h"
 
-#include "Runtime/CoreUObject/UBillBoardComp.h"
+#include "Runtime/Components/UBillboardComponent.h"
 #include "Runtime/Geometry/FAxisAlignedBoundingBox.h"
 #include "Runtime/Engine/FRenderView.h"
 #include "Runtime/Rendering/FMesh.h"
@@ -14,12 +14,12 @@ void FBillboardVisualizer::Draw(
     const FCamera& Camera,
     const FVector4& Color) const
 {
-	if (Component.IsA<UBillBoardComp>() == false)
+	if (Component.IsA<UBillboardComponent>() == false)
 	{
 		return;
 	}
 
-	const UBillBoardComp& BillBoardComponent = *Component.Cast<UBillBoardComp>();
+	const UBillboardComponent& BillBoardComponent = *Component.Cast<UBillboardComponent>();
 
 	UStaticMesh* MeshPtr = BillBoardComponent.GetRenderData(Camera).Mesh;
 	if (!MeshPtr)

@@ -1,4 +1,4 @@
-#include "UBillBoardComp.h"
+#include "UBillboardComponent.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Engine/UScene.h"
 #include "Runtime/Engine/FArchive.h"
@@ -8,15 +8,15 @@
 #include "Runtime/Engine/FSceneView.h"
 #include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Asset/UTexture.h"
-#include "UClass.h"
+#include "Runtime/CoreUObject/UClass.h"
 #include <algorithm>
 #include <cctype>
 
-IMPLEMENT_UCLASS(UBillBoardComp, UPrimitiveComponent)
-UCLASS_META(UBillBoardComp, DisplayName, "BillBoard")
-UCLASS_META(UBillBoardComp, MeshName, "BillBoard")
+IMPLEMENT_UCLASS(UBillboardComponent, UPrimitiveComponent)
+UCLASS_META(UBillboardComponent, DisplayName, "BillBoard")
+UCLASS_META(UBillboardComponent, MeshName, "BillBoard")
 
-void UBillBoardComp::Initialize()
+void UBillboardComponent::Initialize()
 {
 	Super::Initialize();
 
@@ -27,7 +27,7 @@ void UBillBoardComp::Initialize()
 	RenderData.Type = ERenderType::Primitive;
 }
 
-void UBillBoardComp::Serialize(FArchive& Archive) const
+void UBillboardComponent::Serialize(FArchive& Archive) const
 {
 	Super::Serialize(Archive);
 
@@ -38,7 +38,7 @@ void UBillBoardComp::Serialize(FArchive& Archive) const
 	}
 }
 
-void UBillBoardComp::Deserialize(const FArchive& Archive)
+void UBillboardComponent::Deserialize(const FArchive& Archive)
 {
 	Super::Deserialize(Archive);
 
@@ -57,17 +57,17 @@ void UBillBoardComp::Deserialize(const FArchive& Archive)
 	}
 }
 
-void UBillBoardComp::SetTexture(UTexture* Texture)
+void UBillboardComponent::SetTexture(UTexture* Texture)
 {
 	UPrimitiveComponent::SetTexture(Texture);
 }
 
-UTexture* UBillBoardComp::GetTexture() const
+UTexture* UBillboardComponent::GetTexture() const
 {
 	return RenderData.Materials.empty() ? nullptr : RenderData.Materials[0].Texture;
 }
 
-FMatrix UBillBoardComp::GetRenderMatrix(const FCamera& Camera) const
+FMatrix UBillboardComponent::GetRenderMatrix(const FCamera& Camera) const
 {
 	FTransform Transform = GetGlobalTransform();
 
@@ -87,22 +87,22 @@ FMatrix UBillBoardComp::GetRenderMatrix(const FCamera& Camera) const
 	};
 }
 
-void UBillBoardComp::SetUVScale(FVector2 Value)
+void UBillboardComponent::SetUVScale(FVector2 Value)
 {
 	RenderData.Materials[0].UVScale = Value;
 }
 
-void UBillBoardComp::SetUVOffset(FVector2 Value)
+void UBillboardComponent::SetUVOffset(FVector2 Value)
 {
 	RenderData.Materials[0].UVOffset = Value;
 }
 
-FVector2 UBillBoardComp::GetUVScale() const
+FVector2 UBillboardComponent::GetUVScale() const
 {
 	return RenderData.Materials[0].UVScale;
 }
 
-FVector2 UBillBoardComp::GetUVOffset() const
+FVector2 UBillboardComponent::GetUVOffset() const
 {
 	return RenderData.Materials[0].UVOffset;
 }

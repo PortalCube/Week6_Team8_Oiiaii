@@ -1,11 +1,11 @@
 #include "FImguiPropertyWindow.h"
-#include "Runtime/CoreUObject/USceneComponent.h"
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
-#include "Runtime/CoreUObject/USpotLightComponent.h"
-#include "Runtime/CoreUObject/UTextInstanceComponent.h"
-#include "Runtime/CoreUObject/UBillBoardComp.h"
-#include "Runtime/CoreUObject/UAnimatedBillboardComp.h"
-#include "Runtime/CoreUObject/Mesh/UStaticMeshComponent.h"
+#include "Runtime/Components/USceneComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
+#include "Runtime/Components/USpotLightComponent.h"
+#include "Runtime/Components/UTextComponent.h"
+#include "Runtime/Components/UBillboardComponent.h"
+#include "Runtime/Components/UAnimatedBillboardComp.h"
+#include "Runtime/Components/Mesh/UStaticMeshComponent.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Actors/AActor.h"
 #include "ThirdParty/Imgui/imgui.h"
@@ -130,9 +130,9 @@ void FImguiPropertyWindow::ShowComponentDetails(FEditor& Editor, AActor& Actor,
 {
 	ShowTransform(Editor, Comp, bIsRoot);
 
-	if (Comp.IsA<UTextInstanceComponent>())
+	if (Comp.IsA<UTextComponent>())
 	{
-		ShowTextSettings(static_cast<UTextInstanceComponent&>(Comp));
+		ShowTextSettings(static_cast<UTextComponent&>(Comp));
 	}
 	else if (Comp.IsA<UAnimatedBillboardComp>())
 	{
@@ -140,9 +140,9 @@ void FImguiPropertyWindow::ShowComponentDetails(FEditor& Editor, AActor& Actor,
 		ShowBillboardSettings(BillboardComp);
 		ShowAnimatedBillboardSettings(BillboardComp);
 	}
-	else if (Comp.IsA<UBillBoardComp>())
+	else if (Comp.IsA<UBillboardComponent>())
 	{
-		ShowBillboardSettings(static_cast<UBillBoardComp&>(Comp));
+		ShowBillboardSettings(static_cast<UBillboardComponent&>(Comp));
 	}
 	else if (Comp.IsA<USpotLightComponent>())
 	{
@@ -210,7 +210,7 @@ void FImguiPropertyWindow::ShowTransform(FEditor& Editor, USceneComponent& Comp,
 	Comp.SetRelativeTransform(RelTransform);
 }
 
-void FImguiPropertyWindow::ShowTextSettings(UTextInstanceComponent& TextComp) const
+void FImguiPropertyWindow::ShowTextSettings(UTextComponent& TextComp) const
 {
 	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "Text Settings");
@@ -254,7 +254,7 @@ void FImguiPropertyWindow::ShowTextSettings(UTextInstanceComponent& TextComp) co
 	ImGui::Text("Height: %.2f", TextComp.GetHeight());
 }
 
-void FImguiPropertyWindow::ShowBillboardSettings(UBillBoardComp& BillboardComp) const
+void FImguiPropertyWindow::ShowBillboardSettings(UBillboardComponent& BillboardComp) const
 {
 	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0.8f, 0.6f, 1.0f, 1.0f), "Billboard Settings");

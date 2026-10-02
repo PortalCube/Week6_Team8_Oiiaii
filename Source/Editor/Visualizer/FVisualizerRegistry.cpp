@@ -5,11 +5,11 @@
 #include "Editor/Visualizer/FBillboardVisualizer.h"
 #include "Editor/Visualizer/FTextVisualizer.h"
 
-#include "Runtime/CoreUObject/UPrimitiveComponent.h"
-#include "Runtime/CoreUObject/USpotLightComponent.h"
-#include "Runtime/CoreUObject/UBillBoardComp.h"
-#include "Runtime/CoreUObject/UAnimatedBillboardComp.h"
-#include "Runtime/CoreUObject/UTextInstanceComponent.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
+#include "Runtime/Components/USpotLightComponent.h"
+#include "Runtime/Components/UBillboardComponent.h"
+#include "Runtime/Components/UAnimatedBillboardComp.h"
+#include "Runtime/Components/UTextComponent.h"
 
 FVisualizerRegistry::FVisualizerRegistry()
 {
@@ -21,11 +21,11 @@ FVisualizerRegistry::FVisualizerRegistry()
 	Map[USpotLightComponent::StaticClass()] = Visualizers.back().get();
 
 	Visualizers.push_back(MakeUnique<FBillboardVisualizer>());
-	Map[UBillBoardComp::StaticClass()] = Visualizers.back().get();
+	Map[UBillboardComponent::StaticClass()] = Visualizers.back().get();
 	Map[UAnimatedBillboardComp::StaticClass()] = Visualizers.back().get();
 
 	Visualizers.push_back(MakeUnique<FTextVisualizer>());
-	Map[UTextInstanceComponent::StaticClass()] = Visualizers.back().get();
+	Map[UTextComponent::StaticClass()] = Visualizers.back().get();
 }
 
 IVisualizer* FVisualizerRegistry::FindVisualizer(UClass* ClassType)

@@ -18,7 +18,7 @@ void FEditor::Initialize(USceneManager* SceneManager)
 {
 	State.ReadFromFile();
 	Gizmo.Initialize();
-	SelectedActorTextComp = NewObject<UTextInstanceComponent>();
+	SelectedActorTextComp = NewObject<UTextComponent>();
 	if (SelectedActorTextComp)
 	{
 		SelectedActorTextComp->Initialize();

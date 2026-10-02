@@ -3,7 +3,7 @@
 #include "Runtime/Rendering/FRenderResourceLibrary.h"
 #include "Runtime/Engine/FArchive.h"
 #include "Runtime/Asset/FAssetRegistry.h"
-#include "UClass.h"
+#include "Runtime/CoreUObject/UClass.h"
 
 IMPLEMENT_UCLASS(USpotLightComponent, UPrimitiveComponent)
 UCLASS_META(USpotLightComponent, DisplayName, "SpotLight")

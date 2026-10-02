@@ -1,7 +1,7 @@
 #include "FTextVisualizer.h"
 
 #include "Runtime/Core/TArray.h"
-#include "Runtime/CoreUObject/UTextInstanceComponent.h"
+#include "Runtime/Components/UTextComponent.h"
 #include "Runtime/Engine/FRenderView.h"
 #include "Runtime/Geometry/FAxisAlignedBoundingBox.h"
 #include "Runtime/Math/FMatrix.h"
@@ -14,13 +14,13 @@ void FTextVisualizer::Draw(
     const FCamera& Camera,
     const FVector4& Color) const
 {
-	if (Component.IsA<UTextInstanceComponent>() == false)
+	if (Component.IsA<UTextComponent>() == false)
 	{
 		return;
 	}
 
-	const UTextInstanceComponent& TextComponent =
-	    *Component.Cast<UTextInstanceComponent>();
+	const UTextComponent& TextComponent =
+	    *Component.Cast<UTextComponent>();
 
 	float Width = TextComponent.GetWidth();
 	float Height = TextComponent.GetHeight();

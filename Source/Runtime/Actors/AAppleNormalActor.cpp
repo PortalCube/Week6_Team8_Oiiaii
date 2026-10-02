@@ -2,7 +2,7 @@
 
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
-#include "Runtime/CoreUObject/Mesh/UStaticMeshComponent.h"
+#include "Runtime/Components/Mesh/UStaticMeshComponent.h"
 #include "Runtime/Asset/FAssetRegistry.h"
 
 IMPLEMENT_UCLASS(AAppleNormalActor, AActor)
