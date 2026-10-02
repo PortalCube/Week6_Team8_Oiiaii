@@ -39,8 +39,7 @@ bool FRenderResourceLibrary::CreateWireframePipeline(FRenderer& Renderer)
 		.PixelShaderFilePath = std::filesystem::path(PsPath).string(),
 	};
 
-	TSharedPtr<FRenderPipeline> WireframePipeline =
-	    Renderer.CreateRenderPipeline(Desc, EViewModeIndex::VMI_Wireframe);
+	TSharedPtr<FRenderPipeline> WireframePipeline = Renderer.CreateRenderPipeline(Desc, EViewModeIndex::VMI_Wireframe);
 	if (WireframePipeline)
 	{
 		AllPipelineMap[FName("#Simple_Wireframe")] = WireframePipeline;
@@ -82,20 +81,14 @@ bool FRenderResourceLibrary::CreateOutlinePipeline(FRenderer& Renderer)
 		return false;
 	}
 
-	Result = Device->CreateVertexShader(Blob->GetBufferPointer(),
-	    Blob->GetBufferSize(), nullptr,
-	    &VertexShader);
+	Result = Device->CreateVertexShader(Blob->GetBufferPointer(), Blob->GetBufferSize(), nullptr, &VertexShader);
 	if (FAILED(Result))
 	{
 		return false;
 	}
 
 	// 입력 레이아웃 생성
-	Result = Device->CreateInputLayout(FVertexLayouts::Layout,
-	    FVertexLayouts::NumElements,
-	    Blob->GetBufferPointer(),
-	    Blob->GetBufferSize(),
-	    &InputLayout);
+	Result = Device->CreateInputLayout(FVertexLayouts::Layout, FVertexLayouts::NumElements, Blob->GetBufferPointer(), Blob->GetBufferSize(), &InputLayout);
 	if (FAILED(Result))
 	{
 		return false;
@@ -108,9 +101,7 @@ bool FRenderResourceLibrary::CreateOutlinePipeline(FRenderer& Renderer)
 		return false;
 	}
 
-	Result = Device->CreatePixelShader(Blob->GetBufferPointer(),
-	    Blob->GetBufferSize(), nullptr,
-	    &PixelShader);
+	Result = Device->CreatePixelShader(Blob->GetBufferPointer(), Blob->GetBufferSize(), nullptr, &PixelShader);
 	if (FAILED(Result))
 	{
 		return false;
@@ -219,9 +210,7 @@ bool FRenderResourceLibrary::CreatePostProcessPipeline(FRenderer& Renderer)
 		return false;
 	}
 
-	Result = Device->CreateVertexShader(Blob->GetBufferPointer(),
-	    Blob->GetBufferSize(), nullptr,
-	    &VertexShader);
+	Result = Device->CreateVertexShader(Blob->GetBufferPointer(), Blob->GetBufferSize(), nullptr, &VertexShader);
 	if (FAILED(Result))
 	{
 		return false;
@@ -234,9 +223,7 @@ bool FRenderResourceLibrary::CreatePostProcessPipeline(FRenderer& Renderer)
 		return false;
 	}
 
-	Result = Device->CreatePixelShader(Blob->GetBufferPointer(),
-	    Blob->GetBufferSize(), nullptr,
-	    &PixelShader);
+	Result = Device->CreatePixelShader(Blob->GetBufferPointer(), Blob->GetBufferSize(), nullptr, &PixelShader);
 	if (FAILED(Result))
 	{
 		return false;
@@ -261,8 +248,7 @@ bool FRenderResourceLibrary::CreatePostProcessPipeline(FRenderer& Renderer)
 		.DepthFunc = D3D11_COMPARISON_ALWAYS,
 		.StencilEnable = FALSE,
 	};
-	Result = Device->CreateDepthStencilState(&DepthStencilDesc,
-	    &DepthStencilState);
+	Result = Device->CreateDepthStencilState(&DepthStencilDesc, &DepthStencilState);
 	if (FAILED(Result))
 	{
 		return false;
@@ -271,8 +257,7 @@ bool FRenderResourceLibrary::CreatePostProcessPipeline(FRenderer& Renderer)
 	// 블렌드 상태 생성
 	D3D11_BLEND_DESC BlendDesc{};
 	BlendDesc.RenderTarget[0].BlendEnable = FALSE;
-	BlendDesc.RenderTarget[0].RenderTargetWriteMask =
-	    D3D11_COLOR_WRITE_ENABLE_ALL;
+	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	Result = Device->CreateBlendState(&BlendDesc, &BlendState);
 	if (FAILED(Result))
 	{
@@ -348,15 +333,17 @@ TSharedPtr<FMesh> FRenderResourceLibrary::GetOrCreateMesh(const FName& ID, const
 {
 	auto it = AllMeshMap.find(ID);
 	if (it != AllMeshMap.end())
+	{
 		return it->second;
+	}
 
-	FMeshDesc Desc{ .VertexData = vertices.data(),
-		.VertexDataSize =
-		    static_cast<uint32>(sizeof(FVertexData) * vertices.size()),
+	FMeshDesc Desc{
+		.VertexData = vertices.data(),
+		.VertexDataSize = static_cast<uint32>(sizeof(FVertexData) * vertices.size()),
 		.VertexStride = static_cast<uint32>(sizeof(FVertexData)),
-		.VertexCount = static_cast<uint32>(vertices.size()) };
-	TSharedPtr<FMesh> newMesh =
-	    RendererRef ? RendererRef->CreateMesh(Desc) : nullptr;
+		.VertexCount = static_cast<uint32>(vertices.size())
+	};
+	TSharedPtr<FMesh> newMesh = RendererRef ? RendererRef->CreateMesh(Desc) : nullptr;
 	if (newMesh)
 	{
 		AllMeshMap[ID] = newMesh;

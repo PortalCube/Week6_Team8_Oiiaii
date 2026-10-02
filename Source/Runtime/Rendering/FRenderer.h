@@ -58,15 +58,11 @@ public:
 	void GetDeviceAndContext_ImplDX11(ID3D11Device*& DeviceOut,
 	    ID3D11DeviceContext*& ContextOut);
 	[[nodiscard]] ID3D11Device* GetDevice() const { return Device.Get(); }
-	[[nodiscard]] ID3D11DeviceContext* GetContext() const
-	{
-		return Context.Get();
-	}
+	[[nodiscard]] ID3D11DeviceContext* GetContext() const { return Context.Get(); }
 
 	[[nodiscard]]
 	TSharedPtr<FRenderPipeline>
-	CreateRenderPipeline(const FRenderPipelineDesc& Desc,
-	    EViewModeIndex RenderMode = EViewModeIndex::VMI_Lit);
+	CreateRenderPipeline(const FRenderPipelineDesc& Desc, EViewModeIndex RenderMode = EViewModeIndex::VMI_Lit);
 	[[nodiscard]]
 	TSharedPtr<FTexture> CreateTexture(const wchar_t* path);
 	TSharedPtr<FTexture> CreateSolidTexture(const FVector4& Color);
@@ -86,18 +82,14 @@ public:
 	void DrawTextInstances(const FDrawCommand& Command);
 	void ClearTextInstances();
 
-	void Draw(const FDrawCommand& Command, uint32 Slot = 2,
-	    bool bApplyViewMode = true);
+	void Draw(const FDrawCommand& Command, uint32 Slot = 2, bool bApplyViewMode = true);
 
 	void DrawPrimitiveBatch(std::span<const FDrawCommand> Commands);
 
 	bool UploadObjectConstants(std::span<const FDrawCommand> Commands);
 
 	void BindObjectConstantRange(uint32 Slot, uint32 ByteOffset);
-	void BindDrawResources(
-	    const FMesh& Mesh,
-	    const FMaterial& Material,
-	    bool bApplyViewMode);
+	void BindDrawResources( const FMesh& Mesh, const FMaterial& Material, bool bApplyViewMode);
 
 	void DrawUploadedCommand(const FDrawCommand& Command, bool bApplyViewMode = true);
 
@@ -211,9 +203,7 @@ private:
 
 public:
 	template <typename TConstants>
-	void FlushLineBatch(
-	    const TConstants& Constants,
-	    const FName& PipelineId = FName("Simple_Line"))
+	void FlushLineBatch( const TConstants& Constants, const FName& PipelineId = FName("Simple_Line"))
 	{
 		UpdateBuffer(Constants, 2);
 		LineBatcher.Flush(*Context.Get(), GetPipeline(PipelineId));
@@ -221,19 +211,11 @@ public:
 
 	// bApplyViewMode=false면 뷰모드(와이어프레임) 오버라이드를 건너뛴다
 	template <typename TConstants>
-	void Draw(
-	    const FMesh& Mesh,
-	    const FMaterial& Material,
-	    const TConstants& Constants,
-	    uint32 Slot = 2,
-	    bool bApplyViewMode = true)
+	void Draw(const FMesh& Mesh, const FMaterial& Material, const TConstants& Constants, uint32 Slot = 2, bool bApplyViewMode = true)
 	{
 		UpdateBuffer(Constants, 2);
 
-		BindDrawResources(
-		    Mesh,
-		    Material,
-		    bApplyViewMode);
+		BindDrawResources(Mesh, Material, bApplyViewMode);
 
 		if (Mesh.HasIndices())
 		{
@@ -249,21 +231,11 @@ public:
 	}
 
 	template <typename TConstants>
-	void DrawSection(
-	    const FMesh& Mesh,
-	    const FMaterial& Material,
-	    const TConstants& Constants,
-	    uint32 StartIndex,
-	    uint32 IndexCount,
-	    uint32 Slot = 2,
-	    bool bApplyViewMode = true)
+	void DrawSection(const FMesh& Mesh, const FMaterial& Material, const TConstants& Constants, uint32 StartIndex, uint32 IndexCount, uint32 Slot = 2, bool bApplyViewMode = true)
 	{
 		UpdateBuffer(Constants, Slot);
 
-		BindDrawResources(
-		    Mesh,
-		    Material,
-		    bApplyViewMode);
+		BindDrawResources(Mesh, Material, bApplyViewMode);
 
 		if (Mesh.HasIndices())
 		{
@@ -319,8 +291,7 @@ public:
 		}
 
 		D3D11_MAPPED_SUBRESOURCE Mapped{};
-		if (FAILED(Context->Map(GetCurrentFrameResource()->ObjectConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD,
-		        0, &Mapped)))
+		if (FAILED(Context->Map(GetCurrentFrameResource()->ObjectConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped)))
 		{
 			return;
 		}
