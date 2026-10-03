@@ -3,7 +3,7 @@
 #include "Editor/EditorViewport/FEditorViewportClient.h"
 #include "Editor/Gizmo/FGizmo.h"
 #include "Editor/Core/FEditorState.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/CoreUObject/TWeakObjectPtr.h"

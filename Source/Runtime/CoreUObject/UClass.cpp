@@ -1,5 +1,5 @@
 #include "UClass.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 
 UClass* UClass::RegisterToFactory(const FString& typeName, const TFunction<UObject*()>& createFunction, const FString& superClassTypeName)
 {

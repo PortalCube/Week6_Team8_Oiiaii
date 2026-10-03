@@ -1,0 +1,21 @@
+#pragma once
+
+#include "Runtime/Engine/Types/IntTypes.h"
+
+/*
+* 이 파일은 Engine 이곳저곳에서 쓰이는 enum이나 여러 type을 정의합니다.
+* !!특정 타입이 어느 한 클래스 종속적이더라도 가급적 여기에 선언하세요!!
+*/
+
+////////////////////////////////////////////////////////////
+// FWorldContext
+////////////////////////////////////////////////////////////
+
+enum class EWorldType: uint8
+{
+	None = 0,
+	Game,
+	Editor,
+	PIE,
+	EditorPreview
+};

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Runtime/Actors/AActor.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Components/UPrimitiveComponent.h"

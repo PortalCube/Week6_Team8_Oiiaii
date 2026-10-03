@@ -1,6 +1,6 @@
 #include "FFont.h"
 #include "Runtime/Engine/FArchive.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 
 FFont::FFont(const FArchive& Archive)
 {

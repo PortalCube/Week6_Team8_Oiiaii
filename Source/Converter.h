@@ -2,7 +2,7 @@
 
 #include "Runtime/Core/TMap.h"
 #include "Runtime/Core/FString.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Engine/FArchive.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Resource/FResourceLoader.h"

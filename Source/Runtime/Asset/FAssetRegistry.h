@@ -3,7 +3,7 @@
 #include "Runtime/Core/FName.h"
 #include "Runtime/Core/TMap.h"
 #include "Runtime/Core/TSet.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Rendering/FRenderPipeline.h"
 #include "Runtime/Asset/UAsset.h"
 

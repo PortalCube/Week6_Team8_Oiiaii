@@ -2,7 +2,7 @@
 
 #include "Runtime/Core/FString.h"
 #include "Runtime/Core/TArray.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Math/FVector.h"
 #include "Runtime/Math/FVector2.h"
 #include "ThirdParty/mIni/ini.h"

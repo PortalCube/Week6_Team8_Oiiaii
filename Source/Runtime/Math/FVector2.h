@@ -1,6 +1,6 @@
-﻿#pragma once
+#pragma once
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include <concepts>
 #include <cmath>
 

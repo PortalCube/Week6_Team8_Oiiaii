@@ -3,8 +3,8 @@
 #include <Windows.h>
 
 #include "Runtime/Core/FString.h"
-#include "Runtime/Core/IntTypes.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 
 struct FWindowDesc
 {

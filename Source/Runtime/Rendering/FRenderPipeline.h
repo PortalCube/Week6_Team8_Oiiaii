@@ -8,7 +8,7 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 
 struct FRenderPipelineDesc

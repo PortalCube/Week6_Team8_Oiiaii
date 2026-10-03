@@ -2,7 +2,7 @@
 
 #include "Runtime/ApplicationCore/FWindow.h"
 #include "Runtime/Core/TArray.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 
 #include <Windows.h>
 

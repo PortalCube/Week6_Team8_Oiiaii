@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 
 // 사실 더 쉽게 가고 싶으면 D3D11_FILTER의 값과 매칭 시켜도 괜찮음
 

@@ -1,6 +1,6 @@
 #include "FGizmo.h"
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Rendering/FRenderer.h"

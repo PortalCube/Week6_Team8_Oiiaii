@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Runtime/Components/USceneComponent.h"
-#include "Runtime/Core/IntTypes.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Engine/FRayCastingManager.h"
 #include "Runtime/Rendering/FMesh.h"
 #include "Runtime/Rendering/FMaterial.h"

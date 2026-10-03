@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/ApplicationCore/FWindowApplication.h"
 
 class FEngine;

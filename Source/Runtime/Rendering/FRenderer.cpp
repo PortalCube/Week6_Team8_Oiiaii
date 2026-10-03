@@ -5,7 +5,7 @@
 #include "FMesh.h"
 #include "FRenderPipeline.h"
 #include "Runtime/Core/Log.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Core/Globals.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Engine/FCamera.h"

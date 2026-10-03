@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Runtime/Core/FString.h"
-#include "Runtime/Core/IntTypes.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Engine/FEngine.h"
 
 // 엔진의 전역 변수를 담는 네임스페이스입니다.

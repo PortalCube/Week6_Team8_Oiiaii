@@ -1,7 +1,7 @@
 #pragma once
 #include <d3d11.h>
 #include <wrl/client.h>
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 
 class FTexture final
 {

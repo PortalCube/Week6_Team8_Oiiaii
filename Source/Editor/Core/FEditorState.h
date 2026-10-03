@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Runtime/Math/FVector.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Core/FString.h"
 
 class FConfigArchive;

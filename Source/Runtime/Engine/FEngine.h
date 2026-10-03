@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Engine/FRenderView.h"
 #include "Runtime/Engine/USceneManager.h"

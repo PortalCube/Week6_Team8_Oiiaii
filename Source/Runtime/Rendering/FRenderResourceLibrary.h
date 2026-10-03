@@ -7,7 +7,7 @@
 #include "FRenderPipeline.h"
 #include "Runtime/Core/FString.h"
 #include "Runtime/Core/FName.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Core/TMap.h"
 #include "Vertices.h"

@@ -2,7 +2,7 @@
 
 #include "Vertices.h"
 #include "Runtime/Math/FVector.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Core/FName.h"
 #include <d3d11.h>
 #include <wrl/client.h>

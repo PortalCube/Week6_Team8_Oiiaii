@@ -1,6 +1,6 @@
 #pragma once
 #include "UClass.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "ThirdParty/Json/json.hpp"
 #include <cstddef>
 #include <new>
