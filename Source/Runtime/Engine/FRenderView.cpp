@@ -289,13 +289,15 @@ void FRenderView::BeginView(const FSceneView& View)
 	Renderer.UpdateLightConstants(View.LightConstants);
 
 	// ViewConstants 갱신
+	UpdateViewConstants(View.Camera, View.LeftTopPixel, View.RightBottomPixel);
+}
+
+void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 LeftTopPixel, FVector2 RightBottomPixel)
+{
 	FViewConstants ViewConstants{
-		.View = View.Camera.GetViewMatrix(),
-		.Projection = View.Camera.GetProjectionMatrix(),
-		.ViewportSize = FVector2{
-		    View.RightBottomPixel.X - View.LeftTopPixel.X,
-		    View.RightBottomPixel.Y - View.LeftTopPixel.Y,
-		},
+		.View = Camera.GetViewMatrix(),
+		.Projection = Camera.GetProjectionMatrix(),
+		.ViewportSize = RightBottomPixel - LeftTopPixel,
 	};
 
 	Renderer.UpdateViewConstants(ViewConstants);
@@ -323,10 +325,13 @@ void FRenderView::FlushLinePass(const FCamera& Camera)
 	FlushLineBatch(Camera.GetViewProjectionMatrix());
 }
 
+// Overlay 되는 것 그리는 Pass (지금은 기즈모, 텍스트)
 void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp)
 {
 	// 뷰포트 영역 재설정
+	Renderer.BindBackBufferRenderTargets();
 	Renderer.SetViewportPixel(View.LeftTopPixel, View.RightBottomPixel);
+	UpdateViewConstants(View.Camera, View.LeftTopPixel, View.RightBottomPixel);
 
 	//// 기즈모 렌더링
 	// Renderer.ClearDepth();
@@ -348,7 +353,9 @@ void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& Se
 
 void FRenderView::RenderGizmo(const FTransform& Transform, const FCamera& Camera, FVector2 LeftTopPixel, FVector2 RightBottomPixel, const FGizmo& Gizmo)
 {
+	Renderer.BindBackBufferRenderTargets();
 	Renderer.SetViewportPixel(LeftTopPixel, RightBottomPixel);
+	UpdateViewConstants(Camera, LeftTopPixel, RightBottomPixel);
 	Renderer.ClearDepth();
 	Gizmo.Draw(Renderer, Transform, Camera);
 }
@@ -427,7 +434,7 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 	{
 		// 아웃라인을 Post Process에서 그림
 		DrawStencilMask(View.Camera, SelectedActor);
-		Renderer.RenderSelectionOutline();
+		Renderer.RenderSelectionOutline(View.LeftTopPixel, View.RightBottomPixel);
 	}
 }
 

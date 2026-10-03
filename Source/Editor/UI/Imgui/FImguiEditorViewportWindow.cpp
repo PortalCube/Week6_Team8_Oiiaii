@@ -26,7 +26,7 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 	if (!Gizmo.IsInteracting())
 		Gizmo.HoveredHandle = EGizmoHandle::None;
 
-	SEditorViewport(&Viewports)[MAX_VIEWPORT_COUNT] = Editor.GetViewportLayout().Viewports;
+	FEditorViewportLayout& Layout = Editor.GetViewportLayout();
 	SEditorViewport* ActiveViewport = Editor.GetActiveViewport();
 
 	const ImGuiViewport* MainViewport = ImGui::GetMainViewport();
@@ -51,36 +51,33 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 		ContentPos.x - Origin.x + ContentSize.x,
 		ContentPos.y - Origin.y + ContentSize.y
 	};
-	Editor.GetViewportLayout().Root->OnResize(Rect);
+	Layout.Resize(Rect);
 
 	// 스플리터 입력 및 Leaf 영역 갱신
-	if (Editor.GetViewportLayout().SplitterV.bVisible)
-		ShowViewportVerticalSplitter(Editor.GetViewportLayout().SplitterV);
-	if (Editor.GetViewportLayout().SplitterH1.bVisible)
-		ShowViewportHorizontalSplitter(Editor.GetViewportLayout().SplitterH1);
-	if (Editor.GetViewportLayout().SplitterH2.bVisible)
+	if (Layout.SplitterV.bVisible)
+		ShowViewportVerticalSplitter(Layout.SplitterV);
+	if (Layout.SplitterH1.bVisible)
+		ShowViewportHorizontalSplitter(Layout.SplitterH1);
+	if (Layout.SplitterH2.bVisible)
 	{
-		Editor.GetViewportLayout().SplitterH2.Ratio = Editor.GetViewportLayout().SplitterH1.Ratio;
-		ShowViewportHorizontalSplitter(Editor.GetViewportLayout().SplitterH2);
-		Editor.GetViewportLayout().SplitterH1.Ratio = Editor.GetViewportLayout().SplitterH2.Ratio;
+		Layout.SplitterH2.Ratio = Layout.SplitterH1.Ratio;
+		ShowViewportHorizontalSplitter(Layout.SplitterH2);
+		Layout.SplitterH1.Ratio = Layout.SplitterH2.Ratio;
 	}
 
 	// 연결된 스플리터 비율을 이번 프레임의 모든 Leaf에 반영한다.
-	Editor.GetViewportLayout().Root->OnResize(Rect);
+	Layout.Resize(Rect);
 
 	// 스플리터 비율 저장
-	Editor.State.SetSplitter(
-	    Editor.GetViewportLayout().SplitterV.Ratio,
-	    Editor.GetViewportLayout().SplitterH1.Ratio,
-	    Editor.GetViewportLayout().SplitterH2.Ratio);
+	const FVector SplitterRatio = Layout.GetSplitterRatio();
+	Editor.State.SetSplitter(SplitterRatio.X, SplitterRatio.Y, SplitterRatio.Z);
 
 	// 자식 창 안에서 수집하고, 루프 뒤에서 한 번만 처리할 입력
 	FViewportInput ActiveInput{};
 	bool bHasActiveInput = false;
 
-	for (int i = 0; i < MAX_VIEWPORT_COUNT; ++i)
+	for (SEditorViewport& Viewport : Layout.Viewports)
 	{
-		SEditorViewport& Viewport = Editor.GetViewportLayout().Viewports[i];
 		if (!Viewport.bVisible)
 			continue;
 
@@ -100,8 +97,6 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 
 		if (Width <= 0.0f || Height <= 0.0f)
 			continue;
-
-		SEditorViewport& CurrentViewport = Viewport;
 
 		// 스플리터 여백을 제외한 자식 창 위치를 ImGui 화면 좌표로 변환
 		ImGui::SetCursorScreenPos(ImVec2(Origin.x + ChildRect.Left, Origin.y + ChildRect.Top));
@@ -127,16 +122,16 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 			if (GetViewportSceneRect(Origin, SceneRect))
 			{
 				// 상단바를 제외한 영역으로 렌더링·종횡비 설정
-				SyncViewportRect(CurrentViewport, SceneRect);
-				const FVector2 ViewportSizePixels = CurrentViewport.GetViewport().GetViewportSize();
-				const FVector2 LeftTopPixel = CurrentViewport.GetViewport().GetLeftTop();
+				Viewport.SetSceneRect(SceneRect);
+				const FVector2 ViewportSizePixels = Viewport.GetViewport().GetViewportSize();
+				const FVector2 LeftTopPixel = Viewport.GetViewport().GetLeftTop();
 				FViewportInput Input = GatherInput(ViewportSizePixels, LeftTopPixel);
 
 				// 3D 입력 아이템을 누른 경우에만 활성 뷰포트를 변경한다.
 				if (Input.bPickRequested || ImGui::IsItemClicked(ImGuiMouseButton_Right))
 				{
-					ActiveViewport = &CurrentViewport;
-					Editor.GetViewportLayout().ActiveViewport = &Viewport;
+					Layout.SetActiveViewport(&Viewport);
+					ActiveViewport = Editor.GetActiveViewport();
 					ImGui::SetWindowFocus();
 					Input.bFocused = true;
 				}
@@ -144,11 +139,11 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 				// 클릭 전에도 마우스가 올라간 뷰포트에서 매 프레임 검사한다.
 				if (Editor.ObjectSelected() && Input.bHovered && !Gizmo.IsInteracting())
 				{
-					UpdateGizmoHover(Editor, CurrentViewport, Input.LocalMouse, Input.SizePixels);
+					UpdateGizmoHover(Editor, Viewport, Input.LocalMouse, Input.SizePixels);
 				}
 
 				// 조작은 활성 뷰포트에서 한 번만 처리한다.
-				if (&CurrentViewport == ActiveViewport)
+				if (&Viewport == ActiveViewport)
 				{
 					ActiveInput = Input;
 					bHasActiveInput = true;
@@ -166,7 +161,7 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 	}
 
 	// 활성 뷰포트의 입력을 한 번만 처리
-	if (ActiveViewport && ActiveViewport == Editor.GetActiveViewport() && bHasActiveInput)
+	if (ActiveViewport && bHasActiveInput)
 	{
 		ActiveViewport->GetClient().UpdateFocusedAndHovered(ActiveInput.bFocused, ActiveInput.bHovered);
 		UpdateSelection(Editor, *ActiveViewport, ActiveInput);
@@ -209,19 +204,6 @@ void FImguiEditorViewportWindow::BeginWindow() const
 void FImguiEditorViewportWindow::EndWindow() const
 {
 	ImGui::End();
-}
-
-void FImguiEditorViewportWindow::SyncViewportRect(SEditorViewport& Viewport, const FRect& Rect) const
-{
-	const FVector2 WindowSize{ ImGui::GetWindowSize().x, ImGui::GetWindowSize().y };
-
-	// 창을 접거나 탭으로 숨기면 0 이 될 수 있으므로 나눗셈 전에 막는다.
-	if (WindowSize.X <= 0.0f || WindowSize.Y <= 0.0f)
-	{
-		return;
-	}
-
-	Viewport.SetSceneRect(Rect);
 }
 
 FImguiEditorViewportWindow::FViewportInput FImguiEditorViewportWindow::GatherInput(const FVector2& ViewportSizePixels, const FVector2& ViewportTopLeftPixels) const
@@ -286,9 +268,10 @@ void FImguiEditorViewportWindow::UpdateCamera(FEditor& Editor, SEditorViewport& 
 	FCamera& Camera = Viewport.GetClient().GetViewportCamera();
 
 	// ORTHOGRAPHIC 화면모드와의 분기
-	if (Camera.GetProjection().GetProjectionType() == EProjectionType::Orthographic)
+	const bool bOrthographic = Camera.GetProjection().GetProjectionType() == EProjectionType::Orthographic;
+	if (bOrthographic)
 	{
-		CameraController.UpdateMouseInput_ORTHOGRAPHIC(Camera);
+		CameraController.UpdateMouseInput_ORTHOGRAPHIC(Camera, Input.SizePixels.Y, Input.bHovered);
 	}
 	else
 	{
@@ -296,9 +279,13 @@ void FImguiEditorViewportWindow::UpdateCamera(FEditor& Editor, SEditorViewport& 
 	}
 
 	// 우클릭 중에는 WASD 가 카메라 비행에 쓰이므로 단축키와 겹치지 않게 나눈다.
+	// 우클릭 중에만 WASD가 동작하도록. 언리얼 에디터 스타일
 	if (FInputManager::Get().IsMousePressed(EMouseButton::Right))
 	{
-		CameraController.UpdateKeyInput(Camera, DeltaTime);
+		if (!bOrthographic) // ORTHOGRAPHIC이 아닌 경우에만 WASD가 움직임
+		{
+			CameraController.UpdateKeyInput(Camera, DeltaTime);
+		}
 		return;
 	}
 	else
@@ -662,38 +649,5 @@ void FImguiEditorViewportWindow::ApplyPendingViewportMaximize(FEditor& Editor)
 	SEditorViewport* MaxViewport = PendingMaximizeViewport;
 	PendingMaximizeViewport = nullptr;
 
-	const auto SplitMode = Editor.State.GetSplitMode();
-
-	// 원래 단일 화면이면 변경할 필요 없음
-	if (SplitMode == FEditorState::SplitViewMode::SINGLE) { return; }
-
-	FEditorViewportLayout& Layout = Editor.GetViewportLayout();
-	if (Layout.MaximizedViewport)
-	{
-		SEditorViewport* RestoredViewport = Layout.MaximizedViewport;
-		Layout.Resize(SplitMode);
-		Layout.ActiveViewport = RestoredViewport;
-		return;
-	}
-
-	// 요청 이후 툴바에서 배치가 바뀌어 대상이 숨겨졌다면 무시
-	bool bViewportVisible = false;
-	for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
-	{
-		if (Viewport.bVisible && &Viewport == MaxViewport)
-		{
-			bViewportVisible = true;
-			break;
-		}
-	}
-	if (!bViewportVisible) { return; }
-
-	Layout.Resize(FEditorState::SplitViewMode::SINGLE);
-	Layout.Viewports[0].bVisible = false;
-	MaxViewport->bVisible = true;
-	Layout.Root = MaxViewport;
-	Layout.MaximizedViewport = MaxViewport;
-
-	// ResizeView()가 활성 번호를 0으로 초기화하므로 다시 지정
-	Layout.ActiveViewport = MaxViewport;
+	Editor.GetViewportLayout().ToggleMaximize(MaxViewport, Editor.State.GetSplitMode());
 }

@@ -21,13 +21,10 @@ enum class ECameraMode
 class FEditorViewportClient final
 {
 public:
-	bool operator==(const FEditorViewportClient& Other) const = default;
-
-
 	//======Getter & Setter======
 
 	ECameraMode GetCameraMode() const { return CameraMode; }
-	void SetCameraMode(ECameraMode Mode); // CameraMode에 따라 Camera의 설정을 변경
+	void SetCameraMode(ECameraMode Mode); 
 	
 	EViewModeIndex const GetViewMode() const { return ViewMode; }
 	void SetViewMode(EViewModeIndex InViewMode) { ViewMode = InViewMode; }
@@ -57,19 +54,7 @@ public:
 
 	void Update();
 
-	FSceneView GetSceneView(const FLightConstants& InLightConstants)
-	{
-		FSceneView SceneView{
-			.Camera = ViewportCamera,
-			.ViewProj = ViewportCamera.GetViewProjectionMatrix(),
-			.LeftTopPixel = Viewport->GetLeftTop(),
-			.RightBottomPixel = Viewport->GetRightBottom(),
-			.ViewMode = ViewMode,
-			.ShowFlags = ShowFlags,
-			.LightConstants = InLightConstants
-		};
-		return SceneView;
-	}
+	FSceneView GetSceneView(const FLightConstants& InLightConstants);
 
 private:
 	bool bFocused = false;

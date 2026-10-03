@@ -1,15 +1,10 @@
 #pragma once
 #include "Runtime/UI/SWindow.h"
 
-
 struct FViewport
 {
 	// UV가 아닌 픽셀 좌표 Rect를 가지고 있음
 	FRect Rect = {};
-	bool bShow = false;
-
-	bool operator==(const FViewport& Other) const = default;
-	FViewport& operator=(const FViewport& Other) = default;
 
 	//====== Getter & Setter ======
 	FVector2 GetLeftTop() const { return Rect.GetLeftTop(); }

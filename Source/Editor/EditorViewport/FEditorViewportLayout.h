@@ -7,87 +7,25 @@
 #include "Editor/Core/FEditorState.h"
 #include "Runtime/Engine/Showflags.h"
 
+constexpr uint32 MAX_VIEWPORT_COUNT = 4;
+
 struct FEditorViewportLayout
 {
-	SWindow* Root = nullptr;
-	SEditorViewport* ActiveViewport = nullptr;
-	SEditorViewport* MaximizedViewport = nullptr;
-	SEditorViewport Viewports[MAX_VIEWPORT_COUNT];
+	SWindow* Root = nullptr;						// 윈도우를 관리하는 SWindow 포인터. Viewports 중 하나를 가르킴
+	SEditorViewport* ActiveViewport = nullptr;		// 현재 포커스된 Viewports를 가르킴
+	SEditorViewport* MaximizedViewport = nullptr;	// 현재 최대화된 Viewports를 가르킴
+	SEditorViewport Viewports[MAX_VIEWPORT_COUNT];	// Viewport 들을 가지고 있는 배열
 	SSplitterH SplitterH1; // 세로선1
 	SSplitterH SplitterH2; // 세로선2
 	SSplitterV SplitterV; // 가로선
 
 	FEditorViewportLayout() = default;
-	FEditorViewportLayout(SWindow* InRoot)
-	    : Root(InRoot)
-	{}
 
-	void Resize(FEditorState::SplitViewMode Mode)
-	{
-		// viewport를 가지고있는 splitter,window를 업데이트
-		ActiveViewport = &Viewports[0];
-		MaximizedViewport = nullptr;
-		Root = &Viewports[0];
-		//=== 초기화 ===//
-		Viewports[0].bVisible = false;
-		Viewports[1].bVisible = false;
-		Viewports[2].bVisible = false;
-		Viewports[3].bVisible = false;
+	void Rearrange(FEditorState::SplitViewMode Mode);
+	void Resize(const FRect& InRect);
+	void SetActiveViewport(SEditorViewport* InViewport);
+	void ToggleMaximize(SEditorViewport* InViewport, FEditorState::SplitViewMode Mode);
 
-		SplitterH1.bVisible = false;
-		SplitterH2.bVisible = false;
-		SplitterV.bVisible = false;
-		//=== 초기화 ===//
-
-		//===람다함수===//
-		auto Connect = [](SSplitter& Splitter, SWindow& LT, SWindow& RB)
-		{
-			Splitter.SideLT = &LT;
-			Splitter.SideRB = &RB;
-
-			Splitter.bVisible = true;
-			LT.bVisible = true;
-			RB.bVisible = true;
-		};
-
-		switch (Mode)
-		{
-		case FEditorState::SplitViewMode::SINGLE:
-			Viewports[0].bVisible = true;
-			Root = &Viewports[0];
-			break;
-
-		case FEditorState::SplitViewMode::HORIZONTAL:
-			Viewports[0].bVisible = true;
-			Viewports[1].bVisible = true;
-			Connect(SplitterH1, Viewports[0], Viewports[1]);
-			Root = &SplitterH1;
-			break;
-
-		case FEditorState::SplitViewMode::VERTICAL:
-			Viewports[0].bVisible = true;
-			Viewports[2].bVisible = true;
-			Connect(SplitterV, Viewports[0], Viewports[2]);
-			Root = &SplitterV;
-			break;
-
-		case FEditorState::SplitViewMode::QUAD:
-			Viewports[0].bVisible = true;
-			Viewports[1].bVisible = true;
-			Viewports[2].bVisible = true;
-			Viewports[3].bVisible = true;
-			Connect(SplitterV, SplitterH1, SplitterH2);
-			Connect(SplitterH1, Viewports[0], Viewports[1]);
-			Connect(SplitterH2, Viewports[2], Viewports[3]);
-			Root = &SplitterV;
-			break;
-		}
-	}
-
-	void SetSplitterRatio(FVector InSplitter)
-	{
-		SplitterV.Ratio = InSplitter.X;
-		SplitterH1.Ratio = InSplitter.Y;
-		SplitterH2.Ratio = InSplitter.Z;
-	}
+	void SetSplitterRatio(FVector InSplitter);
+	FVector GetSplitterRatio() const;
 };

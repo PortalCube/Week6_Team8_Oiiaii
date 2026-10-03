@@ -101,12 +101,18 @@ void FRenderer::BeginFrame()
 	constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 	// constexpr float ClearColor[] = {0.05f, 0.05f, 0.08f, 1.0f};
 	Context->ClearRenderTargetView(SceneColorRTV.Get(), ClearColor);
+	Context->ClearRenderTargetView(BackBufferRTV.Get(), ClearColor);
 	Context->ClearDepthStencilView(SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void FRenderer::BindSceneRenderTargets()
 {
 	Context->OMSetRenderTargets(1, SceneColorRTV.GetAddressOf(), SceneDepthDSV.Get());
+}
+
+void FRenderer::BindBackBufferRenderTargets()
+{
+	Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), SceneDepthDSV.Get());
 }
 
 void FRenderer::SetViewportPixel(FVector2 LeftTopPixel, FVector2 RightBottomPixel)
@@ -1501,11 +1507,9 @@ void FRenderer::DrawScreenPass(ID3D11ShaderResourceView* SRVs[], ID3D11RenderTar
 	//Context->PSSetShaderResources(0, 2, NullSRVs);
 }
 
-void FRenderer::RenderSelectionOutline()
+void FRenderer::RenderSelectionOutline(FVector2 LeftTopPixel, FVector2 RightBottomPixel)
 {
-	// 백버퍼 뷰포트 및 토폴로지 복구
-
-	Context->RSSetViewports(1, &Viewport);
+	SetViewportPixel(LeftTopPixel, RightBottomPixel);
 	Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context->IASetInputLayout(nullptr);
 

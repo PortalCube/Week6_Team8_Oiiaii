@@ -6,8 +6,11 @@ void FEditorViewportClient::UpdateFocusedAndHovered(bool bFocused, bool bHovered
 	this->bHovered = bHovered;
 	return;
 }
+
+// CameraMode에 따라 Camera의 설정을 변경
 void FEditorViewportClient::SetCameraMode(ECameraMode Mode)
 {
+	// CameraMode에 따라 뷰포트 카메라의 EProjectionType도 변경
 	if (Mode == ECameraMode::PERSPECTIVE)
 	{
 		ViewportCamera.SetProjectionType(EProjectionType::Perspective);
@@ -17,9 +20,10 @@ void FEditorViewportClient::SetCameraMode(ECameraMode Mode)
 		ViewportCamera.SetProjectionType(EProjectionType::Orthographic);
 	}
 
-	float distance = 5.0f;
+	float distance = 7.0f;
 	CameraMode = Mode;
 
+	// ORTHOGRAPHIC 방향에 따라 카메라 기본 위치, 회전 값 세팅
 	switch (Mode)
 	{
 	case ECameraMode::ORTHOGRAPHIC_TOP:
@@ -51,4 +55,19 @@ void FEditorViewportClient::SetCameraMode(ECameraMode Mode)
 		break;
 	}
 
+}
+
+// FEditorApplication::Render() 에서 필요한 FSceneView를 만들어 반환
+FSceneView FEditorViewportClient::GetSceneView(const FLightConstants& InLightConstants)
+{
+	FSceneView SceneView{
+		.Camera = ViewportCamera,
+		.ViewProj = ViewportCamera.GetViewProjectionMatrix(),
+		.LeftTopPixel = Viewport->GetLeftTop(),
+		.RightBottomPixel = Viewport->GetRightBottom(),
+		.ViewMode = ViewMode,
+		.ShowFlags = ShowFlags,
+		.LightConstants = InLightConstants
+	};
+	return SceneView;
 }

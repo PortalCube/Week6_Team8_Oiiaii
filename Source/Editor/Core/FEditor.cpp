@@ -9,6 +9,7 @@
 #include "Runtime/Actors/ASphereActor.h"
 #include "Runtime/Actors/ASpotlightActor.h"
 #include "Runtime/Asset/FAssetRegistry.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/FTimeManager.h"
@@ -85,7 +86,7 @@ void FEditor::Process()
 
 void FEditor::SaveState()
 {
-	SEditorViewport* Viewport = GetActiveViewport();
+	SEditorViewport* Viewport = GetPerspectiveViewport();
 	if (!Viewport)
 	{
 		return;
@@ -104,7 +105,7 @@ void FEditor::SaveState()
 
 void FEditor::LoadState()
 {
-	SEditorViewport* Viewport = GetActiveViewport();
+	SEditorViewport* Viewport = GetPerspectiveViewport();
 	if (!Viewport)
 	{
 		return;
@@ -119,7 +120,6 @@ void FEditor::LoadState()
 	Gizmo.Mode = static_cast<EGizmoMode>(State.GetGizmoMode());
 	Gizmo.SetGizmoSpace(static_cast<EGizmoSpace>(State.GetGizmoSpace()));
 
-	// viewmode관련
 	ViewportLayout.SetSplitterRatio(State.GetSplitter());
 }
 
@@ -127,7 +127,9 @@ void FEditor::NewScene()
 {
 	UnSelectActor();
 	SceneManager->SetScene(NewObject<UScene>());
+	const FEditorState::SplitViewMode SplitMode = State.GetSplitMode();
 	State.ResetToDefaults();
+	State.SetSplitMode(SplitMode);
 	LoadState();
 }
 
@@ -139,7 +141,7 @@ void FEditor::SaveScene(const FString& Path)
 void FEditor::LoadScene(const FString& Path)
 {
 	// 씬 로드
-	SEditorViewport* Viewport = GetActiveViewport();
+	SEditorViewport* Viewport = GetPerspectiveViewport();
 	SceneManager->LoadScene(Path, Viewport ? &Viewport->GetClient().GetViewportCamera() : nullptr);
 	SelectedActor = nullptr;
 
@@ -158,9 +160,33 @@ bool FEditor::CheckSceneExists()
 	return true;
 }
 
+// 포커스된 뷰포트를 반환
 SEditorViewport* FEditor::GetActiveViewport()
 {
-	return ViewportLayout.ActiveViewport ? ViewportLayout.ActiveViewport : nullptr;
+	return ViewportLayout.ActiveViewport;
+}
+
+// Viewports 배열에 원근 뷰포트가 있으면 그걸 반환. 없으면 Active 뷰포트를 반환
+// 주로 save, load에 쓰임
+SEditorViewport* FEditor::GetPerspectiveViewport()
+{
+	SEditorViewport* HiddenPerspective = nullptr;
+	for (SEditorViewport& Viewport : ViewportLayout.Viewports)
+	{
+		if (Viewport.GetClient().GetCameraMode() != ECameraMode::PERSPECTIVE)
+		{
+			continue;
+		}
+		if (Viewport.bVisible)
+		{
+			return &Viewport;
+		}
+		if (!HiddenPerspective) //원근 뷰포트를 찾음
+		{
+			HiddenPerspective = &Viewport;
+		}
+	}
+	return HiddenPerspective ? HiddenPerspective : GetActiveViewport();
 }
 
 bool FEditor::SelectActor(AActor* Actor)
@@ -273,16 +299,16 @@ void FEditor::SpawnActorToCurrentScene(UClass* Type, int Size)
 	}
 }
 
+// Split View Mode가 바뀌었을때 ViewLayout을 그에 맞게 하드코딩된 기본값으로 업데이트함
 void FEditor::SetViewLayout(FEditorState::SplitViewMode Mode)
 {
-	ViewportLayout.Resize(Mode);
+	ViewportLayout.Rearrange(Mode);
 
 	auto SetCameraMode = [this](int32 ViewportIndex, ECameraMode Mode)
 	{
 		GetViewportLayout().Viewports[ViewportIndex].GetClient().SetCameraMode(Mode);
 	};
 
-	// TODO: 지금은 하드 코딩이지만 나중에 각 뷰포트 마다 값을 변경할 수 있도록
 	switch (Mode)
 	{
 	case FEditorState::SplitViewMode::SINGLE:
@@ -310,4 +336,29 @@ void FEditor::SetViewLayout(FEditorState::SplitViewMode Mode)
 		State.SetSplitMode(FEditorState::SplitViewMode::QUAD);
 		break;
 	}
+
+	ViewportLayout.SetActiveViewport(GetPerspectiveViewport());
+}
+
+// FEditorApplication::Render에서 필요한 EditorRenderContext을 만든다
+FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry)
+{
+	FEditorRenderContext EditorRenderContext{
+		.SelectedActor = SelectedActor,
+		.SelectedPrimitive = nullptr,
+		.Grid = &Viewport.GetClient().GetGrid(),
+		.VisualizerRegistry = VisualizerRegistry,
+		.SelectedTransform = SelectedTransform,
+		.Gizmo = ObjectSelected() ? &Gizmo : nullptr,
+		.TextComp = ObjectSelected() ? SelectedActorTextComp : nullptr,
+	};
+
+	if (SelectedActor)
+	{
+		if (USceneComponent* RootComp = SelectedActor->GetRootComponent())
+		{
+			EditorRenderContext.SelectedPrimitive = RootComp->Cast<UPrimitiveComponent>();
+		}
+	}
+	return EditorRenderContext;
 }

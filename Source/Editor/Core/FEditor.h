@@ -60,13 +60,11 @@ public:
 	UScene* GetCurrentScene() const { return SceneManager ? SceneManager->CurrentScene : nullptr; }
 
 	// Viewport
-	void AddViewport(FEditorViewportClient Viewport);
-	void DeleteViewport(int32 IndexOfViewport);
 	SEditorViewport* GetActiveViewport();
 	void SetViewLayout(FEditorState::SplitViewMode mode);
-
-	// Camera
-	void UpdateCamera();
+	FEditorViewportLayout& GetViewportLayout() { return ViewportLayout; }
+	FEditorRenderContext GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry);
+	SEditorViewport* GetPerspectiveViewport();
 
 	// Actor
 	bool SelectActor(AActor* Actor);
@@ -77,9 +75,6 @@ public:
 	void SpawnActorToCurrentScene(UClass* Type, int Count = 1);
 
 	UTextComponent* GetTextcomp() { return SelectedActorTextComp; }
-
-	// Viewport관련
-	FEditorViewportLayout& GetViewportLayout() { return ViewportLayout; }
 	
 	// 피킹 등에서 현재 씬의 렌더링 대상 컴포넌트가 필요할 때 사용
 	const TArray<UPrimitiveComponent*>& GetPrimitiveComponents() const;
@@ -87,20 +82,6 @@ public:
 	FRenderResourceLibrary* GetRendererLibrary();
 
 	void ClearSelectionForGC();
-	FEditorRenderContext GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry)
-	{
-		FEditorRenderContext EditorRenderContext
-		{
-			.SelectedActor = SelectedActor,
-			.SelectedPrimitive = nullptr,
-			.Grid = &Viewport.GetClient().GetGrid(),
-			.VisualizerRegistry = VisualizerRegistry,
-			.SelectedTransform = SelectedTransform,
-			.Gizmo = ObjectSelected() ? &Gizmo : nullptr,
-			.TextComp = ObjectSelected() ? SelectedActorTextComp : nullptr,
-		};
-		return EditorRenderContext;
-	}
 
 	// State
 	void SaveState();
@@ -113,13 +94,12 @@ public:
 	}
 
 private:
-	USceneManager* SceneManager =
-	    nullptr; // 씬을 다중으로 가질 수 있도록 구조개선 가능-이경우 에디터쪽에
-	             // 클래스를 추가해 씬과 FEditorViewportClient들을 연관
+	USceneManager* SceneManager = nullptr; // 씬을 다중으로 가질 수 있도록 구조개선 가능-이경우 에디터쪽에
+										   // 클래스를 추가해 씬과 FEditorViewportClient들을 연관
 	FGizmo Gizmo;
 	TWeakObjectPtr<AActor> SelectedActor;
 	TWeakObjectPtr<UTextComponent> SelectedActorTextComp;
 
-	// Viewport 관련
+	// Viewport
 	FEditorViewportLayout ViewportLayout;
 };

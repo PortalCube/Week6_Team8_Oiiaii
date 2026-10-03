@@ -36,8 +36,6 @@ class FEditorApplication final : public IApplication
 
 	FRenderView* RenderView = nullptr;
 
-	SWindow EditorViewports;
-
 public:
 	FEditorApplication() = default;
 	~FEditorApplication() override = default;
@@ -59,7 +57,7 @@ public:
 	void Shutdown() override;
 	void Update(float DeltaTime) override;
 	void Render() override;
-	void OnWindowSize(UINT Width, UINT Height) override;
+	void OnWindowSize(UINT Width, UINT Height) override {};
 
 	void ExecuteCommand(const char* Command);
 

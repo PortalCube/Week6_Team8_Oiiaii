@@ -6,6 +6,7 @@
 
 #include "FInputManager.h"
 #include <algorithm>
+#include <cmath>
 
 void FCameraInputController::UpdateKeyInput(FCamera& Camera, float DeltaTime)
 {
@@ -101,9 +102,17 @@ void FCameraInputController::UpdateMouseInput(FCamera& Camera) const
 	}
 }
 
-void FCameraInputController::UpdateMouseInput_ORTHOGRAPHIC(FCamera& Camera) const
+void FCameraInputController::UpdateMouseInput_ORTHOGRAPHIC(FCamera& Camera, float ViewportHeightPixels, bool bHovered) const
 {
-	if (FInputManager::Get().IsMouseDown(EMouseButton::Right))
+	// Orthographic에서 마우스로 줌 하는 기능
+	const float Wheel = FInputManager::Get().GetMouseWheelDelta();
+	if (bHovered && Wheel != 0.0f)
+	{
+		const float NewHeight = Camera.GetProjection().GetOrthographicHeight() * std::pow(0.9f, Wheel);
+		Camera.SetOrthographicHeight(std::clamp(NewHeight, 0.1f, 10000.0f));
+	}
+	// Orthographic에서 마우스로 움직이는 기능
+	if (FInputManager::Get().IsMousePressed(EMouseButton::Right) && ViewportHeightPixels > 0.0f)
 	{
 		// 마우스의 클릭에 대한 원점은 좌측 상단
 		const FVector2 Delta = FInputManager::Get().GetMouseDelta();
@@ -114,7 +123,7 @@ void FCameraInputController::UpdateMouseInput_ORTHOGRAPHIC(FCamera& Camera) cons
 		// 카메라 로컬 +Y방향
 		const FVector Up{ Rotation.M[2][0], Rotation.M[2][1], Rotation.M[2][2] };
 
-		const float PanSpeed = Camera.GetProjection().GetOrthographicHeight() * 0.001f;
+		const float PanSpeed = Camera.GetProjection().GetOrthographicHeight() / ViewportHeightPixels;
 		Camera.SetPosition(Camera.GetPosition() + (Up * Delta.Y - Right * Delta.X) * PanSpeed);
 	}
 }

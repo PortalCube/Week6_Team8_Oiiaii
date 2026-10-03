@@ -66,6 +66,7 @@ public:
 	void Shutdown();
 	void BeginFrame();
 	void BindSceneRenderTargets();
+	void BindBackBufferRenderTargets();
 	void SetViewportPixel(FVector2 LeftTopPixel, FVector2 RightBottomPixel);
 	void ClearDepth();
 	void SwapBuffer();
@@ -115,7 +116,7 @@ public:
 	void DrawUploadedCommand(const FDrawCommand& Command, FRenderPipeline* OverridePipeline);
 
 	void DrawScreenPass(ID3D11ShaderResourceView* SRVs[], ID3D11RenderTargetView* BackBuffer);
-	void RenderSelectionOutline();
+	void RenderSelectionOutline(FVector2 LeftTopPixel, FVector2 RightBottomPixel);
 	void RenderSceneDepth();
 	ID3D11RenderTargetView* GetBackBufferRTV() { return BackBufferRTV.Get(); }
 	ID3D11DepthStencilView* GetSceneDepthDSV() { return SceneDepthDSV.Get(); }

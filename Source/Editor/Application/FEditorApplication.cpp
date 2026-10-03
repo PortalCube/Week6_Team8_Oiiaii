@@ -90,7 +90,7 @@ void FEditorApplication::Render()
 	// Active인 ViewportClient만 렌더링
 	for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
 	{
-		if (!Viewport.bVisible)
+		if (!Viewport.IsRenderable())
 			continue;
 
 		// 뷰포트 렌더링 명세 구성
@@ -98,14 +98,6 @@ void FEditorApplication::Render()
 
 		// 에디터 렌더링 컨텍스트 구성
 		FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(Viewport, &VisualizerRegistry);
-
-		if (EditorRenderContext.SelectedActor)
-		{
-			if (USceneComponent* RootComp = EditorRenderContext.SelectedActor->GetRootComponent())
-			{
-				EditorRenderContext.SelectedPrimitive = RootComp->Cast<UPrimitiveComponent>();
-			}
-		}
 
 		// 뷰포트 렌더링 일괄 수행
 		RenderView->RenderView(SceneView, *SceneManager->CurrentScene, EditorRenderContext);
@@ -116,7 +108,7 @@ void FEditorApplication::Render()
 	{
 		for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
 		{
-			if (!Viewport.bVisible)
+			if (!Viewport.IsRenderable())
 				continue;
 
 			FSceneView SceneView = Viewport.GetClient().GetSceneView(Editor.GlobalLight);
@@ -132,11 +124,9 @@ void FEditorApplication::Render()
 		}
 	}
 
+	// ImGui는 마지막에 그림
+	RenderView->GetRenderer().BindBackBufferRenderTargets();
 	ImguiManager.RenderUI();
-}
-
-void FEditorApplication::OnWindowSize(UINT Width, UINT Height)
-{
 }
 
 void FEditorApplication::ExecuteCommand(const char* Command)

@@ -54,14 +54,14 @@ void FObjViewerApplication::Render()
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* Context = nullptr;
 	Renderer->GetDeviceAndContext_ImplDX11(Device, Context);
-	ID3D11RenderTargetView* BackBuffer = Renderer->GetBackBufferRTV();
-	ID3D11DepthStencilView* DepthStencil = Renderer->GetSceneDepthDSV();
+	ID3D11RenderTargetView* BackBufferRTV = Renderer->GetBackBufferRTV();
+	ID3D11DepthStencilView* SceneDepthDSV = Renderer->GetSceneDepthDSV();
 
-	if (BackBuffer && Context)
+	if (BackBufferRTV && Context)
 	{
-		Context->OMSetRenderTargets(1, &BackBuffer, DepthStencil);
+		Context->OMSetRenderTargets(1, &BackBufferRTV, SceneDepthDSV);
 
-		Context->ClearRenderTargetView(BackBuffer, BackgroundColor);
+		Context->ClearRenderTargetView(BackBufferRTV, BackgroundColor);
 	}
 
 	if (CurrentMesh)
