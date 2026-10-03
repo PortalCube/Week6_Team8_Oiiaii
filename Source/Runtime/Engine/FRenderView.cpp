@@ -285,7 +285,7 @@ void FRenderView::BeginView(const FSceneView& View)
 {
 	// 에디터 뷰포트 렌더타겟 바인딩
 	Renderer.BindSceneRenderTargets();
-	Renderer.SetViewportUV(View.LeftTopUV, View.LengthUV);
+	Renderer.SetViewportPixel(View.LeftTopPixel, View.RightBottomPixel);
 	Renderer.UpdateLightConstants(View.LightConstants);
 
 	// ViewConstants 갱신
@@ -293,8 +293,8 @@ void FRenderView::BeginView(const FSceneView& View)
 		.View = View.Camera.GetViewMatrix(),
 		.Projection = View.Camera.GetProjectionMatrix(),
 		.ViewportSize = FVector2{
-		    View.LengthUV.X * Renderer.GetWidth(),
-		    View.LengthUV.Y * Renderer.GetHeight(),
+		    View.RightBottomPixel.X - View.LeftTopPixel.X,
+		    View.RightBottomPixel.Y - View.LeftTopPixel.Y,
 		},
 	};
 
@@ -326,7 +326,7 @@ void FRenderView::FlushLinePass(const FCamera& Camera)
 void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp)
 {
 	// 뷰포트 영역 재설정
-	Renderer.SetViewportUV(View.LeftTopUV, View.LengthUV);
+	Renderer.SetViewportPixel(View.LeftTopPixel, View.RightBottomPixel);
 
 	//// 기즈모 렌더링
 	// Renderer.ClearDepth();
@@ -346,9 +346,9 @@ void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& Se
 	}
 }
 
-void FRenderView::RenderGizmo(const FTransform& Transform, const FCamera& Camera, FVector2 TopLeftUV, FVector2 LengthUV, const FGizmo& Gizmo)
+void FRenderView::RenderGizmo(const FTransform& Transform, const FCamera& Camera, FVector2 LeftTopPixel, FVector2 RightBottomPixel, const FGizmo& Gizmo)
 {
-	Renderer.SetViewportUV(TopLeftUV, LengthUV);
+	Renderer.SetViewportPixel(LeftTopPixel, RightBottomPixel);
 	Renderer.ClearDepth();
 	Gizmo.Draw(Renderer, Transform, Camera);
 }

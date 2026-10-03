@@ -3,46 +3,40 @@
 #include "Runtime/Core/IntTypes.h"
 #include "Runtime/UI/SWindow.h"
 #include "Runtime/UI/SSplitter.h"
-#include "FEditorViewport.h"
-#include "Runtime/UI/SViewport.h"
+#include "SEditorViewport.h"
+#include "Editor/Core/FEditorState.h"
 #include "Runtime/Engine/Showflags.h"
 
 struct FEditorViewportLayout
 {
-	SWindow* Root;
-	SViewport* ActiveViewport = nullptr;
-	SViewport Leaf[MAX_VIEWPORT_COUNT];
-	SSplitterH HorizonSplitter;  // 세로선
-	SSplitterH HorizonSplitter2; // 세로선
-	SSplitterV VerticalSplitter; // 가로선
+	SWindow* Root = nullptr;
+	SEditorViewport* ActiveViewport = nullptr;
+	SEditorViewport* MaximizedViewport = nullptr;
+	SEditorViewport Viewports[MAX_VIEWPORT_COUNT];
+	SSplitterH SplitterH1; // 세로선1
+	SSplitterH SplitterH2; // 세로선2
+	SSplitterV SplitterV; // 가로선
 
 	FEditorViewportLayout() = default;
 	FEditorViewportLayout(SWindow* InRoot)
 	    : Root(InRoot)
 	{}
 
-	void Initialize(FEditorViewport*& InEditorViewports)
-	{
-		for (uint32 i = 0; i < MAX_VIEWPORT_COUNT; ++i)
-		{
-			Leaf[i].EditorViewport = &InEditorViewports[i];
-		}
-		ActiveViewport = &Leaf[0];
-	}
-
-	void ResizeLayout(FEditorState::SplitViewMode Mode)
+	void Resize(FEditorState::SplitViewMode Mode)
 	{
 		// viewport를 가지고있는 splitter,window를 업데이트
-		ActiveViewport = &Leaf[0];
+		ActiveViewport = &Viewports[0];
+		MaximizedViewport = nullptr;
+		Root = &Viewports[0];
 		//=== 초기화 ===//
-		Leaf[0].bisActive = false;
-		Leaf[1].bisActive = false;
-		Leaf[2].bisActive = false;
-		Leaf[3].bisActive = false;
+		Viewports[0].bVisible = false;
+		Viewports[1].bVisible = false;
+		Viewports[2].bVisible = false;
+		Viewports[3].bVisible = false;
 
-		HorizonSplitter2.bisActive = false;
-		VerticalSplitter.bisActive = false;
-		HorizonSplitter.bisActive = false;
+		SplitterH1.bVisible = false;
+		SplitterH2.bVisible = false;
+		SplitterV.bVisible = false;
 		//=== 초기화 ===//
 
 		//===람다함수===//
@@ -51,80 +45,49 @@ struct FEditorViewportLayout
 			Splitter.SideLT = &LT;
 			Splitter.SideRB = &RB;
 
-			Splitter.bisActive = true;
-			LT.bisActive = true;
-			RB.bisActive = true;
+			Splitter.bVisible = true;
+			LT.bVisible = true;
+			RB.bVisible = true;
 		};
 
 		switch (Mode)
 		{
 		case FEditorState::SplitViewMode::SINGLE:
-			Leaf[0].bisActive = true;
-			Root = &Leaf[0];
+			Viewports[0].bVisible = true;
+			Root = &Viewports[0];
 			break;
 
 		case FEditorState::SplitViewMode::HORIZONTAL:
-			Leaf[0].bisActive = true;
-			Leaf[1].bisActive = true;
-			Connect(HorizonSplitter, Leaf[0], Leaf[1]);
-			Root = &HorizonSplitter;
+			Viewports[0].bVisible = true;
+			Viewports[1].bVisible = true;
+			Connect(SplitterH1, Viewports[0], Viewports[1]);
+			Root = &SplitterH1;
 			break;
 
 		case FEditorState::SplitViewMode::VERTICAL:
-			Leaf[0].bisActive = true;
-			Leaf[2].bisActive = true;
-			Connect(VerticalSplitter, Leaf[0], Leaf[2]);
-			Root = &VerticalSplitter;
+			Viewports[0].bVisible = true;
+			Viewports[2].bVisible = true;
+			Connect(SplitterV, Viewports[0], Viewports[2]);
+			Root = &SplitterV;
 			break;
 
 		case FEditorState::SplitViewMode::QUAD:
-			Leaf[0].bisActive = true;
-			Leaf[1].bisActive = true;
-			Leaf[2].bisActive = true;
-			Leaf[3].bisActive = true;
-			Connect(VerticalSplitter, HorizonSplitter, HorizonSplitter2);
-			Connect(HorizonSplitter, Leaf[0], Leaf[1]);
-			Connect(HorizonSplitter2, Leaf[2], Leaf[3]);
-			Root = &VerticalSplitter;
+			Viewports[0].bVisible = true;
+			Viewports[1].bVisible = true;
+			Viewports[2].bVisible = true;
+			Viewports[3].bVisible = true;
+			Connect(SplitterV, SplitterH1, SplitterH2);
+			Connect(SplitterH1, Viewports[0], Viewports[1]);
+			Connect(SplitterH2, Viewports[2], Viewports[3]);
+			Root = &SplitterV;
 			break;
 		}
 	}
 
 	void SetSplitterRatio(FVector InSplitter)
 	{
-		VerticalSplitter.Ratio = InSplitter.X;
-		HorizonSplitter.Ratio = InSplitter.Y;
-		HorizonSplitter2.Ratio = InSplitter.Z;
+		SplitterV.Ratio = InSplitter.X;
+		SplitterH1.Ratio = InSplitter.Y;
+		SplitterH2.Ratio = InSplitter.Z;
 	}
-
-	// void SwitchSplitMode(FEditorState::SplitViewMode mode)
-	//{
-	//	switch (mode)
-	//	{
-	//	case FEditorState::SplitViewMode::SINGLE:
-	//		VerticalSplitter.bisActive = false;
-	//		HorizonSplitter.bisActive = false;
-	//		HorizonSplitter2.bisActive = false;
-	//		break;
-
-	//	case FEditorState::SplitViewMode::VERTICAL:
-	//		VerticalSplitter.bisActive = true;
-	//		HorizonSplitter.bisActive = false;
-	//		HorizonSplitter2.bisActive = false;
-	//		break;
-
-	//	case FEditorState::SplitViewMode::HORIZONTAL:
-	//		VerticalSplitter.bisActive = false;
-	//		HorizonSplitter.bisActive = true;
-	//		HorizonSplitter2.bisActive = false;
-	//		break;
-
-	//	case FEditorState::SplitViewMode::QUAD:
-	//		VerticalSplitter.bisActive = true;
-	//		HorizonSplitter.bisActive = true;
-	//		HorizonSplitter2.bisActive = true;
-	//		break;
-	//	}
-	//}
 };
-

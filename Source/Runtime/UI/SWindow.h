@@ -1,4 +1,5 @@
 #pragma once
+#include "Runtime/Math/FVector2.h"
 
 // SSplitterH : 자식을 수평 나열 (좌|우). 분할선은 세로. 마우스 X로 드래그.
 // SSplitterV : 자식을 수직 나열 (상/하). 분할선은 가로. 마우스 Y로 드래그.
@@ -27,6 +28,6 @@ public:
 	virtual ~SWindow() = default; // 파생을 포인터로 다루니 가상 소멸자
 	// bool ISHover();
 
-	bool bisActive = false;
+	bool bVisible = false;
 	virtual void OnResize(const FRect& In) { Rect = In; }
 };

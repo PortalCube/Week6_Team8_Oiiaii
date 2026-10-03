@@ -4,6 +4,8 @@
 #include "Editor/Grid/FGrid.h"
 #include "Runtime/Engine/FViewport.h"
 #include "Runtime/Engine/ShowFlags.h"
+#include "Runtime/Engine/FSceneView.h"
+
 enum class ECameraMode
 {
 	PERSPECTIVE,
@@ -19,11 +21,15 @@ enum class ECameraMode
 class FEditorViewportClient final
 {
 public:
-	const ECameraMode GetCameraMode() const { return CameraMode; }
-	// CameraMode에 따라 Camera의 설정을 변경
-	void SetCameraMode(ECameraMode Mode);
+	bool operator==(const FEditorViewportClient& Other) const = default;
+
+
+	//======Getter & Setter======
+
+	ECameraMode GetCameraMode() const { return CameraMode; }
+	void SetCameraMode(ECameraMode Mode); // CameraMode에 따라 Camera의 설정을 변경
 	
-	const EViewModeIndex const GetViewMode() const { return ViewMode; }
+	EViewModeIndex const GetViewMode() const { return ViewMode; }
 	void SetViewMode(EViewModeIndex InViewMode) { ViewMode = InViewMode; }
 
 	FViewport& GetViewport() { return *Viewport; }
@@ -34,33 +40,35 @@ public:
 	const FCamera& GetViewportCamera() const { return ViewportCamera; }
 	void SetViewportCamera(FCamera InViewportCamera) { ViewportCamera = InViewportCamera; }
 
-	void UpdateFocusedAndHovered(bool bFocused, bool bHovered);
-
 	FGrid& GetGrid() { return Grid; }
 	const FGrid& GetGrid() const { return Grid; }
 
+	bool IsFocused() const { return bFocused; }
+	bool IsHovered() const { return bHovered; }
 
 	const uint64 GetShowFlags() const { return ShowFlags; }
-	[[nodiscard]] bool HasShowFlag(EEngineShowFlags Flag) const
-	{
-		return (ShowFlags & static_cast<uint64>(Flag)) != 0;
-	}
-	void ToggleShowFlag(EEngineShowFlags Flag)
-	{
-		ShowFlags ^= static_cast<uint64>(Flag);
-	}
+	bool HasShowFlag(EEngineShowFlags Flag) const { return (ShowFlags & static_cast<uint64>(Flag)) != 0; }
 
-	[[nodiscard]] bool IsFocused() const { return bFocused; }
-	[[nodiscard]] bool IsHovered() const { return bHovered; }
+	//======Getter & Setter======
+
+	void ToggleShowFlag(EEngineShowFlags Flag) { ShowFlags ^= static_cast<uint64>(Flag); }
+
+	void UpdateFocusedAndHovered(bool bFocused, bool bHovered);
+
 	void Update();
 
-	void ResizeViewport(const FRect& Rect)
+	FSceneView GetSceneView(const FLightConstants& InLightConstants)
 	{
-		ViewportCamera.SetAspectRatio(Rect.GetWidth() / Rect.GetHeight());
-
-		// 픽셀. 창 크기가 바뀌어도 이 값은 그대로 쓸 수 있다.
-		Viewport->SetLeftTop(FVector2{ Rect.Left , Rect.Top });
-		Viewport->SetRightBottom(FVector2{ Rect.Right, Rect.Bottom});
+		FSceneView SceneView{
+			.Camera = ViewportCamera,
+			.ViewProj = ViewportCamera.GetViewProjectionMatrix(),
+			.LeftTopPixel = Viewport->GetLeftTop(),
+			.RightBottomPixel = Viewport->GetRightBottom(),
+			.ViewMode = ViewMode,
+			.ShowFlags = ShowFlags,
+			.LightConstants = InLightConstants
+		};
+		return SceneView;
 	}
 
 private:
@@ -73,15 +81,16 @@ private:
 	// 뷰포트 카메라
 	FCamera ViewportCamera;
 
+	// 뷰포트 카메라 모드
 	ECameraMode CameraMode = ECameraMode::PERSPECTIVE;
-
-	// 그리드
-	FGrid Grid;
 	
-	// 쇼 플래그
-	// 뷰포트 렌더 모드
+	// 뷰포트 뷰 모드
 	EViewModeIndex ViewMode = EViewModeIndex::VMI_Lit;
+
+	// 쇼 플래그
 	uint64 ShowFlags = static_cast<uint64>(EEngineShowFlags::SF_Primitives) |
 	                   static_cast<uint64>(EEngineShowFlags::SF_BillboardText) |
 	                   static_cast<uint64>(EEngineShowFlags::SF_Grid);
+	// 그리드
+	FGrid Grid;
 };

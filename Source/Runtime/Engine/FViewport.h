@@ -4,17 +4,22 @@
 
 struct FViewport
 {
-	// 전체 클라이언트 영역 기준 고정 UV: 좌상단 (0,0), 우하단 (1,1).
-	// 픽셀 위치/크기는 사용할 때 클라이언트 크기를 곱해 계산한다.
-	//FVector2 TopLeftUV = { 0.0f, 0.0f };
-	//FVector2 LengthUV = { 1.0f, 1.0f };
+	// UV가 아닌 픽셀 좌표 Rect를 가지고 있음
 	FRect Rect = {};
-
 	bool bShow = false;
 
+	bool operator==(const FViewport& Other) const = default;
+	FViewport& operator=(const FViewport& Other) = default;
+
+	//====== Getter & Setter ======
 	FVector2 GetLeftTop() const { return Rect.GetLeftTop(); }
 	void SetLeftTop(const FVector2& InLeftTop) { Rect.Left = InLeftTop.X; Rect.Top = InLeftTop.Y; }
 
 	FVector2 GetRightBottom() const { return Rect.GetRightBottom(); }
-	void SetRightBottom(const FVector2& InLengthUV) { Rect.Right = InLengthUV.X; Rect.Bottom = InLengthUV.Y; }
+	void SetRightBottom(const FVector2& InRightBottom) { Rect.Right = InRightBottom.X; Rect.Bottom = InRightBottom.Y; }
+	//====== Getter & Setter ======
+
+
+	// 뷰포트의 크기를 픽셀 단위로 반환
+	FVector2 GetViewportSize() const { return GetRightBottom() - GetLeftTop(); }
 };

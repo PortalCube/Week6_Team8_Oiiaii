@@ -1,25 +1,27 @@
 #include "FRenderer.h"
 #include "FRenderResourceLibrary.h"
 
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <Windows.h>
+#include <wrl/client.h>
+
 #include "FMaterial.h"
 #include "FMesh.h"
 #include "FRenderPipeline.h"
+#include "Runtime/Core/Globals.h"
 #include "Runtime/Core/Log.h"
 #include "Runtime/Core/PointerTypes.h"
-#include "Runtime/Core/Globals.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Engine/FCamera.h"
+#include "Runtime/Engine/FSceneView.h"
 #include "Runtime/Rendering/FRenderQueue.h"
 #include "Runtime/Rendering/FTexture.h"
-#include "Runtime/Engine/FSceneView.h"
 #include "ShaderConstants.h"
+#include "Vertices.h"
+
 #include "ThirdParty/DirectXTK/Inc/DDSTextureLoader.h"
 #include "ThirdParty/DirectXTK/Inc/WICTextureLoader.h"
-#include "Vertices.h"
-#include <Windows.h>
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <wrl/client.h>
 
 bool FRenderer::Initialize(HWND Window)
 {
@@ -107,14 +109,14 @@ void FRenderer::BindSceneRenderTargets()
 	Context->OMSetRenderTargets(1, SceneColorRTV.GetAddressOf(), SceneDepthDSV.Get());
 }
 
-void FRenderer::SetViewportUV(FVector2 TopLeftUV, FVector2 LengthUV)
+void FRenderer::SetViewportPixel(FVector2 LeftTopPixel, FVector2 RightBottomPixel)
 {
-	// Viewport는 전체 백버퍼 크기를 유지하고, UV는 그리기 직전에 픽셀로 변환한다.
+	// 뷰포트가 그릴 픽셀 영역을 컨텍스트에 바인딩
 	D3D11_VIEWPORT RenderViewport = Viewport;
-	RenderViewport.TopLeftX = TopLeftUV.X * Viewport.Width;
-	RenderViewport.TopLeftY = TopLeftUV.Y * Viewport.Height;
-	RenderViewport.Width = LengthUV.X * Viewport.Width;
-	RenderViewport.Height = LengthUV.Y * Viewport.Height;
+	RenderViewport.TopLeftX = LeftTopPixel.X;
+	RenderViewport.TopLeftY = LeftTopPixel.Y;
+	RenderViewport.Width = RightBottomPixel.X - LeftTopPixel.X;
+	RenderViewport.Height = RightBottomPixel.Y - LeftTopPixel.Y;
 	Context->RSSetViewports(1, &RenderViewport);
 };
 

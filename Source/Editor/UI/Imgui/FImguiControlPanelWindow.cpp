@@ -192,7 +192,7 @@ void FImguiControlPanelWindow::RunPickBenchmark(FEditor& Editor, int Iterations)
 	}
 
 	UScene* Scene = Editor.GetCurrentScene();
-	SViewport* Viewport = Editor.GetActiveViewport();
+	SEditorViewport* Viewport = Editor.GetActiveViewport();
 	const bool bUseBVH = Editor.bUseBVHPicking && Scene;
 	if (!bUseBVH && !Viewport)
 	{
@@ -217,7 +217,7 @@ void FImguiControlPanelWindow::RunPickBenchmark(FEditor& Editor, int Iterations)
 		else
 		{
 			FRayCastingManager::RayIntersectsMeshes(
-			    Ray, Viewport->EditorViewport->Client.GetViewportCamera(), Editor.GetPrimitiveComponents(), HitComponent, ImpactPoint);
+			    Ray, Viewport->GetClient().GetViewportCamera(), Editor.GetPrimitiveComponents(), HitComponent, ImpactPoint);
 		}
 		Times.push_back(Counter.Finish());
 	}
@@ -386,17 +386,17 @@ void FImguiControlPanelWindow::ActorSpawnSetting(FEditor& Editor)
 // 그리드 설정
 void FImguiControlPanelWindow::GridSetting(FEditor& Editor)
 {
-	SViewport* Viewport = Editor.GetActiveViewport();
+	SEditorViewport* Viewport = Editor.GetActiveViewport();
 	if (!Viewport)
 	{
 		return;
 	}
 
-	float CellSize = Viewport->EditorViewport->Client.GetGrid().GetCellSize();
+	float CellSize = Viewport->GetClient().GetGrid().GetCellSize();
 	ImGui::SetNextItemWidth(180.0f);
 	if (ImGui::DragFloat("##GridCellSize", &CellSize, 0.05f, 0.1f, 15.0f, "%.2f"))
 	{
-		Viewport->EditorViewport->Client.GetGrid().SetCellSize(CellSize);
+		Viewport->GetClient().GetGrid().SetCellSize(CellSize);
 	}
 	ImGui::SameLine();
 	ImGui::Text("Grid Cell Size");
@@ -405,16 +405,16 @@ void FImguiControlPanelWindow::GridSetting(FEditor& Editor)
 void FImguiControlPanelWindow::RenderModeAndShowFlagSetting(FEditor& Editor)
 {
 
-	SViewport* ActiveViewport = Editor.GetActiveViewport();
+	SEditorViewport* ActiveViewport = Editor.GetActiveViewport();
 	if (ActiveViewport)
 	{
 		// 뷰 모드 드롭박스
-		int CurrentViewMode = static_cast<int>(ActiveViewport->EditorViewport->Client.GetViewMode());
+		int CurrentViewMode = static_cast<int>(ActiveViewport->GetClient().GetViewMode());
 		const char* ViewModes[] = { "Lit", "Unlit", "Wireframe", "SceneDepth" };
 		ImGui::SetNextItemWidth(180.0f);
 		if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModes, IM_ARRAYSIZE(ViewModes)))
 		{
-			ActiveViewport->EditorViewport->Client.SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
+			ActiveViewport->GetClient().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
 		}
 		ImGui::SameLine();
 		ImGui::Text("View Mode");
@@ -423,20 +423,20 @@ void FImguiControlPanelWindow::RenderModeAndShowFlagSetting(FEditor& Editor)
 		ImGui::SetNextItemWidth(180.0f);
 		if (ImGui::BeginCombo("##ShowFlags", "Show Flags"))
 		{
-			bool bPrimitives = ActiveViewport->EditorViewport->Client.HasShowFlag(EEngineShowFlags::SF_Primitives);
+			bool bPrimitives = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_Primitives);
 			if (ImGui::Checkbox("Primitives", &bPrimitives))
 			{
-				ActiveViewport->EditorViewport->Client.ToggleShowFlag(EEngineShowFlags::SF_Primitives);
+				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_Primitives);
 			}
-			bool bBillboardText = ActiveViewport->EditorViewport->Client.HasShowFlag(EEngineShowFlags::SF_BillboardText);
+			bool bBillboardText = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_BillboardText);
 			if (ImGui::Checkbox("Billboard Text", &bBillboardText))
 			{
-				ActiveViewport->EditorViewport->Client.ToggleShowFlag(EEngineShowFlags::SF_BillboardText);
+				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_BillboardText);
 			}
-			bool bGrid = ActiveViewport->EditorViewport->Client.HasShowFlag(EEngineShowFlags::SF_Grid);
+			bool bGrid = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_Grid);
 			if (ImGui::Checkbox("Grid", &bGrid))
 			{
-				ActiveViewport->EditorViewport->Client.ToggleShowFlag(EEngineShowFlags::SF_Grid);
+				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_Grid);
 			}
 			ImGui::EndCombo();
 		}
@@ -447,9 +447,9 @@ void FImguiControlPanelWindow::RenderModeAndShowFlagSetting(FEditor& Editor)
 
 void FImguiControlPanelWindow::CameraSetting(FEditor& Editor)
 {
-	if (SViewport* Viewport = Editor.GetActiveViewport())
+	if (SEditorViewport* Viewport = Editor.GetActiveViewport())
 	{
-		FCamera& Camera = Viewport->EditorViewport->Client.GetViewportCamera();
+		FCamera& Camera = Viewport->GetClient().GetViewportCamera();
 
 		bool bOrthographic =
 		    (Camera.GetProjection().GetProjectionType() == EProjectionType::Orthographic);

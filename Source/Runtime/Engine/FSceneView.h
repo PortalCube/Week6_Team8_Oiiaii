@@ -17,8 +17,8 @@ struct FSceneView
 {
 	const FCamera& Camera;
 	FMatrix ViewProj;
-	FVector2 LeftTopUV;
-	FVector2 LengthUV;
+	FVector2 LeftTopPixel;
+	FVector2 RightBottomPixel;
 	EViewModeIndex ViewMode = EViewModeIndex::VMI_Lit;
 	uint64 ShowFlags = static_cast<uint64>(EEngineShowFlags::SF_Primitives);
 	FLightConstants LightConstants{};

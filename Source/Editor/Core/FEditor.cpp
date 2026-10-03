@@ -1,18 +1,20 @@
 #include "FEditor.h"
+
+#include <numbers>
+
 #include "Runtime/Actors/AActor.h"
-#include "Runtime/Actors/ACubeActor.h"
-#include "Runtime/Actors/ASphereActor.h"
-#include "Runtime/Actors/ACylinderActor.h"
 #include "Runtime/Actors/ABillboardActor.h"
+#include "Runtime/Actors/ACubeActor.h"
+#include "Runtime/Actors/ACylinderActor.h"
+#include "Runtime/Actors/ASphereActor.h"
 #include "Runtime/Actors/ASpotlightActor.h"
+#include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/CoreUObject/UObject.h"
+#include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Input/FInputManager.h"
-#include "Runtime/Rendering/FRenderResourceLibrary.h"
 #include "Runtime/Math/Random.h"
-#include "Runtime/Asset/FAssetRegistry.h"
-#include <numbers>
-#include <Runtime/Engine/FSceneBVH.h>
+#include "Runtime/Rendering/FRenderResourceLibrary.h"
 
 void FEditor::Initialize(USceneManager* SceneManager)
 {
@@ -83,18 +85,18 @@ void FEditor::Process()
 
 void FEditor::SaveState()
 {
-	const SViewport* Viewport = GetActiveViewport();
+	SEditorViewport* Viewport = GetActiveViewport();
 	if (!Viewport)
 	{
 		return;
 	}
 
-	const FCamera& Camera = Viewport->EditorViewport->Client.GetViewportCamera();
+	const FCamera& Camera = Viewport->GetClient().GetViewportCamera();
 	State.SetCameraLocation(Camera.GetPosition());
 	State.SetCameraPitch(Camera.GetPitch());
 	State.SetCameraYaw(Camera.GetYaw());
 	State.SetCameraFOV(Camera.GetProjection().GetFOV());
-	State.SetGridCellSize(Viewport->EditorViewport->Client.GetGrid().GetCellSize());
+	State.SetGridCellSize(Viewport->GetClient().GetGrid().GetCellSize());
 	State.SetGizmoMode(static_cast<uint8>(Gizmo.Mode));
 	State.SetGizmoSpace(static_cast<uint8>(Gizmo.GetSpace()));
 	State.SetSelectedActor(SelectedActor ? SelectedActor->GetUUID() : static_cast<uint32>(-1));
@@ -102,18 +104,18 @@ void FEditor::SaveState()
 
 void FEditor::LoadState()
 {
-	SViewport* Viewport = GetActiveViewport();
+	SEditorViewport* Viewport = GetActiveViewport();
 	if (!Viewport)
 	{
 		return;
 	}
 
-	FCamera& Camera = Viewport->EditorViewport->Client.GetViewportCamera();
+	FCamera& Camera = Viewport->GetClient().GetViewportCamera();
 
 	Camera.SetPosition(State.GetCameraLocation());
 	Camera.SetRotation(State.GetCameraPitch(), State.GetCameraYaw());
 	Camera.SetFOV(State.GetCameraFOV());
-	Viewport->EditorViewport->Client.GetGrid().SetCellSize(State.GetGridCellSize());
+	Viewport->GetClient().GetGrid().SetCellSize(State.GetGridCellSize());
 	Gizmo.Mode = static_cast<EGizmoMode>(State.GetGizmoMode());
 	Gizmo.SetGizmoSpace(static_cast<EGizmoSpace>(State.GetGizmoSpace()));
 
@@ -137,8 +139,8 @@ void FEditor::SaveScene(const FString& Path)
 void FEditor::LoadScene(const FString& Path)
 {
 	// 씬 로드
-	SViewport* Viewport = GetActiveViewport();
-	SceneManager->LoadScene(Path, Viewport ? &Viewport->EditorViewport->Client.GetViewportCamera() : nullptr);
+	SEditorViewport* Viewport = GetActiveViewport();
+	SceneManager->LoadScene(Path, Viewport ? &Viewport->GetClient().GetViewportCamera() : nullptr);
 	SelectedActor = nullptr;
 
 	// 로드된 컴포넌트는 대기열에만 쌓이므로, 트랜스폼이 모두 설정된 지금 트리를 만든다.
@@ -156,16 +158,7 @@ bool FEditor::CheckSceneExists()
 	return true;
 }
 
-void FEditor::InitViewports()
-{
-	//for (uint32 i = 0; i < MAX_VIEWPORT_COUNT; ++i)
-	//{
-	//	Viewports[i].Client = 
-
-	//}
-}
-
-SViewport* FEditor::GetActiveViewport()
+SEditorViewport* FEditor::GetActiveViewport()
 {
 	return ViewportLayout.ActiveViewport ? ViewportLayout.ActiveViewport : nullptr;
 }
@@ -280,18 +273,13 @@ void FEditor::SpawnActorToCurrentScene(UClass* Type, int Size)
 	}
 }
 
-void FEditor::ResizeView(FEditorState::SplitViewMode Mode)
-{
-	ViewportLayout.ResizeLayout(Mode);
-}
-
 void FEditor::SetViewLayout(FEditorState::SplitViewMode Mode)
 {
-	ResizeView(Mode);
+	ViewportLayout.Resize(Mode);
 
 	auto SetCameraMode = [this](int32 ViewportIndex, ECameraMode Mode)
 	{
-		Viewports[ViewportIndex].Client.SetCameraMode(Mode);
+		GetViewportLayout().Viewports[ViewportIndex].GetClient().SetCameraMode(Mode);
 	};
 
 	// TODO: 지금은 하드 코딩이지만 나중에 각 뷰포트 마다 값을 변경할 수 있도록
@@ -322,5 +310,4 @@ void FEditor::SetViewLayout(FEditorState::SplitViewMode Mode)
 		State.SetSplitMode(FEditorState::SplitViewMode::QUAD);
 		break;
 	}
-	//ViewportLayout.SwitchSplitMode(Mode);
 }

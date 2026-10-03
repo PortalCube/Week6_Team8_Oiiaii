@@ -12,7 +12,7 @@
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "Runtime/Components/UTextComponent.h"
 #include "Runtime/UI/SSplitter.h"
-#include "Editor/EditorViewport/FEditorViewport.h"
+#include "Editor/EditorViewport/SEditorViewport.h"
 #include "Editor/EditorViewport/FEditorViewportLayout.h"
 
 enum class EEditorPrimitiveType : uint8
@@ -47,56 +47,64 @@ public:
 	int32 PickingAttempts = 0;
 
 public:
-	FEditor()
-	{
-		//ViewportLayout.Initialize(Viewports);
-	}
 	void Initialize(USceneManager* SceneManager);
 	void Shutdown();
 
 	void Process();
 
+	// Scene
 	void NewScene();
 	void SaveScene(const FString& Path);
 	void LoadScene(const FString& Path);
 	bool CheckSceneExists();
+	UScene* GetCurrentScene() const { return SceneManager ? SceneManager->CurrentScene : nullptr; }
 
+	// Viewport
 	void AddViewport(FEditorViewportClient Viewport);
-	void InitViewports();
-	void ResizeView(FEditorState::SplitViewMode mode);
 	void DeleteViewport(int32 IndexOfViewport);
-	SViewport* GetActiveViewport();
+	SEditorViewport* GetActiveViewport();
+	void SetViewLayout(FEditorState::SplitViewMode mode);
 
+	// Camera
 	void UpdateCamera();
 
+	// Actor
 	bool SelectActor(AActor* Actor);
 	void UnSelectActor();
 	AActor* GetSelectedActor() const { return SelectedActor.Get(); }
-	[[nodiscard]] bool ActorSelected() const { return SelectedActor.IsValid(); }
-	[[nodiscard]] bool ObjectSelected() const { return SelectedActor.IsValid(); }
+	bool ActorSelected() const { return SelectedActor.IsValid(); }
+	bool ObjectSelected() const { return SelectedActor.IsValid(); }
+	void SpawnActorToCurrentScene(UClass* Type, int Count = 1);
+
+	UTextComponent* GetTextcomp() { return SelectedActorTextComp; }
 
 	// Viewport관련
-	FEditorViewport (&GetViewports())[MAX_VIEWPORT_COUNT] { return Viewports; }
-
 	FEditorViewportLayout& GetViewportLayout() { return ViewportLayout; }
-
-	[[nodiscard]] UScene* GetCurrentScene() const
-	{
-		return SceneManager ? SceneManager->CurrentScene : nullptr;
-	}
-	void SpawnActorToCurrentScene(UClass* Type, int Count = 1);
+	
 	// 피킹 등에서 현재 씬의 렌더링 대상 컴포넌트가 필요할 때 사용
-	[[nodiscard]] const TArray<UPrimitiveComponent*>& GetPrimitiveComponents() const;
+	const TArray<UPrimitiveComponent*>& GetPrimitiveComponents() const;
 	FGizmo& GetGizmo() { return Gizmo; }
 	FRenderResourceLibrary* GetRendererLibrary();
 
 	void ClearSelectionForGC();
+	FEditorRenderContext GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry)
+	{
+		FEditorRenderContext EditorRenderContext
+		{
+			.SelectedActor = SelectedActor,
+			.SelectedPrimitive = nullptr,
+			.Grid = &Viewport.GetClient().GetGrid(),
+			.VisualizerRegistry = VisualizerRegistry,
+			.SelectedTransform = SelectedTransform,
+			.Gizmo = ObjectSelected() ? &Gizmo : nullptr,
+			.TextComp = ObjectSelected() ? SelectedActorTextComp : nullptr,
+		};
+		return EditorRenderContext;
+	}
 
+	// State
 	void SaveState();
 	void LoadState();
-	void SetViewLayout(FEditorState::SplitViewMode mode);
-	UTextComponent* GetTextcomp() { return SelectedActorTextComp; }
-
 	void ResetPickingStats()
 	{
 		LastPickingMs = 0.0;
@@ -112,8 +120,6 @@ private:
 	TWeakObjectPtr<AActor> SelectedActor;
 	TWeakObjectPtr<UTextComponent> SelectedActorTextComp;
 
-	// Viewport관련
-	FEditorViewport Viewports[MAX_VIEWPORT_COUNT];
+	// Viewport 관련
 	FEditorViewportLayout ViewportLayout;
-
 };

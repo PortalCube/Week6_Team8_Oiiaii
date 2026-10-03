@@ -66,7 +66,7 @@ public:
 	void Shutdown();
 	void BeginFrame();
 	void BindSceneRenderTargets();
-	void SetViewportUV(FVector2 TopLeftUV, FVector2 LengthUV);
+	void SetViewportPixel(FVector2 LeftTopPixel, FVector2 RightBottomPixel);
 	void ClearDepth();
 	void SwapBuffer();
 	void FlushDrawStats();
