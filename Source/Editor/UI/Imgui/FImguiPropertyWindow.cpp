@@ -26,7 +26,7 @@ namespace
 	constexpr float SlotSize = 64.0f;
 }
 
-void FImguiPropertyWindow::Process(FEditor& Editor)
+void FImguiPropertyWindow::Process(FEditor& Editor, float DeltaTime)
 {
 	if (Editor.bHideUI || Editor.bZenMode)
 	{

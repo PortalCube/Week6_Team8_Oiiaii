@@ -1,4 +1,11 @@
 #include "FEditorApplication.h"
+#include "Editor/UI/Imgui/FImguiPropertyWindow.h"
+#include "Editor/UI/Imgui/FImguiControlPanelWindow.h"
+#include "Editor/UI/Imgui/FImguiContentsDrawer.h"
+#include "Editor/UI/Imgui/FImguiWorldOutliner.h"
+#include "Editor/UI/Imgui/FImguiEditorViewportWindow.h"
+#include "Editor/UI/Imgui/FImguiConsoleWindow.h"
+#include "Editor/UI/Imgui/FImguiToolBar.h"
 
 #include "Runtime/Components/UAnimatedBillboardComp.h"
 #include "Runtime/Components/UBillboardComponent.h"
@@ -13,6 +20,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <utility>
 
 #include "Runtime/Core/FString.h"
 
@@ -26,6 +34,26 @@
 #include <Editor/UI/Imgui/FImguiStatsWindow.h>
 #include <Runtime/CoreUObject/FStatsManager.h>
 #include "Runtime/Core/Globals.h"
+
+FEditorApplication::FEditorApplication()
+{
+    EditorWindows.push_back(std::make_unique<FImguiToolbar>());
+
+	// TODO: FImguiWindow를 UObject를 상속받도록 구조 리팩토링
+	// 지금 방식에서는 어쩔 수 없이 ViewportWindow를 임시로 저장하는게 제일 편함..
+    auto ViewportWindow = std::make_unique<FImguiEditorViewportWindow>();
+    EditorViewportWindow = ViewportWindow.get();
+    EditorWindows.push_back(std::move(ViewportWindow));
+
+    EditorWindows.push_back(std::make_unique<FImguiWorldOutliner>());
+    EditorWindows.push_back(std::make_unique<FImguiControlPanelWindow>());
+    EditorWindows.push_back(std::make_unique<FImguiPropertyWindow>());
+    EditorWindows.push_back(std::make_unique<FImguiConsoleWindow>(
+        [this](const char* Command) { ExecuteCommand(Command); }));
+    EditorWindows.push_back(std::make_unique<FImguiContentsDrawer>());
+}
+
+FEditorApplication::~FEditorApplication() = default;
 
 void FEditorApplication::Initialize_ImguiWin32DX11(
     HWND& Window, ID3D11Device* Device, ID3D11DeviceContext* Context)
@@ -44,10 +72,6 @@ void FEditorApplication::Initialize_Runtime(USceneManager* SceneManager,
 	Editor.InitMultiViewport(FEditorViewportClient{});
 	Editor.LoadState();
 	Editor.SetViewLayout(Editor.State.GetSplitMode());
-
-	// TEMP: 당분간 기본값으로 활성화
-	EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Unit);
-	EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::FPS);
 }
 
 void FEditorApplication::Shutdown()
@@ -68,14 +92,10 @@ void FEditorApplication::BeginFrame()
 
 void FEditorApplication::Tick(float DeltaTime)
 {
-	ToolBar.Process(Editor, ConsoleWindow, ControlPanelWindow, PropertyWindow);
-	EditorViewportWindow.Process(Editor, DeltaTime);
-	WorldOutliner.Process(Editor);
-	ControlPanelWindow.Process(Editor);
-	PropertyWindow.Process(Editor);
-	ConsoleWindow.Process(Editor, [this](const char* Command)
-	    { ExecuteCommand(Command); });
-	ContentsDrawer.Process(Editor);
+	for (const auto& Window : EditorWindows)
+	{
+		Window->Process(Editor, DeltaTime);
+	}
 	Editor.Process();
 }
 
@@ -195,31 +215,31 @@ void FEditorApplication::ExecuteCommand(const char* Command)
 	if (lowerCmd.compare("stat memory") == 0)
 	{
 		UE_LOG("Stat Memory Command is executed!");
-		EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Memory);
+		EditorViewportWindow->Toggle(FImguiStatsWindow::EStatsWindow::Memory);
 	}
 
 	else if (lowerCmd.compare("stat fps") == 0)
 	{
 		UE_LOG("Stat FPS Command is executed!");
-		EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::FPS);
+		EditorViewportWindow->Toggle(FImguiStatsWindow::EStatsWindow::FPS);
 	}
 
 	else if (lowerCmd.compare("stat unit") == 0)
 	{
 		UE_LOG("Stat unit Command is executed!");
-		EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Unit);
+		EditorViewportWindow->Toggle(FImguiStatsWindow::EStatsWindow::Unit);
 	}
 
 	else if (lowerCmd.compare("stat none") == 0)
 	{
 		UE_LOG("Stat Window is closed!");
-		EditorViewportWindow.SetClose();
+		EditorViewportWindow->SetClose();
 	}
 
 	else if (lowerCmd.compare("stat cull") == 0)
 	{
 		UE_LOG("Stat Cull Command is executed!");
-		// EditorViewportWindow.Toggle(FImguiStatsWindow::EStatsWindow::Cull);
+		// EditorViewportWindow->Toggle(FImguiStatsWindow::EStatsWindow::Cull);
 	}
 
 	else if (lowerCmd.compare("cull") == 0)

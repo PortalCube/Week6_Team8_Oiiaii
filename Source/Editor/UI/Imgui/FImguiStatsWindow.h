@@ -1,9 +1,10 @@
 #pragma once
+#include "Editor/UI/IEditorWindow.h"
 #include "Editor/Core/FEditor.h"
 #include "ThirdParty/Imgui/imgui.h"
 #include <vector>
 
-class FImguiStatsWindow final
+class FImguiStatsWindow final : public IEditorWindow
 {
 
 public:
@@ -20,7 +21,7 @@ public:
 	FImguiStatsWindow(const FImguiStatsWindow&) = delete;
 	FImguiStatsWindow& operator=(const FImguiStatsWindow&) = delete;
 
-	void Process(FEditor& Editor, float DeltaTime);
+	void Process(FEditor& Editor, float DeltaTime) override;
 
 	// 패널을 켜고 끈다. Cycle/Counter 스탯 수집도 같이 따라간다.
 	void Toggle(EStatsWindow Window);

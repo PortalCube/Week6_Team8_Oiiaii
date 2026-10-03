@@ -1,4 +1,5 @@
 #pragma once
+#include "Editor/UI/IEditorWindow.h"
 #include "Editor/Core/FEditor.h"
 
 class AActor;
@@ -10,7 +11,7 @@ class UBillboardComponent;
 class UAnimatedBillboardComp;
 
 // 선택된 액터의 컴포넌트 속성을 편집하는 창.
-class FImguiPropertyWindow final
+class FImguiPropertyWindow final : public IEditorWindow
 {
 public:
 	FImguiPropertyWindow() = default;
@@ -21,7 +22,7 @@ public:
 	// 복사 대입 금지
 	FImguiPropertyWindow& operator=(const FImguiPropertyWindow&) = delete;
 
-	void Process(FEditor& Editor);
+	void Process(FEditor& Editor, float DeltaTime) override;
 
 private:
 	// 액터 클래스명과 UUID.

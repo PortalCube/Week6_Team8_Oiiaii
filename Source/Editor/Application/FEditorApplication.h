@@ -2,19 +2,15 @@
 #include "Editor/Application/IApplication.h"
 #include "Editor/Core/FEditor.h"
 #include "Editor/UI/Imgui/FImguiManager.h"
-#include "Editor/UI/Imgui/FImguiToolBar.h"
-#include "Editor/UI/Imgui/FImguiPropertyWindow.h"
-#include "Editor/UI/Imgui/FImguiEditorViewportWindow.h"
-#include "Editor/UI/Imgui/FImguiControlPanelWindow.h"
-#include "Editor/UI/Imgui/FImguiConsoleWindow.h"
-#include "Editor/UI/Imgui/FImguiWorldOutliner.h"
-#include "Editor/UI/Imgui/FImguiContentsDrawer.h"
-#include "Editor/UI/Imgui/FImguiStatsWindow.h"
+#include "Editor/UI/IEditorWindow.h"
+#include <memory>
 #include "Runtime/Engine/FRenderView.h"
 #include "Runtime/Input/FCameraInputController.h"
 
 #include "Editor/Visualizer/FVisualizerRegistry.h"
 #include "Runtime/UI/SWindow.h"
+
+class FImguiEditorViewportWindow;
 
 class FEditorApplication final : public IApplication
 {
@@ -25,13 +21,8 @@ class FEditorApplication final : public IApplication
 
 	FImguiManager ImguiManager;
 
-	FImguiToolbar ToolBar;
-	FImguiControlPanelWindow ControlPanelWindow;
-	FImguiEditorViewportWindow EditorViewportWindow;
-	FImguiPropertyWindow PropertyWindow;
-	FImguiConsoleWindow ConsoleWindow;
-	FImguiWorldOutliner WorldOutliner;
-	FImguiContentsDrawer ContentsDrawer;
+	TArray<std::unique_ptr<IEditorWindow>> EditorWindows;
+	FImguiEditorViewportWindow* EditorViewportWindow = nullptr;
 	FVisualizerRegistry VisualizerRegistry;
 
 	FRenderView* RenderView = nullptr;
@@ -39,8 +30,8 @@ class FEditorApplication final : public IApplication
 	SWindow EditorViewports;
 
 public:
-	FEditorApplication() = default;
-	~FEditorApplication() override = default;
+	FEditorApplication();
+	~FEditorApplication() override;
 
 	static FEditorApplication& Get()
 	{

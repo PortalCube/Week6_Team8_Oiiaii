@@ -1,4 +1,5 @@
-﻿#pragma once
+#pragma once
+#include "Editor/UI/IEditorWindow.h"
 #include "Editor/Core/FEditor.h"
 #include "Runtime/Math/FVector2.h"
 #include "Runtime/Input/FCameraInputController.h"
@@ -10,7 +11,7 @@
 //   ImGui 의 hover/active 판정이 "다른 패널에 가려지지 않은 뷰포트 영역"만 걸러준다.
 // - 창의 위치와 크기를 활성 뷰포트의 UV로 되돌려주고 focus/hover 상태를 갱신한다.
 // - 뷰포트 위에서 클릭이 발생하면 피킹을 수행한다.
-class FImguiEditorViewportWindow final
+class FImguiEditorViewportWindow final : public IEditorWindow
 {
 
 	FImguiStatsWindow StatsWindow;
@@ -24,7 +25,7 @@ public:
 	// 복사 대입 금지
 	FImguiEditorViewportWindow& operator=(const FImguiEditorViewportWindow&) = delete;
 
-	void Process(FEditor& Editor, float DeltaTime);
+	void Process(FEditor& Editor, float DeltaTime) override;
 
 	void Toggle(FImguiStatsWindow::EStatsWindow Window);
 	void SetClose();

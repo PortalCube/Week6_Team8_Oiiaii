@@ -19,7 +19,7 @@ FImguiContentsDrawer::FImguiContentsDrawer() : LeftPanelWidth(200.0f)
 	CurrentPath = RootPath;
 }
 
-void FImguiContentsDrawer::Process(FEditor& Editor)
+void FImguiContentsDrawer::Process(FEditor& Editor, float DeltaTime)
 {
 	if (Editor.bHideUI || Editor.bZenMode)
 	{

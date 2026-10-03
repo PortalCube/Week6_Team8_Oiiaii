@@ -7,7 +7,7 @@
 #include <string>
 #include <algorithm>
 
-void FImguiWorldOutliner::Process(FEditor& Editor)
+void FImguiWorldOutliner::Process(FEditor& Editor, float DeltaTime)
 {
 	if (Editor.bHideUI || Editor.bZenMode)
 	{

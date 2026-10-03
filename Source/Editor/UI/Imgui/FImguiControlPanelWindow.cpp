@@ -20,7 +20,7 @@
 #include <ShlObj.h>
 #include <filesystem>
 
-void FImguiControlPanelWindow::Process(FEditor& Editor)
+void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 {
 	if (Editor.bHideUI || Editor.bZenMode)
 	{

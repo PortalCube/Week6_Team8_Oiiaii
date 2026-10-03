@@ -1,4 +1,5 @@
 #pragma once
+#include "Editor/UI/IEditorWindow.h"
 #include "Editor/Core/FEditor.h"
 
 class UTexture;
@@ -7,7 +8,7 @@ class UMaterial;
 class UStaticMesh;
 class UFont;
 
-class FImguiContentsDrawer final
+class FImguiContentsDrawer final : public IEditorWindow
 {
 
 public:
@@ -19,7 +20,7 @@ public:
 	// 복사 대입 금지
 	FImguiContentsDrawer& operator=(const FImguiContentsDrawer&) = delete;
 
-	void Process(FEditor& Editor);
+	void Process(FEditor& Editor, float DeltaTime) override;
 	std::filesystem::path RootPath;
 	std::filesystem::path CurrentPath;
 	float LeftPanelWidth;

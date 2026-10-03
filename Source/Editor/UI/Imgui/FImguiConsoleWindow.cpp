@@ -6,6 +6,7 @@
 #include "ThirdParty/Imgui/imgui_impl_win32.h"
 #include <string.h>
 #include <ctime>
+#include <utility>
 
 namespace
 {
@@ -111,7 +112,7 @@ static const char* Stristr(const char* haystack, const char* needle)
 	return nullptr;
 }
 
-void FImguiConsoleWindow::Process(FEditor& Editor, std::function<void(const char*)> f)
+void FImguiConsoleWindow::Process(FEditor& Editor, float DeltaTime)
 {
 	if (Editor.bHideUI || Editor.bZenMode)
 	{
@@ -119,8 +120,6 @@ void FImguiConsoleWindow::Process(FEditor& Editor, std::function<void(const char
 	}
 
 	ImGui::Begin("Console Window", nullptr, ImGuiWindowFlags_MenuBar);
-
-	ExecuteFunction = f;
 
 	const bool bCopyToClipboard = ShowMenuBar();
 
@@ -403,7 +402,8 @@ void FImguiConsoleWindow::ShowCommandLine()
 		DrawSuggestionPopup(InputMin);
 }
 
-FImguiConsoleWindow::FImguiConsoleWindow()
+FImguiConsoleWindow::FImguiConsoleWindow(std::function<void(const char*)> InExecuteCommand)
+    : ExecuteFunction(std::move(InExecuteCommand))
 {
 	FLogManager::Get().Clear();
 
@@ -582,7 +582,10 @@ void FImguiConsoleWindow::ExecCommand(const char* command_line)
 	else
 	{
 		// 이외의 커맨드는 EditorApplication의 함수로 전달합니다.
-		ExecuteFunction(command_line);
+		if (ExecuteFunction)
+		{
+			ExecuteFunction(command_line);
+		}
 	}
 
 	// On command input, we scroll to bottom even if AutoScroll==false

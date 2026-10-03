@@ -1,20 +1,22 @@
 #pragma once
+#include "Editor/UI/IEditorWindow.h"
 #include "Editor/Core/FEditor.h"
 #include "Runtime/Core/Log.h"
+#include <functional>
 #include "ThirdParty/Imgui/imgui.h"
 
 // 로그 출력과 명령어 입력을 담당하는 콘솔 창.
-class FImguiConsoleWindow final
+class FImguiConsoleWindow final : public IEditorWindow
 {
 public:
-	FImguiConsoleWindow();
-	~FImguiConsoleWindow();
+	explicit FImguiConsoleWindow(std::function<void(const char*)> InExecuteCommand);
+	~FImguiConsoleWindow() override;
 
 	// History 가 ImGui::MemAlloc 로 잡은 raw 버퍼를 소유하므로 복사를 막는다.
 	FImguiConsoleWindow(const FImguiConsoleWindow&) = delete;
 	FImguiConsoleWindow& operator=(const FImguiConsoleWindow&) = delete;
 
-	void Process(FEditor& Editor, std::function<void(const char*)> f);
+	void Process(FEditor& Editor, float DeltaTime) override;
 
 private:
 	// 상단 메뉴바. Actions 메뉴, 레벨 토글, 필터 입력.
