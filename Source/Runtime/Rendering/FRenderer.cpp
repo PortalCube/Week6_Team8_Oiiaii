@@ -8,6 +8,7 @@
 #include "Runtime/Core/PointerTypes.h"
 #include "Runtime/Core/Globals.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
+#include "Runtime/Components/UFireBallComponent.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Rendering/FRenderQueue.h"
 #include "Runtime/Rendering/FTexture.h"
@@ -25,7 +26,8 @@ bool FRenderer::Initialize(HWND Window)
 {
 	if (!InitializeDeviceAndSwapChain(Window) ||
 	    !InitializeBackBufferAndDepthStencil() ||
-	    !InitializeEditorViewportRenderTarget() || !InitializeConstantBuffers())
+	    !InitializeEditorViewportRenderTarget() || !InitializeConstantBuffers() ||
+	    !InitializePointLightBuffers())
 	{
 		Shutdown();
 		return false;
@@ -67,6 +69,9 @@ void FRenderer::Shutdown()
 		FrameResources[i].ViewConstantBuffer.Reset();
 	}
 	LightConstantBuffer.Reset();
+	PointLightSRV.Reset();
+	PointLightBuffer.Reset();
+	PointLightCountBuffer.Reset();
 
 	BackBufferRTV.Reset();
 	DepthStencilView.Reset();
@@ -842,6 +847,58 @@ bool FRenderer::InitializeBackBufferAndDepthStencil()
 	}
 
 	return true;
+}
+
+bool FRenderer::InitializePointLightBuffers()
+{
+	D3D11_BUFFER_DESC LightDesc{};
+	LightDesc.ByteWidth =
+	    sizeof(FPointLightConstants) * MaxPointLightCount;
+	LightDesc.Usage = D3D11_USAGE_DEFAULT;
+	LightDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	LightDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	LightDesc.StructureByteStride = sizeof(FPointLightConstants);
+
+	HRESULT Result = Device->CreateBuffer(
+	    &LightDesc, nullptr, PointLightBuffer.GetAddressOf());
+
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SrvDesc{};
+	SrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	SrvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	SrvDesc.Buffer.FirstElement = 0;
+	SrvDesc.Buffer.NumElements = MaxPointLightCount;
+
+	Result = Device->CreateShaderResourceView(
+	    PointLightBuffer.Get(),
+	    &SrvDesc,
+	    PointLightSRV.GetAddressOf());
+
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	FPointLightCountConstants InitialCount{};
+
+	D3D11_BUFFER_DESC CountDesc{};
+	CountDesc.ByteWidth = sizeof(FPointLightCountConstants);
+	CountDesc.Usage = D3D11_USAGE_DEFAULT;
+	CountDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	D3D11_SUBRESOURCE_DATA InitialData{};
+	InitialData.pSysMem = &InitialCount;
+
+	Result = Device->CreateBuffer(
+	    &CountDesc,
+	    &InitialData,
+	    PointLightCountBuffer.GetAddressOf());
+
+	return SUCCEEDED(Result);
 }
 
 bool FRenderer::InitializeEditorViewportRenderTarget()

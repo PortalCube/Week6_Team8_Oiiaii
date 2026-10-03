@@ -51,28 +51,20 @@ public:
 	EViewModeIndex GetRenderMode() const { return CurrentRenderMode; }
 	void SetRenderMode(EViewModeIndex InMode) { CurrentRenderMode = InMode; }
 
-	[[nodiscard]]
-	TSharedPtr<FMesh> CreateMesh(const FMeshDesc& Desc);
-	[[nodiscard]]
-	TSharedPtr<FMesh> CreateDynamicMesh(const FMeshDesc& Desc); // 텍스트 렌더링용
-	void GetDeviceAndContext_ImplDX11(ID3D11Device*& DeviceOut,
-	    ID3D11DeviceContext*& ContextOut);
-	[[nodiscard]] ID3D11Device* GetDevice() const { return Device.Get(); }
-	[[nodiscard]] ID3D11DeviceContext* GetContext() const
-	{
-		return Context.Get();
-	}
+	[[nodiscard]] TSharedPtr<FMesh> CreateMesh(const FMeshDesc& Desc);
+	[[nodiscard]] TSharedPtr<FMesh> CreateDynamicMesh(const FMeshDesc& Desc); // 텍스트 렌더링용
 
-	[[nodiscard]]
-	TSharedPtr<FRenderPipeline>
-	CreateRenderPipeline(const FRenderPipelineDesc& Desc,
-	    EViewModeIndex RenderMode = EViewModeIndex::VMI_Lit);
-	[[nodiscard]]
-	TSharedPtr<FTexture> CreateTexture(const wchar_t* path);
+	void GetDeviceAndContext_ImplDX11(ID3D11Device*& DeviceOut, ID3D11DeviceContext*& ContextOut);
+	[[nodiscard]] ID3D11Device* GetDevice() const { return Device.Get(); }
+	[[nodiscard]] ID3D11DeviceContext* GetContext() const { return Context.Get(); }
+
+	[[nodiscard]] TSharedPtr<FRenderPipeline> CreateRenderPipeline(
+		const FRenderPipelineDesc& Desc, EViewModeIndex RenderMode = EViewModeIndex::VMI_Lit);
+	[[nodiscard]] TSharedPtr<FTexture> CreateTexture(const wchar_t* path);
 	TSharedPtr<FTexture> CreateSolidTexture(const FVector4& Color);
+
 	// 파이프라인 조회
-	[[nodiscard]]
-	TSharedPtr<FRenderPipeline> GetPipeline(const FName& Id) const;
+	[[nodiscard]] TSharedPtr<FRenderPipeline> GetPipeline(const FName& Id) const;
 
 	FLineBatcher& GetLineBatcher() { return LineBatcher; }
 
@@ -152,6 +144,15 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ViewConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantBuffer;*/
 	Microsoft::WRL::ComPtr<ID3D11Buffer> LightConstantBuffer;
+
+	static constexpr uint32 MaxPointLightCount = 64;
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightBuffer;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> PointLightSRV;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightCountBuffer;
+
+	bool InitializePointLightBuffers();
+
 
 	// 임시 상수버퍼
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantUploadBuffer;

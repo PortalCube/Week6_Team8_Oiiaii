@@ -14,6 +14,7 @@ struct PS_INPUT
     float4 Color : COLOR;
     float2 UV : TEXCOORD0;
     float3 Normal : NORMAL;
+    float3 WorldPosition : TEXCOORD1;
 };
 
 PS_INPUT MainVS(VS_INPUT Input)
@@ -21,6 +22,7 @@ PS_INPUT MainVS(VS_INPUT Input)
     PS_INPUT Output;
 
     Output.Position = mul(float4(Input.Position, 1.0f), mul(World, mul(View, Projection)));
+    Output.WorldPosition = mul(float4(Input.Position, 1.0f), World).xyz;
     Output.Color = Input.Color;
     Output.UV = Input.UV * UVScale + UVOffset;
 

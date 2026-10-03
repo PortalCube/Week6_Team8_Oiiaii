@@ -7,6 +7,7 @@
 #include "Runtime/Actors/AActor.h"
 #include "Runtime/Components/UBillboardComponent.h"
 #include "Runtime/Components/Mesh/UStaticMeshComponent.h"
+#include "Runtime/Components/UFireBallComponent.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Engine/FSceneView.h"
@@ -18,6 +19,7 @@
 #include "Runtime/Engine/UScene.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Core/Globals.h"
+
 #include <fstream>
 
 #include "Runtime/CoreUObject/FStatsManager.h"
@@ -238,6 +240,9 @@ void FRenderView::RenderView(const FSceneView& View, const UScene& Scene, const 
 	{
 		RenderQueue.Sort();
 	}
+
+	TArray<FPointLightConstants> PointLights;
+	CollectPointLights(Scene, PointLights);
 
 	// 기본 씬 오브젝트 패스
 	FlushBasePass(View.Camera);
@@ -513,6 +518,26 @@ void FRenderView::FlushQueue(const FCamera& Camera)
 	}
 
 	RenderQueue.Clear();
+}
+
+void FRenderView::CollectPointLights(const UScene& Scene, TArray<FPointLightConstants>& OutLights)
+{
+	OutLights.clear();
+
+	for (UPrimitiveComponent* Component : Scene.GetRenderComponents())
+	{
+		if (!Component)
+		{
+			continue;
+		}
+
+		UFireBallComponent* Light = Component->Cast<UFireBallComponent>();
+
+		if (Light)
+		{
+			OutLights.push_back(Light->GetPointLightData());
+		}
+	}
 }
 
 FCullingSettings& FRenderView::GetCullingSettings()

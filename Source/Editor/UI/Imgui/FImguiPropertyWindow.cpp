@@ -249,6 +249,12 @@ void FImguiPropertyWindow::ShowTextSettings(UTextComponent& TextComp) const
 		TextComp.SetText(newText);
 	}
 
+	FVector4 Color = TextComp.GetTextColor();
+	if (ImGui::ColorEdit4("Text Color", &Color.X))
+	{
+		TextComp.SetTextColor(Color);
+	}
+
 	ImGui::TextDisabled("Text Bounds");
 	ImGui::Text("Width: %.2f", TextComp.GetWidth());
 	ImGui::Text("Height: %.2f", TextComp.GetHeight());

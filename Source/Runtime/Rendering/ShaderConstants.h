@@ -37,6 +37,14 @@ struct FObjectConstants
 };
 static_assert(sizeof(FObjectConstants) % 16 == 0);
 
+
+struct FPointLightCountConstants
+{
+	uint32 PointLightCount = 0;
+	float Padding[3]{};
+};
+static_assert(sizeof(FPointLightCountConstants) == 16);
+
 static constexpr uint32 ConstantRangeAlignment = 256u;
 
 static constexpr uint32 AlignConstantRange(uint32 Size)
