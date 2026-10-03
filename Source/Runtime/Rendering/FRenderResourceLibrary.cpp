@@ -182,6 +182,7 @@ bool FRenderResourceLibrary::CreateOutlinePipeline(FRenderer& Renderer)
 	return true;
 }
 
+// Post Process 전용 파이프라인
 bool FRenderResourceLibrary::CreatePostProcessPipeline(FRenderer& Renderer)
 {
 	ID3D11Device* Device = Renderer.GetDevice();

@@ -11,8 +11,10 @@
 #include "Runtime/Engine/USceneManager.h"
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "Runtime/Components/UTextComponent.h"
-
 #include "Runtime/UI/SSplitter.h"
+#include "Editor/EditorViewport/FEditorViewport.h"
+#include "Editor/EditorViewport/FEditorViewportLayout.h"
+
 enum class EEditorPrimitiveType : uint8
 {
 	Cube,
@@ -44,14 +46,11 @@ public:
 	double AccumulatedPickingMs = 0.0;
 	int32 PickingAttempts = 0;
 
-	void ResetPickingStats()
-	{
-		LastPickingMs = 0.0;
-		AccumulatedPickingMs = 0.0;
-		PickingAttempts = 0;
-	}
-
 public:
+	FEditor()
+	{
+		//ViewportLayout.Initialize(Viewports);
+	}
 	void Initialize(USceneManager* SceneManager);
 	void Shutdown();
 
@@ -63,10 +62,10 @@ public:
 	bool CheckSceneExists();
 
 	void AddViewport(FEditorViewportClient Viewport);
-	void InitMultiViewport(FEditorViewportClient Viewport);
+	void InitViewports();
 	void ResizeView(FEditorState::SplitViewMode mode);
 	void DeleteViewport(int32 IndexOfViewport);
-	FEditorViewportClient* GetActiveViewport(); // 임시로 0번 반환
+	SViewport* GetActiveViewport();
 
 	void UpdateCamera();
 
@@ -76,10 +75,11 @@ public:
 	[[nodiscard]] bool ActorSelected() const { return SelectedActor.IsValid(); }
 	[[nodiscard]] bool ObjectSelected() const { return SelectedActor.IsValid(); }
 
-	[[nodiscard]] TArray<FEditorViewportClient>& GetViewports()
-	{
-		return EditorViewports;
-	}
+	// Viewport관련
+	FEditorViewport (&GetViewports())[MAX_VIEWPORT_COUNT] { return Viewports; }
+
+	FEditorViewportLayout& GetViewportLayout() { return ViewportLayout; }
+
 	[[nodiscard]] UScene* GetCurrentScene() const
 	{
 		return SceneManager ? SceneManager->CurrentScene : nullptr;
@@ -97,19 +97,23 @@ public:
 	void SetViewLayout(FEditorState::SplitViewMode mode);
 	UTextComponent* GetTextcomp() { return SelectedActorTextComp; }
 
-	// Viewport관련
-	int32 ActiveViewportIndex = 0;
-	SWindow* Root = nullptr;
-	SWindow Leaf[4];
-	SSplitterH HorizonSplitter;  // 세로선
-	SSplitterH HorizonSplitter2; // 세로선
-	SSplitterV VerticalSplitter; // 가로선
+	void ResetPickingStats()
+	{
+		LastPickingMs = 0.0;
+		AccumulatedPickingMs = 0.0;
+		PickingAttempts = 0;
+	}
+
 private:
 	USceneManager* SceneManager =
 	    nullptr; // 씬을 다중으로 가질 수 있도록 구조개선 가능-이경우 에디터쪽에
 	             // 클래스를 추가해 씬과 FEditorViewportClient들을 연관
-	TArray<FEditorViewportClient> EditorViewports;
 	FGizmo Gizmo;
 	TWeakObjectPtr<AActor> SelectedActor;
 	TWeakObjectPtr<UTextComponent> SelectedActorTextComp;
+
+	// Viewport관련
+	FEditorViewport Viewports[MAX_VIEWPORT_COUNT];
+	FEditorViewportLayout ViewportLayout;
+
 };

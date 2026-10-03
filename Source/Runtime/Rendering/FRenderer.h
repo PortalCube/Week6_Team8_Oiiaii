@@ -33,13 +33,39 @@ struct FFrameResource
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantBuffer;
 };
 
+// TODO: 임시 위치  헤더 파일로 분리
+// Screen Pass에 쓰이는 Color와 Depth Texture
+// 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리
+struct FSceneTextures
+{
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneColorTexture;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> SceneColorRTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneColorSRV;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneDepthTexture;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> SceneDepthDSV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneDepthSRV;
+
+	void Reset()
+	{
+		SceneColorTexture.Reset();
+		SceneColorRTV.Reset();
+		SceneColorSRV.Reset();
+
+		SceneDepthTexture.Reset();
+		SceneDepthDSV.Reset();
+		SceneDepthSRV.Reset();
+	}
+};
+
+
 class FRenderer final
 {
 public:
 	bool Initialize(HWND Window);
 	void Shutdown();
 	void BeginFrame();
-	void BindEditorViewportRenderTargets();
+	void BindSceneRenderTargets();
 	void SetViewportUV(FVector2 TopLeftUV, FVector2 LengthUV);
 	void ClearDepth();
 	void SwapBuffer();
@@ -88,10 +114,11 @@ public:
 
 	void DrawUploadedCommand(const FDrawCommand& Command, FRenderPipeline* OverridePipeline);
 
-	void RenderOutline();
+	void DrawScreenPass(ID3D11ShaderResourceView* SRVs[], ID3D11RenderTargetView* BackBuffer);
+	void RenderSelectionOutline();
 	void RenderSceneDepth();
-	ID3D11RenderTargetView* GetBackBuffer() { return BackBufferRTV.Get(); }
-	ID3D11DepthStencilView* GetDepthStencilView() { return DepthStencilView.Get(); }
+	ID3D11RenderTargetView* GetBackBufferRTV() { return BackBufferRTV.Get(); }
+	ID3D11DepthStencilView* GetSceneDepthDSV() { return SceneDepthDSV.Get(); }
 
 	float GetWidth() const { return Viewport.Width; }
 	float GetHeight() const { return Viewport.Height; }
@@ -100,9 +127,12 @@ public:
 
 private:
 	bool InitializeDeviceAndSwapChain(HWND Window);
-	bool InitializeBackBufferAndDepthStencil();
+	bool InitializeBackBuffer();
+	bool InitializeSceneTextures();
 	bool InitializeConstantBuffers();
 	bool InitializeGPUTimerQueries();
+
+	void ResetSceneTexture();
 
 	// GPU 타임스탬프. 결과를 같은 프레임에 바로 읽으면 CPU가 GPU를 기다리게 되므로
 	// 쿼리 세트를 돌려 쓰고 가장 오래된 것만 회수한다.
@@ -128,10 +158,6 @@ private:
 	// D3D11_1 Extension
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> Context1;
 
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> BackBufferRTV;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> DepthStencilBuffer;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> DepthStencilView;
-
 	// 모든 ConstantBuffer의 최대 크기
 	static constexpr UINT ConstantBufferSize = 256u;
 
@@ -144,10 +170,17 @@ private:
 	// 임시 상수버퍼
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantUploadBuffer;
 
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> EditorViewPortRTV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> EditorViewPortSRV;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> DepthStencilSRV;
+	// Draw, ImGui 모두 다 포함하는 BackBuffer Texture
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> BackBufferTexture;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> BackBufferRTV;
+
+	// Screen Pass에서 쓰이는 텍스쳐
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneColorTexture;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> SceneColorRTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneColorSRV;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneDepthTexture; // 이전 DepthStencilBuffer
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> SceneDepthDSV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneDepthSRV;
 
 	TMap<FRasterizerDesc, Microsoft::WRL::ComPtr<ID3D11RasterizerState>> RasterizerStateMap;
@@ -155,10 +188,7 @@ private:
 	TMap<FBlendDesc, Microsoft::WRL::ComPtr<ID3D11BlendState>> BlendStateMap;
 	TMap<FTextureSamplerDesc, Microsoft::WRL::ComPtr<ID3D11SamplerState>> SamplerStateMap;
 
-	bool InitializeEditorViewportRenderTarget();
-
 	// 텍스트 인스턴싱 버퍼
-
 	Microsoft::WRL::ComPtr<ID3D11Buffer> InstanceBuffer;
 	UINT TextInstanceBufferSize = 0;
 

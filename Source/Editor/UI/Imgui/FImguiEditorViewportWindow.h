@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Editor/Core/FEditor.h"
 #include "Runtime/Math/FVector2.h"
 #include "Runtime/Input/FCameraInputController.h"
@@ -52,7 +52,7 @@ private:
 
 	// ImGui 창의 실제 사각형을 뷰포트 UV 와 종횡비에 반영한다.
 	// 사용자가 창을 옮기거나 크기를 바꾸면 3D 렌더 영역이 따라간다.
-	void SyncViewportRect(FEditorViewportClient& Viewport, const FRect& Rect, const FVector2& ClientSize) const;
+	void SyncViewportRect(SViewport& Viewport, const FRect& Rect, const FVector2& ClientSize) const;
 
 	// 창 전체를 덮는 클릭 판정용 아이템을 만들고 입력 상태를 모은다.
 	FViewportInput GatherInput(const FVector2& ViewportTopLeftPixels,
@@ -61,23 +61,23 @@ private:
 	// 창이 작업 영역 위로 올라가 타이틀바에 가리는 것을 막는다.
 	void ClampWindowToWorkArea() const;
 
-	void UpdateSelection(FEditor& Editor, const FEditorViewportClient& Viewport,
+	void UpdateSelection(FEditor& Editor, const SViewport& Viewport,
 	    const FViewportInput& Input);
-	void UpdateGizmo(FEditor& Editor, const FEditorViewportClient& Viewport,
+	void UpdateGizmo(FEditor& Editor, const SViewport& Viewport,
 	    const FViewportInput& Input);
-	void UpdateCamera(FEditor& Editor, FEditorViewportClient& Viewport,
+	void UpdateCamera(FEditor& Editor, SViewport& Viewport,
 	    const FViewportInput& Input, float DeltaTime);
 	void UpdateShortcuts(FEditor& Editor) const;
 
-	void HandlePicking(FEditor& Editor, const FEditorViewportClient& Viewport,
+	void HandlePicking(FEditor& Editor, const SViewport& Viewport,
 	    const FVector2& LocalMousePixels, const FVector2& ViewportSizePixels);
-	void UpdateGizmoHover(FEditor& Editor, const FEditorViewportClient& Viewport,
+	void UpdateGizmoHover(FEditor& Editor, const SViewport& Viewport,
 	    const FVector2& LocalMousePixels, const FVector2& ViewportSizePixels);
 	void ShowViewportVerticalSplitter(SSplitter& Splitter);
 	void ShowViewportHorizontalSplitter(SSplitter& Splitter);
 	void ApplyPendingViewportMaximize(FEditor& Editor);
 	bool GetViewportSceneRect(const ImVec2& Origin, FRect& OutRect) const;
-	void DrawViewportHeader(int32 ViewportIndex, FEditor& Editor);
-	int32 PendingMaximizeViewport = -1;
+	void DrawViewportHeader(SViewport& Viewport, FEditor& Editor);
+	SViewport* PendingMaximizeViewport = nullptr;
 	FCameraInputController CameraController;
 };

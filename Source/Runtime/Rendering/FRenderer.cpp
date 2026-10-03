@@ -24,8 +24,8 @@
 bool FRenderer::Initialize(HWND Window)
 {
 	if (!InitializeDeviceAndSwapChain(Window) ||
-	    !InitializeBackBufferAndDepthStencil() ||
-	    !InitializeEditorViewportRenderTarget() ||
+	    !InitializeBackBuffer() ||
+	    !InitializeSceneTextures() ||
 		!InitializeConstantBuffers())
 	{
 		Shutdown();
@@ -69,9 +69,9 @@ void FRenderer::Shutdown()
 	}
 	LightConstantBuffer.Reset();
 
+	BackBufferTexture.Reset();
 	BackBufferRTV.Reset();
-	DepthStencilView.Reset();
-	DepthStencilBuffer.Reset();
+	ResetSceneTexture();
 
 	for (FGPUTimerQuery& Query : GPUTimerQueries)
 	{
@@ -94,17 +94,17 @@ void FRenderer::BeginFrame()
 	BeginGPUTimer();
 
 	Context->RSSetViewports(1, &Viewport);
-	BindEditorViewportRenderTargets();
+	BindSceneRenderTargets();
 
 	constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 	// constexpr float ClearColor[] = {0.05f, 0.05f, 0.08f, 1.0f};
-	Context->ClearRenderTargetView(EditorViewPortRTV.Get(), ClearColor);
-	Context->ClearDepthStencilView(DepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	Context->ClearRenderTargetView(SceneColorRTV.Get(), ClearColor);
+	Context->ClearDepthStencilView(SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
-void FRenderer::BindEditorViewportRenderTargets()
+void FRenderer::BindSceneRenderTargets()
 {
-	Context->OMSetRenderTargets(1, EditorViewPortRTV.GetAddressOf(), DepthStencilView.Get());
+	Context->OMSetRenderTargets(1, SceneColorRTV.GetAddressOf(), SceneDepthDSV.Get());
 }
 
 void FRenderer::SetViewportUV(FVector2 TopLeftUV, FVector2 LengthUV)
@@ -120,7 +120,7 @@ void FRenderer::SetViewportUV(FVector2 TopLeftUV, FVector2 LengthUV)
 
 void FRenderer::ClearDepth()
 {
-	Context->ClearDepthStencilView(DepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	Context->ClearDepthStencilView(SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void FRenderer::FlushDrawStats()
@@ -146,21 +146,16 @@ void FRenderer::SwapBuffer()
 void FRenderer::OnWindowSize(UINT Width, UINT Height)
 {
 	Context->OMSetRenderTargets(0, nullptr, nullptr);
+	BackBufferTexture.Reset();
 	BackBufferRTV.Reset();
-	DepthStencilView.Reset();
-	DepthStencilSRV.Reset();
-	SceneDepthSRV.Reset();
-	DepthStencilBuffer.Reset();
-	EditorViewPortRTV.Reset();
-	EditorViewPortSRV.Reset();
-	renderTexture.Reset();
+	ResetSceneTexture();
 
 	SwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
 	Viewport.Width = static_cast<float>(Width);
 	Viewport.Height = static_cast<float>(Height);
 
-	InitializeBackBufferAndDepthStencil();
-	InitializeEditorViewportRenderTarget();
+	InitializeBackBuffer();
+	InitializeSceneTextures();
 }
 
 TSharedPtr<FMesh> FRenderer::CreateMesh(const FMeshDesc& Desc)
@@ -749,7 +744,7 @@ bool FRenderer::InitializeDeviceAndSwapChain(HWND Window)
 	return true;
 }
 
-bool FRenderer::InitializeBackBufferAndDepthStencil()
+bool FRenderer::InitializeBackBuffer()
 {
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> BackBuffer;
 	HRESULT Result = SwapChain->GetBuffer(0, IID_PPV_ARGS(&BackBuffer));
@@ -758,17 +753,32 @@ bool FRenderer::InitializeBackBufferAndDepthStencil()
 		return false;
 	}
 
-	Result =
-	    Device->CreateRenderTargetView(BackBuffer.Get(), nullptr, &BackBufferRTV);
+	Result = Device->CreateRenderTargetView(BackBuffer.Get(), nullptr, &BackBufferRTV);
 	if (FAILED(Result))
 	{
 		return false;
 	}
 
+	return true;
+}
+
+// SceneColor, SceneDepth 생성
+bool FRenderer::InitializeSceneTextures()
+{
 	const UINT Width = static_cast<UINT>(Viewport.Width);
 	const UINT Height = static_cast<UINT>(Viewport.Height);
 
-	D3D11_TEXTURE2D_DESC DepthStencilDesc = {
+	if (Width == 0 || Height == 0)
+	{
+		return false;
+	}
+
+	if (!Device)
+	{
+		return false;
+	}
+
+	D3D11_TEXTURE2D_DESC SceneDeptTexturehDesc = {
 		.Width = Width,
 		.Height = Height,
 		.MipLevels = 1u,
@@ -781,64 +791,46 @@ bool FRenderer::InitializeBackBufferAndDepthStencil()
 		.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
 	};
 
-	Result =
-	    Device->CreateTexture2D(&DepthStencilDesc, nullptr, &DepthStencilBuffer);
+	HRESULT Result = Device->CreateTexture2D(&SceneDeptTexturehDesc, nullptr, &SceneDepthTexture);
 	if (FAILED(Result))
 	{
 		return false;
 	}
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC DsvDesc{
+	D3D11_DEPTH_STENCIL_VIEW_DESC SceneDepthDSVDesc = {
 		.Format = DXGI_FORMAT_D24_UNORM_S8_UINT,
 		.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D,
 	};
-	Result = Device->CreateDepthStencilView(DepthStencilBuffer.Get(), &DsvDesc, &DepthStencilView);
+	Result = Device->CreateDepthStencilView(SceneDepthTexture.Get(), &SceneDepthDSVDesc, &SceneDepthDSV);
 	if (FAILED(Result))
 	{
 		return false;
 	}
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC StencilSrvDesc{
+	D3D11_SHADER_RESOURCE_VIEW_DESC SceneDepthSRVDesc = {
 		.Format = DXGI_FORMAT_X24_TYPELESS_G8_UINT,
 		.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
 		.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
 	};
-	Result = Device->CreateShaderResourceView(DepthStencilBuffer.Get(), &StencilSrvDesc, &DepthStencilSRV);
+	Result = Device->CreateShaderResourceView(SceneDepthTexture.Get(), &SceneDepthSRVDesc, &SceneDepthSRV);
 	if (FAILED(Result))
 	{
 		return false;
-	}
+	} // 지금 중복이 위 아래 둘다 있음  이걸 이제 인자로 받아야함
 
 	// Scene Depth Viwe Mode 용 SRV 생성
-	D3D11_SHADER_RESOURCE_VIEW_DESC SceneDepthSrvDesc{
-		.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS, // 포멧은 TYPELESS이어야함
-		.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-		.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
-	};
-	Result = Device->CreateShaderResourceView(DepthStencilBuffer.Get(), &SceneDepthSrvDesc, &SceneDepthSRV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
+	//D3D11_SHADER_RESOURCE_VIEW_DESC SceneDepthSrvDesc = {
+	//	.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS, // 포멧은 TYPELESS이어야함
+	//	.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
+	//	.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
+	//};
+	//Result = Device->CreateShaderResourceView(SceneDepthTexture.Get(), &SceneDepthSrvDesc, &SceneDepthSRV);
+	//if (FAILED(Result))
+	//{
+	//	return false;
+	//}
 
-	return true;
-}
-
-bool FRenderer::InitializeEditorViewportRenderTarget()
-{
-	if (!Device)
-	{
-		return false;
-	}
-
-	const UINT Width = static_cast<UINT>(Viewport.Width);
-	const UINT Height = static_cast<UINT>(Viewport.Height);
-	if (Width == 0 || Height == 0)
-	{
-		return false;
-	}
-
-	D3D11_TEXTURE2D_DESC ColorTexDesc{
+	D3D11_TEXTURE2D_DESC SceneColorTextureDesc{
 		.Width = Width,
 		.Height = Height,
 		.MipLevels = 1u,
@@ -849,22 +841,19 @@ bool FRenderer::InitializeEditorViewportRenderTarget()
 		.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
 	};
 
-	HRESULT Result =
-	    Device->CreateTexture2D(&ColorTexDesc, nullptr, &renderTexture);
+	Result = Device->CreateTexture2D(&SceneColorTextureDesc, nullptr, &SceneColorTexture);
 	if (FAILED(Result))
 	{
 		return false;
 	}
 
-	Result = Device->CreateRenderTargetView(renderTexture.Get(), nullptr,
-	    &EditorViewPortRTV);
+	Result = Device->CreateRenderTargetView(SceneColorTexture.Get(), nullptr, &SceneColorRTV);
 	if (FAILED(Result))
 	{
 		return false;
 	}
 
-	Result = Device->CreateShaderResourceView(renderTexture.Get(), nullptr,
-	    &EditorViewPortSRV);
+	Result = Device->CreateShaderResourceView(SceneColorTexture.Get(), nullptr, &SceneColorSRV);
 	if (FAILED(Result))
 	{
 		return false;
@@ -1087,6 +1076,16 @@ bool FRenderer::InitializeConstantBuffers()
 	}
 
 	return true;
+}
+
+void FRenderer::ResetSceneTexture()
+{
+	SceneColorTexture.Reset();
+	SceneColorRTV.Reset();
+	SceneColorSRV.Reset();
+	SceneDepthTexture.Reset();
+	SceneDepthDSV.Reset();
+	SceneDepthSRV.Reset();
 }
 
 void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
@@ -1471,7 +1470,36 @@ void FRenderer::ClearTextInstances()
 	FRenderResourceLibrary::Get().DestroyAllInstancingArray();
 }
 
-void FRenderer::RenderOutline()
+void FRenderer::DrawScreenPass(ID3D11ShaderResourceView* SRVs[], ID3D11RenderTargetView* BackBuffer)
+{
+	//// 백버퍼 뷰포트 및 토폴로지 복구
+	//Context->RSSetViewports(1, &Viewport);
+
+	//Context->IASetInputLayout(nullptr);
+
+
+	//Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//ID3D11Buffer* NullVB = nullptr;
+	//UINT Zero = 0;
+	//Context->IASetVertexBuffers(0, 1, &NullVB, &Zero, &Zero);
+
+	//Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), nullptr);
+	//// 씬 텍스처와 스텐실 텍스처 바인딩
+	//ID3D11ShaderResourceView* SRVs[] = { SceneColorSRV.Get(), SceneDepthSRV.Get() };
+	//Context->PSSetShaderResources(0, 2, SRVs);
+
+	//FRenderResourceLibrary::Get().GetPipeline(FName("#PostProcess"))->Bind(*Context.Get());
+	//Context->Draw(3, 0);
+	//INC_DWORD_STAT("Draws");
+	//INC_DWORD_STAT_BY("Prims", 1);
+
+	//// 슬롯 해제
+	//ID3D11ShaderResourceView* NullSRVs[] = { nullptr, nullptr };
+	//Context->PSSetShaderResources(0, 2, NullSRVs);
+}
+
+void FRenderer::RenderSelectionOutline()
 {
 	// 백버퍼 뷰포트 및 토폴로지 복구
 
@@ -1485,7 +1513,7 @@ void FRenderer::RenderOutline()
 
 	Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), nullptr);
 	// 씬 텍스처와 스텐실 텍스처 바인딩
-	ID3D11ShaderResourceView* SRVs[] = { EditorViewPortSRV.Get(), DepthStencilSRV.Get() };
+	ID3D11ShaderResourceView* SRVs[] = { SceneColorSRV.Get(), SceneDepthSRV.Get() };
 	Context->PSSetShaderResources(0, 2, SRVs);
 
 	FRenderResourceLibrary::Get().GetPipeline(FName("#PostProcess"))->Bind(*Context.Get());

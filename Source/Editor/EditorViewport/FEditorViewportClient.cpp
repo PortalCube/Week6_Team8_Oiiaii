@@ -6,39 +6,49 @@ void FEditorViewportClient::UpdateFocusedAndHovered(bool bFocused, bool bHovered
 	this->bHovered = bHovered;
 	return;
 }
-void FEditorViewportClient::SetOrthograpihcView(FEditorViewportClient::EOrthogonalType type)
+void FEditorViewportClient::SetCameraMode(ECameraMode Mode)
 {
-	float distance = 5.0f;
-	eOrthogonalType = type;
-	ViewportCamera.SetProjectionType(EProjectionType::Orthographic);
-	switch (type)
+	if (Mode == ECameraMode::PERSPECTIVE)
 	{
-	case EOrthogonalType::ORTHOGRAPHIC_TOP:
+		ViewportCamera.SetProjectionType(EProjectionType::Perspective);
+	}
+	else
+	{
+		ViewportCamera.SetProjectionType(EProjectionType::Orthographic);
+	}
+
+	float distance = 5.0f;
+	CameraMode = Mode;
+
+	switch (Mode)
+	{
+	case ECameraMode::ORTHOGRAPHIC_TOP:
 		ViewportCamera.SetPosition(FVector(0.0f, 0.0f, distance));
 		ViewportCamera.SetRotation(-90.0f, 0.0f);
 		break;
-	case EOrthogonalType::ORTHOGRAPHIC_BOTTOM:
+	case ECameraMode::ORTHOGRAPHIC_BOTTOM:
 		ViewportCamera.SetPosition(FVector(0.0f, 0.0f, -distance));
 		ViewportCamera.SetRotation(90.0f, 0.0f);
 		break;
-	case EOrthogonalType::ORTHOGRAPHIC_LEFT:
+	case ECameraMode::ORTHOGRAPHIC_LEFT:
 		ViewportCamera.SetPosition(FVector(0.0f, -distance, 0.0f));
 		ViewportCamera.SetRotation(0.0f, 90.0f);
 		break;
 
-	case EOrthogonalType::ORTHOGRAPHIC_RIGHT:
+	case ECameraMode::ORTHOGRAPHIC_RIGHT:
 		ViewportCamera.SetPosition(FVector(0.0f, distance, 0.0f));
 		ViewportCamera.SetRotation(0.0f, -90.0f);
 		break;
 
-	case EOrthogonalType::ORTHOGRAPHIC_FRONT:
+	case ECameraMode::ORTHOGRAPHIC_FRONT:
 		ViewportCamera.SetPosition(FVector(distance, 0.0f, 0.0f));
 		ViewportCamera.SetRotation(0.0f, 0.0f);
 		break;
 
-	case EOrthogonalType::ORTHOGRAPHIC_BACK:
+	case ECameraMode::ORTHOGRAPHIC_BACK:
 		ViewportCamera.SetPosition(FVector(-distance, 0.0f, 0.0f));
 		ViewportCamera.SetRotation(0.0f, 180.0f);
 		break;
 	}
+
 }

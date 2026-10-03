@@ -34,12 +34,6 @@ struct FVertexData
 	float nx = 0.0f, ny = 0.0f, nz = 0.0f;        // Normal
 };
 
-struct FVertexQuad
-{
-	FVector Position;
-	FVector2 uv;
-};
-
 // D3D11_APPEND_ALIGNED_ELEMENT = 자동으로 각 정점 속성의 바이트 오프셋을 계산해주는 매크로 상수
 // DirectX가 직접 이전 정점의 오프셋만큼 더해서 넣어줌
 
@@ -230,12 +224,3 @@ inline const FVertexData PlaneVertices[] = {
 	{ 0.5f, 0.5f, 0.0f, 1, 1, 1, 1, 1.0f, 0.0f, 0, 0, 1 },   // 우상
 	{ -0.5f, 0.5f, 0.0f, 1, 1, 1, 1, 0.0f, 0.0f, 0, 0, 1 },  // 좌상
 };
-
-inline const FVertexQuad QuadVertices[] = {
-	{ FVector{ -0.5f, -0.5f, 0.0f }, FVector2{ 0.f, 1.f } },
-	{ FVector{ 0.5f, -0.5f, 0.0f }, FVector2{ 1.f, 1.f } },
-	{ FVector{ 0.5f, 0.5f, 0.0f }, FVector2{ 1.f, 0.f } },
-	{ FVector{ -0.5f, 0.5f, 0.0f }, FVector2{ 0.f, 0.f } }
-};
-
-inline const uint32 QuadIndices[] = {0, 1, 2, 2, 1, 3};

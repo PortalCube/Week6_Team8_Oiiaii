@@ -16,12 +16,14 @@ struct FRect
 	float Left, Top, Right, Bottom;
 	float GetWidth() const { return Right - Left; }
 	float GetHeight() const { return Bottom - Top; }
+	FVector2 GetLeftTop() const { return FVector2{ Left, Top }; }
+	FVector2 GetRightBottom() const { return FVector2{ Right, Bottom }; }
 };
 class SWindow
 {
 public:
 	FRect Rect;
-	int32 ViewportIndex = -1;     // -1 = 스플리터, 0 이상 = 뷰포트 리프
+	//int32 ViewportIndex = -1;     // -1 = 스플리터, 0 이상 = 뷰포트 리프
 	virtual ~SWindow() = default; // 파생을 포인터로 다루니 가상 소멸자
 	// bool ISHover();
 

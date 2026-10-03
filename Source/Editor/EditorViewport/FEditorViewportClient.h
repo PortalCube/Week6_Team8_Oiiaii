@@ -2,51 +2,49 @@
 #include "Runtime/Math/FVector2.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Editor/Grid/FGrid.h"
-
+#include "Runtime/Engine/FViewport.h"
 #include "Runtime/Engine/ShowFlags.h"
+enum class ECameraMode
+{
+	PERSPECTIVE,
+	ORTHOGRAPHIC,
+	ORTHOGRAPHIC_TOP,
+	ORTHOGRAPHIC_BOTTOM,
+	ORTHOGRAPHIC_LEFT,
+	ORTHOGRAPHIC_RIGHT,
+	ORTHOGRAPHIC_FRONT,
+	ORTHOGRAPHIC_BACK,
+};
+
 class FEditorViewportClient final
 {
-	bool bFocused = false;
-	bool bHovered = false;
-	FGrid Grid;
-	// Grid 이식중, ShowFlag 추가필요
-
 public:
-	// Type에 따라 키보드,마우스 조작이 달라지기 때문에 ViewportClient에 있어야 한다고 생각함
-	enum class EOrthogonalType
-	{
-		PERSPECTIVE,
-		ORTHOGRAPHIC,
-		ORTHOGRAPHIC_TOP,
-		ORTHOGRAPHIC_BOTTOM,
-		ORTHOGRAPHIC_LEFT,
-		ORTHOGRAPHIC_RIGHT,
-		ORTHOGRAPHIC_FRONT,
-		ORTHOGRAPHIC_BACK,
-	} eOrthogonalType = EOrthogonalType::PERSPECTIVE;
-	void SetOrthograpihcView(EOrthogonalType type);
+	const ECameraMode GetCameraMode() const { return CameraMode; }
+	// CameraMode에 따라 Camera의 설정을 변경
+	void SetCameraMode(ECameraMode Mode);
+	
+	const EViewModeIndex const GetViewMode() const { return ViewMode; }
+	void SetViewMode(EViewModeIndex InViewMode) { ViewMode = InViewMode; }
 
-	FCamera ViewportCamera;
-	// 전체 클라이언트 영역 기준 고정 UV: 좌상단 (0,0), 우하단 (1,1).
-	// 픽셀 위치/크기는 사용할 때 클라이언트 크기를 곱해 계산한다.
-	FVector2 TopLeftUV = { 0.0f, 0.0f };
-	FVector2 LengthUV = { 1.0f, 1.0f };
+	FViewport& GetViewport() { return *Viewport; }
+	const FViewport& GetViewport() const { return *Viewport; }
+	void SetViewPort(FViewport* InViewport) { Viewport = InViewport; }
 
-	// 뷰포트 렌더 모드 및 쇼 플래그
-	EViewModeIndex ViewMode = EViewModeIndex::VMI_Lit;
-	uint64 ShowFlags = static_cast<uint64>(EEngineShowFlags::SF_Primitives) |
-	                   static_cast<uint64>(EEngineShowFlags::SF_BillboardText) |
-	                   static_cast<uint64>(EEngineShowFlags::SF_Grid);
+	FCamera& GetViewportCamera() { return ViewportCamera; }
+	const FCamera& GetViewportCamera() const { return ViewportCamera; }
+	void SetViewportCamera(FCamera InViewportCamera) { ViewportCamera = InViewportCamera; }
+
+	void UpdateFocusedAndHovered(bool bFocused, bool bHovered);
 
 	FGrid& GetGrid() { return Grid; }
-	void UpdateFocusedAndHovered(bool bFocused, bool bHovered);
 	const FGrid& GetGrid() const { return Grid; }
 
+
+	const uint64 GetShowFlags() const { return ShowFlags; }
 	[[nodiscard]] bool HasShowFlag(EEngineShowFlags Flag) const
 	{
 		return (ShowFlags & static_cast<uint64>(Flag)) != 0;
 	}
-
 	void ToggleShowFlag(EEngineShowFlags Flag)
 	{
 		ShowFlags ^= static_cast<uint64>(Flag);
@@ -55,4 +53,35 @@ public:
 	[[nodiscard]] bool IsFocused() const { return bFocused; }
 	[[nodiscard]] bool IsHovered() const { return bHovered; }
 	void Update();
+
+	void ResizeViewport(const FRect& Rect)
+	{
+		ViewportCamera.SetAspectRatio(Rect.GetWidth() / Rect.GetHeight());
+
+		// 픽셀. 창 크기가 바뀌어도 이 값은 그대로 쓸 수 있다.
+		Viewport->SetLeftTop(FVector2{ Rect.Left , Rect.Top });
+		Viewport->SetRightBottom(FVector2{ Rect.Right, Rect.Bottom});
+	}
+
+private:
+	bool bFocused = false;
+	bool bHovered = false;
+
+	// 뷰포트
+	FViewport* Viewport = nullptr;
+	
+	// 뷰포트 카메라
+	FCamera ViewportCamera;
+
+	ECameraMode CameraMode = ECameraMode::PERSPECTIVE;
+
+	// 그리드
+	FGrid Grid;
+	
+	// 쇼 플래그
+	// 뷰포트 렌더 모드
+	EViewModeIndex ViewMode = EViewModeIndex::VMI_Lit;
+	uint64 ShowFlags = static_cast<uint64>(EEngineShowFlags::SF_Primitives) |
+	                   static_cast<uint64>(EEngineShowFlags::SF_BillboardText) |
+	                   static_cast<uint64>(EEngineShowFlags::SF_Grid);
 };

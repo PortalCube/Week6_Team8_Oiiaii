@@ -284,8 +284,8 @@ void FRenderView::RenderView(const FSceneView& View, const UScene& Scene, const 
 void FRenderView::BeginView(const FSceneView& View)
 {
 	// 에디터 뷰포트 렌더타겟 바인딩
-	Renderer.BindEditorViewportRenderTargets();
-	Renderer.SetViewportUV(View.TopLeftUV, View.LengthUV);
+	Renderer.BindSceneRenderTargets();
+	Renderer.SetViewportUV(View.LeftTopUV, View.LengthUV);
 	Renderer.UpdateLightConstants(View.LightConstants);
 
 	// ViewConstants 갱신
@@ -326,7 +326,7 @@ void FRenderView::FlushLinePass(const FCamera& Camera)
 void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp)
 {
 	// 뷰포트 영역 재설정
-	Renderer.SetViewportUV(View.TopLeftUV, View.LengthUV);
+	Renderer.SetViewportUV(View.LeftTopUV, View.LengthUV);
 
 	//// 기즈모 렌더링
 	// Renderer.ClearDepth();
@@ -391,22 +391,20 @@ void FRenderView::RenderSphere(const FVector& Center, float Radius, const FVecto
 
 void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedActor)
 {
-	if (!SelectedActor)
-		return;
+	if (!SelectedActor) return;
 
 	USceneComponent* RootComp = SelectedActor->GetRootComponent();
-	if (!RootComp)
-		return;
+	if (!RootComp) return;
 
 	UPrimitiveComponent* PrimComp = RootComp->Cast<UPrimitiveComponent>();
-	if (!PrimComp)
-		return;
+	if (!PrimComp) return;
 
-	const FMatrix ModelMatrix = PrimComp->GetRenderMatrix(Camera);
 	FDrawCommand DrawCommand = GetDrawCommand(*PrimComp, Camera, PrimComp->GetWorldBounds(), UStaticMeshComponent::MakeLODView(Camera));
 
-	DrawCommand.Constants.DisableShading = true;
+	const FMatrix ModelMatrix = PrimComp->GetRenderMatrix(Camera);
+	
 	DrawCommand.Constants.World = ModelMatrix;
+	DrawCommand.Constants.DisableShading = true;
 
 	auto OutlineMaterial = FRenderResourceLibrary::Get().GetMaterial("#Outline");
 	if (OutlineMaterial)
@@ -429,7 +427,7 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 	{
 		// 아웃라인을 Post Process에서 그림
 		DrawStencilMask(View.Camera, SelectedActor);
-		Renderer.RenderOutline();
+		Renderer.RenderSelectionOutline();
 	}
 }
 

@@ -41,7 +41,7 @@ void FEditorApplication::Initialize_Runtime(USceneManager* SceneManager,
 	this->CurrentScene = SceneManager->CurrentScene;
 
 	Editor.Initialize(SceneManager);
-	Editor.InitMultiViewport(FEditorViewportClient{});
+	Editor.InitViewports();
 	Editor.LoadState();
 	Editor.SetViewLayout(Editor.State.GetSplitMode());
 
@@ -81,7 +81,7 @@ void FEditorApplication::Tick(float DeltaTime)
 
 void FEditorApplication::Render()
 {
-	TArray<FEditorViewportClient>& EditorViewports = Editor.GetViewports();
+	FEditorViewport(&EditorViewports)[MAX_VIEWPORT_COUNT] = Editor.GetViewports();
 
 	// 렌더 준비
 	RenderView->PrepareRender();
@@ -94,20 +94,21 @@ void FEditorApplication::Render()
 	}
 
 	// Active인 ViewportClient만 렌더링
-	for (SWindow& Leaf : Editor.Leaf)
+	for (SViewport& Leaf : Editor.GetViewportLayout().Leaf)
 	{
 		if (!Leaf.bisActive)
 			continue;
-		FEditorViewportClient& EditorViewport = EditorViewports[Leaf.ViewportIndex];
+		FEditorViewport& EditorViewport = *Leaf.EditorViewport;
 
 		// 뷰포트 렌더링 명세 구성
-		FSceneView sceneview{
-			.Camera = EditorViewport.ViewportCamera,
-			.ViewProj = EditorViewport.ViewportCamera.GetViewProjectionMatrix(),
-			.TopLeftUV = EditorViewport.TopLeftUV,
-			.LengthUV = EditorViewport.LengthUV,
-			.ViewMode = EditorViewport.ViewMode,
-			.ShowFlags = EditorViewport.ShowFlags,
+		FSceneView sceneview
+		{
+			.Camera = EditorViewport.Client.GetViewportCamera(),
+			.ViewProj = EditorViewport.Client.GetViewportCamera().GetViewProjectionMatrix(),
+			.LeftTopUV = EditorViewport.Client.GetViewport().GetLeftTop(),
+			.LengthUV = EditorViewport.Client.GetViewport().GetRightBottom(),
+			.ViewMode = EditorViewport.Client.GetViewMode(),
+			.ShowFlags = EditorViewport.Client.GetShowFlags(),
 			.LightConstants = Editor.GlobalLight
 		};
 
@@ -117,7 +118,7 @@ void FEditorApplication::Render()
 		EditorCtx.SelectedTransform = Editor.SelectedTransform;
 		EditorCtx.Gizmo = Editor.ObjectSelected() ? &Editor.GetGizmo() : nullptr;
 		EditorCtx.TextComp = Editor.ObjectSelected() ? Editor.GetTextcomp() : nullptr;
-		EditorCtx.Grid = &EditorViewport.GetGrid();
+		EditorCtx.Grid = &EditorViewport.Client.GetGrid();
 		EditorCtx.VisualizerRegistry = &VisualizerRegistry;
 
 		if (EditorCtx.SelectedActor)
@@ -135,20 +136,20 @@ void FEditorApplication::Render()
 	// 기즈모 그리기
 	if (Editor.ObjectSelected())
 	{
-		for (const SWindow& Leaf : Editor.Leaf)
+		for (const SViewport& Leaf : Editor.GetViewportLayout().Leaf)
 		{
 			if (!Leaf.bisActive)
 				continue;
 
-			const auto& Viewport = EditorViewports[Leaf.ViewportIndex];
+			const auto& Viewport = *Leaf.EditorViewport;
 
 			FSceneView SceneView{
-				.Camera = Viewport.ViewportCamera,
-				.ViewProj = Viewport.ViewportCamera.GetViewProjectionMatrix(),
-				.TopLeftUV = Viewport.TopLeftUV,
-				.LengthUV = Viewport.LengthUV,
-				.ViewMode = Viewport.ViewMode,
-				.ShowFlags = Viewport.ShowFlags,
+				.Camera = Viewport.Client.GetViewportCamera(),
+				.ViewProj = Viewport.Client.GetViewportCamera().GetViewProjectionMatrix(),
+				.LeftTopUV = Viewport.Client.GetViewport().GetLeftTop(),
+				.LengthUV = Viewport.Client.GetViewport().GetRightBottom(),
+				.ViewMode = Viewport.Client.GetViewMode(),
+				.ShowFlags = Viewport.Client.GetShowFlags(),
 				.LightConstants = Editor.GlobalLight
 			};
 
@@ -156,9 +157,9 @@ void FEditorApplication::Render()
 
 			RenderView->RenderGizmo(
 			    Editor.SelectedTransform,
-			    Viewport.ViewportCamera,
-			    Viewport.TopLeftUV,
-			    Viewport.LengthUV,
+			    Viewport.Client.GetViewportCamera(),
+			    Viewport.Client.GetViewport().GetLeftTop(),
+			    Viewport.Client.GetViewport().GetRightBottom(),
 			    Editor.GetGizmo());
 		}
 	}
@@ -171,11 +172,9 @@ void FEditorApplication::OnWindowSize(UINT Width, UINT Height)
 	// 뷰포트 종횡비 갱신
 	for (auto& Viewport : Editor.GetViewports())
 	{
-		const FVector2 SizePixels =
-		    Viewport.LengthUV *
-		    FVector2{ static_cast<float>(Width), static_cast<float>(Height) };
+		const FVector2 SizePixels = Viewport.Client.GetViewport().GetRightBottom() * FVector2{ static_cast<float>(Width), static_cast<float>(Height) };
 
-		auto& Camera = Viewport.ViewportCamera;
+		FCamera& Camera = Viewport.Client.GetViewportCamera();
 		Camera.SetAspectRatio(SizePixels.X / SizePixels.Y);
 	}
 }
