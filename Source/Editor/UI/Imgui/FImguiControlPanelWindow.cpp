@@ -191,7 +191,7 @@ void FImguiControlPanelWindow::RunPickBenchmark(FEditor& Editor, int Iterations)
 		return;
 	}
 
-	ULevel* Scene = Editor.GetCurrentScene();
+	ULevel* Scene = Editor.GetCurrentLevel();
 	FEditorViewportClient* Viewport = Editor.GetActiveViewport();
 	const bool bUseBVH = Editor.bUseBVHPicking && Scene;
 	if (!bUseBVH && !Viewport)
@@ -323,7 +323,7 @@ void FImguiControlPanelWindow::CullingSetting(FEditor& Editor)
 void FImguiControlPanelWindow::ActorSpawnSetting(FEditor& Editor)
 {
 	static UClass* SelectedActorClass = EditorConstant::SpawnableActors[0];
-	const char* PreviewValue = SelectedActorClass->GetUClassName().c_str();
+	const char* PreviewValue = SelectedActorClass->GetName().c_str();
 
 	ImGui::SetNextItemWidth(180.0f);
 	if (ImGui::BeginCombo("##Actor", PreviewValue))
@@ -331,7 +331,7 @@ void FImguiControlPanelWindow::ActorSpawnSetting(FEditor& Editor)
 		for (const auto Item : EditorConstant::SpawnableActors)
 		{
 			const bool bIsSelected = SelectedActorClass == Item;
-			const char* ItemDisplayName = Item->GetUClassName().c_str();
+			const char* ItemDisplayName = Item->GetName().c_str();
 			if (ImGui::Selectable(ItemDisplayName, bIsSelected))
 			{
 				SelectedActorClass = Item;

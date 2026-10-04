@@ -3,7 +3,10 @@
 #include "Runtime/Core/FString.h"
 #include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Engine/Types/PointerTypes.h"
-#include "Runtime/Engine/FEngine.h"
+
+class UEngine;
+class UEditorEngine;
+class UPackage;
 
 // 엔진의 전역 변수를 담는 네임스페이스입니다.
 namespace Globals
@@ -15,6 +18,15 @@ namespace Globals
 	// 초기 윈도우 사이즈
 	constexpr uint32 WindowWidth = 1600;
 	constexpr uint32 WindowHeight = 900;
+
+	// 전역 엔진 포인터. 반드시 nullptr 체크할 것
+	inline UEngine* Engine = nullptr;
+
+	// 전역 에디터 포인터. GE다운 캐스팅 귀찮아서 만듦. 반드시 nullptr 체크할 것
+	inline UEditorEngine* Editor = nullptr;
+
+	// 전역 TransientPackage. 임시 객체들의 부모를 이것으로 지정
+	inline UPackage* TransientPackage = nullptr;
 
 	// 이번 Tick 이후로 애플리케이션이 종료되어야 하는지 여부
 	inline bool bIsRequestingExit = false;

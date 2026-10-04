@@ -5,60 +5,67 @@
 #include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Core/TMap.h"
-#include "Runtime/CoreUObject/FClassIdSet.h"
 
 class UObject;
 
 class UClass
 {
 private:
-	static inline uint32 registeredCount = 0;
-	static inline TArray<TUniquePtr<UClass>> classList;
-	static inline TMap<FString, uint32> nameToId;
-	static inline TMap<FString, uint32> displayNameToId;
-	FString className, superClassTypeName;
-	TFunction<UObject*()> createFunction;
-	uint32 typeId;
-	UClass* superClass;
-	TMap<FString, FString> metadata;
-	FClassIdSet classIdSet;
-	bool processed = false;
+	// 현재 존재하는 모든 클래스의 배열입니다.
+	static inline TArray<TUniquePtr<UClass>> ClassList;
+
+	// 클래스 이름 테이블
+	static inline TMap<FString, UClass*> NameTable;
+	static inline TMap<FString, UClass*> DisplayNameTable;
+
+	// 클래스 이름
+	FString ClassName;
+	FString SuperClassTypeName;
+
+	// 메타데이터 테이블
+	TMap<FString, FString> MetadataTable;
+
+	// 생성자 함수
+	TFunction<UObject*(UObject*)> CreateFunction;
+
+	// 부모 클래스 포인터
+	UClass* SuperClass;
 
 public:
-	UObject* CreateDefaultObject() const;
+
+	////////////////////////////////////////////////////////////
+	// Register 
+	////////////////////////////////////////////////////////////
+
+	// 주어진 타입 정보로 UClass를 만들고 레지스트리에 등록합니다.
 	static UClass* RegisterToFactory(
-	    const FString& typeName,
-	    const TFunction<UObject*()>& createFunction,
-	    const FString& superClassTypeName);
+	    const FString& ClassName,
+	    const FString& SuperClassTypeName,
+		UClass* SuperClass,
+	    const TFunction<UObject*(UObject*)>& CreateFunction);
+
+	UObject* Create(UObject* Outer);
+
+	////////////////////////////////////////////////////////////
+	// Get Name, Find Name
+	////////////////////////////////////////////////////////////
+	
+	const FString& GetName() const { return ClassName; }
+	const FString& GetDisplayName() const;
 
 	static UClass* FindByName(const FString& Name);
-	const FString& GetDisplayName() const;
-	void SetMeta(const FString& key, const FString& value);
-	static void ResolveTypeBitsets();
-	void ResolveTypeBitset(UClass* classPtr);
+	static UClass* FindClassWithDisplayName(const FString& Name);
 
-	bool IsChildOrSelfOf(UClass* baseClass) const;
 
-	[[nodiscard]] const FString& GetUClassName() const { return className; }
 
-	static UClass* FindClassWithDisplayName(const FString& name)
-	{
+	////////////////////////////////////////////////////////////
+	// Getter, Setter
+	////////////////////////////////////////////////////////////
 
-		auto it = displayNameToId.find(name);
-		if (it != displayNameToId.end())
-			return GetClassById(it->second);
+	// 메타 정보를 지정합니다.
+	void SetMeta(const FString& Key, const FString& Value);
 
-		it = nameToId.find(name);
-		return (it != nameToId.end()) ? GetClassById(it->second) : nullptr;
-	}
+	// 부모 클래스 정보를 반환합니다.
+	UClass* GetSuperClass() { return SuperClass; }
 
-	static UClass* GetClassById(uint32 typeId)
-	{
-		return (typeId < classList.size()) ? classList[typeId].get() : nullptr;
-	}
-
-	UClass* GetSuperClass()
-	{
-		return superClass;
-	}
 };

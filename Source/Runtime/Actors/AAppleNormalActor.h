@@ -10,8 +10,7 @@ class AAppleNormalActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit AAppleNormalActor();
-
+	virtual void Initialize() override;
 	virtual void Update(float DeltaTime) override;
 
 private:

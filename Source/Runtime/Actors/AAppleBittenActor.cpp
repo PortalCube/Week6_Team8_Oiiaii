@@ -8,9 +8,9 @@
 IMPLEMENT_UCLASS(AAppleBittenActor, AActor)
 UCLASS_META(AAppleBittenActor, DisplayName, "Apple Bitten Actor")
 
-AAppleBittenActor::AAppleBittenActor()
+void AAppleBittenActor::Initialize()
 {
-	AppleStaticMeshComp = NewObject<UStaticMeshComponent>();
+	AppleStaticMeshComp = NewObject<UStaticMeshComponent>(this);
 	SetRootComponent(AppleStaticMeshComp);
 
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();

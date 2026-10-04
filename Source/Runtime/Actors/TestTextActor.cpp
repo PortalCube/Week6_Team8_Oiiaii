@@ -6,7 +6,7 @@
 IMPLEMENT_UCLASS(ATestTextActor, AActor)
 UCLASS_META(ATestTextActor, DisplayName, "Test Text Actor")
 
-ATestTextActor::ATestTextActor()
+void ATestTextActor::Initialize()
 {
 	// 텍스트 인스턴스 컴포넌트 장착
 	CreateRootComponent(UTextComponent::StaticClass());

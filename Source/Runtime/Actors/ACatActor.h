@@ -11,9 +11,7 @@ class ACatActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit ACatActor();
-
-	void Initialize() override;
+	virtual void Initialize() override;
 	virtual void Update(float DeltaTime) override;
 
 private:

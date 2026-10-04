@@ -7,10 +7,10 @@
 IMPLEMENT_UCLASS(ACubeActor, AActor)
 UCLASS_META(ACubeActor, DisplayName, "Cube Actor")
 
-ACubeActor::ACubeActor()
+void ACubeActor::Initialize()
 {
 	// 기본 큐브 컴포넌트 장착
-	UStaticMeshComponent* Object = NewObject<UStaticMeshComponent>();
+	UStaticMeshComponent* Object = CreateDefaultSubobject<UStaticMeshComponent>();
 	SetRootComponent(Object);
 
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();

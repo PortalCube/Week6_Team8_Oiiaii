@@ -60,8 +60,6 @@ public:
 	}
 
 protected:
-	USceneComponent() = default;
-
 	FTransform RelativeTransform;
 
 	// 파생 클래스에서 Transfrom 변경에 따라 반응.

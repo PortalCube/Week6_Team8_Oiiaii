@@ -9,9 +9,6 @@ class USpotLightComponent : public UPrimitiveComponent
 	DECLARE_UCLASS(USpotLightComponent, UPrimitiveComponent)
 	GENERATED_BODY()
 
-protected:
-	explicit USpotLightComponent() = default;
-
 public:
 	void Initialize() override;
 

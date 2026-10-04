@@ -18,12 +18,46 @@ void UObject::Release()
 void UObject::Serialize(FArchive& Archive) const
 {
 	Archive.SetInt32("UUID", UUID);
-	Archive.SetString("Type", GetClass()->GetUClassName());
+	Archive.SetString("Type", GetClass()->GetName());
 }
 
 void UObject::Deserialize(const FArchive& Archive)
 {
 	UUID = Archive.GetInt32("UUID");
+}
+
+UObject* UObject::GetOuter() const
+{
+	return Outer;
+}
+
+class UWorld* UObject::GetWorld() const
+{
+	// 부모의 GetWorld()를 재귀적으로 호출하여 반환
+	if (UObject* Outer = GetOuter())
+	{
+		return Outer->GetWorld();
+	}
+
+	// 부모가 없으면 nullptr
+	return nullptr;
+}
+
+bool UObject::IsA(UClass* ClassType) const
+{
+	UClass* CurrentInfo = GetClass();
+
+	while (CurrentInfo)
+	{
+		if (CurrentInfo == ClassType)
+		{
+			return true;
+		}
+
+		CurrentInfo = CurrentInfo->GetSuperClass();
+	}
+
+	return false;
 }
 
 void* UObject::operator new(std::size_t Size)

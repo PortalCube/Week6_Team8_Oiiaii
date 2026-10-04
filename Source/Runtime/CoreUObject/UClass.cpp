@@ -1,101 +1,77 @@
 #include "UClass.h"
 #include "Runtime/Engine/Types/PointerTypes.h"
 
-UClass* UClass::RegisterToFactory(const FString& typeName, const TFunction<UObject*()>& createFunction, const FString& superClassTypeName)
+UClass* UClass::RegisterToFactory(
+    const FString& ClassName,
+    const FString& SuperClassTypeName,
+	UClass* SuperClass,
+    const TFunction<UObject*(UObject*)>& CreateFunction)
 {
+	// 새로운 UClass 생성
+	TUniquePtr<UClass> ClassType = MakeUnique<UClass>();
+	ClassType->ClassName = ClassName;
+	ClassType->SuperClassTypeName = SuperClassTypeName;
+	ClassType->SuperClass = SuperClass;
+	ClassType->CreateFunction = CreateFunction;
 
-	TUniquePtr<UClass> classType = MakeUnique<UClass>();
-	classType->className = typeName;
-	classType->superClassTypeName = superClassTypeName;
-	classType->createFunction = createFunction;
-	classType->typeId = registeredCount++;
+	UClass* Ptr = ClassType.get();
 
-	nameToId[typeName] = classType->typeId;
+	// 배열 목록, Name 테이블에 등록
+	ClassList.push_back(std::move(ClassType));
+	NameTable[ClassName] = Ptr;
 
-	UClass* rawPtr = classType.get();
-
-	classList.push_back(std::move(classType));
-	return rawPtr;
+	return Ptr;
 }
+
+UObject* UClass::Create(UObject* Outer)
+{
+	UObject* Object = CreateFunction(Outer);
+
+	return Object;
+}
+
 UClass* UClass::FindByName(const FString& Name)
 {
-	auto it = nameToId.find(Name);
-	return (it != nameToId.end()) ? classList[it->second].get() : nullptr;
+	auto It = NameTable.find(Name);
+
+	if (It != NameTable.end())
+	{
+		return It->second;
+	}
+
+	return nullptr;
+}
+
+UClass* UClass::FindClassWithDisplayName(const FString& Name)
+{
+	auto It = DisplayNameTable.find(Name);
+
+	if (It != DisplayNameTable.end())
+	{
+		return It->second;
+	}
+
+	return nullptr;
 }
 
 const FString& UClass::GetDisplayName() const
 {
-	auto itr = metadata.find("DisplayName");
-	if (itr != metadata.end())
+	auto It = MetadataTable.find("DisplayName");
+
+	if (It != MetadataTable.end())
 	{
-		return itr->second;
+		return It->second;
 	}
 
-	return className;
+	return "";
 }
 
-void UClass::SetMeta(const FString& key, const FString& value)
+void UClass::SetMeta(const FString& Key, const FString& Value)
 {
-	metadata[key] = value;
+	MetadataTable[Key] = Value;
 
-	if (key == "DisplayName")
+	if (Key == "DisplayName")
 	{
-		displayNameToId[value] = typeId; // typeId는 인스턴스 멤버
-	}
-}
-
-UObject* UClass::CreateDefaultObject() const
-{
-	return createFunction ? createFunction() : nullptr;
-}
-
-bool UClass::IsChildOrSelfOf(UClass* baseClass) const
-{
-	return baseClass && classIdSet.Test(baseClass->typeId);
-}
-
-void UClass::ResolveTypeBitsets()
-{
-	for (const TUniquePtr<UClass>& _class : classList)
-	{
-		if (!_class->superClassTypeName.empty())
-		{
-			auto it = nameToId.find(_class->superClassTypeName);
-			_class->superClass = (it != nameToId.end()) ? classList[it->second].get() : nullptr;
-		}
-	}
-	for (const TUniquePtr<UClass>& _class : classList)
-	{
-		if (_class->processed)
-			continue;
-
-		_class->ResolveTypeBitset(_class.get());
-	}
-}
-
-void UClass::ResolveTypeBitset(UClass* classPtr)
-{
-	TArray<UClass*> stack;
-	stack.push_back(classPtr);
-
-	while (!stack.empty())
-	{
-		UClass* cur = stack.back();
-
-		// 부모가 아직 처리되지 않았다면 먼저 스택에 push
-		while (cur->superClass && !cur->superClass->processed)
-		{
-			stack.push_back(cur->superClass);
-			cur = stack.back();
-		}
-
-		// 현재 노드 처리
-		// cur->classIdSet.Clear();
-		if (cur->superClass)
-			cur->classIdSet = cur->classIdSet |= cur->superClass->classIdSet; // 부모 비트 | 자식 비트 =
-		cur->classIdSet.Set(cur->typeId);                                     // 자신의 비트 추가
-		cur->processed = true;
-
-		stack.pop_back();
+		DisplayNameTable[Value] = this;
 	}
 }

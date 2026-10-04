@@ -58,8 +58,6 @@ public:
 	virtual bool IsOcclusionTarget() const;
 
 protected:
-	UPrimitiveComponent() = default;
-
 	mutable FRenderData RenderData{
 		.Mesh = nullptr,
 		.Materials = {},

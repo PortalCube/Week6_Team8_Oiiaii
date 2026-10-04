@@ -1,4 +1,3 @@
-#include "Editor/Application/FEditorApplication.h"
 #include "Runtime/Core/Log.h"
 #include "Runtime/Core/Globals.h"
 #include "Runtime/Utility/WindowsUtil.h"

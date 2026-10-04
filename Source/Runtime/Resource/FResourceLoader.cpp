@@ -104,7 +104,7 @@ void FResourceLoader::LoadDefaultStaticMeshAssets()
 
 		INC_MEMORY_STAT_BY("StaticMeshMemory", Mesh->GetBufferSize());
 
-		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
+		UStaticMesh* StaticMesh = NewObject<UStaticMesh>(GetTransientPackage());
 		UStaticMeshDesc StaticMeshDesc{};
 		StaticMeshDesc.ID = ID;
 		StaticMeshDesc.Name = ID;
@@ -140,7 +140,7 @@ void FResourceLoader::LoadCodeGeneratedRenderAssets()
 		    "[FResourceLoader::LoadCodeGeneratedRenderAssets] Outline Pipeline 생성에 실패했습니다.");
 	}
 
-	UPipeline* PipelineAsset = NewObject<UPipeline>();
+	UPipeline* PipelineAsset = NewObject<UPipeline>(GetTransientPackage());
 	UPipelineDesc PipelineDesc{};
 	PipelineDesc.ID = "#Pipeline/Outline";
 	PipelineDesc.Name = "#Outline";
@@ -148,7 +148,7 @@ void FResourceLoader::LoadCodeGeneratedRenderAssets()
 	PipelineAsset->Load(PipelineDesc);
 	Registry.Register(PipelineDesc.ID, PipelineAsset);
 
-	UMaterial* MaterialAsset = NewObject<UMaterial>();
+	UMaterial* MaterialAsset = NewObject<UMaterial>(GetTransientPackage());
 	UMaterialDesc MaterialDesc{};
 	MaterialDesc.ID = "#Material/Outline";
 	MaterialDesc.Name = "#Outline";
@@ -366,7 +366,7 @@ void FResourceLoader::LoadPipelineAsset(const FArchive& Archive, const FName& ID
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 
 	// 포인터만 생성..
-	UPipeline* PipelineAsset = NewObject<UPipeline>();
+	UPipeline* PipelineAsset = NewObject<UPipeline>(GetTransientPackage());
 	UPipelineDesc PipelineDesc{};
 	FRenderPipelineDesc RenderPipelineDesc{};
 
@@ -441,7 +441,7 @@ void FResourceLoader::LoadMaterialAsset(const FArchive& Archive, const FName& ID
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 
 	// 포인터만 생성..
-	UMaterial* Material = NewObject<UMaterial>();
+	UMaterial* Material = NewObject<UMaterial>(GetTransientPackage());
 	UMaterialDesc MaterialDesc{};
 
 	MaterialDesc.ID = ID;
@@ -501,7 +501,7 @@ void FResourceLoader::LoadStaticMeshAsset(const FArchive& Archive, const FName& 
 		return;
 	}
 
-	UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
+	UStaticMesh* StaticMesh = NewObject<UStaticMesh>(GetTransientPackage());
 	UStaticMeshDesc StaticMeshDesc{};
 	StaticMeshDesc.ID = ID;
 	StaticMeshDesc.Name = Archive.GetString("Name");
@@ -663,7 +663,7 @@ void FResourceLoader::LoadFontAsset(const FArchive& Archive, const FName& ID)
 
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 
-	UFont* FontAsset = NewObject<UFont>();
+	UFont* FontAsset = NewObject<UFont>(GetTransientPackage());
 
 	const FName UTextureID = Archive.GetString("UTextureID");
 
@@ -695,7 +695,7 @@ void FResourceLoader::LoadTextureAsset(const FArchive& Archive, const FName& ID)
 
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 
-	UTexture* TextureAsset = NewObject<UTexture>();
+	UTexture* TextureAsset = NewObject<UTexture>(GetTransientPackage());
 	UTextureDesc TextureDesc{};
 
 	TextureDesc.ID = ID;
@@ -776,7 +776,7 @@ void FResourceLoader::LoadMtlMaterial(const std::filesystem::path& MtlFilePath, 
 				FVector4 Color(Mtl.Kd.X, Mtl.Kd.Y, Mtl.Kd.Z, 1.0f);
 				auto RawTexture = Renderer->CreateSolidTexture(Color);
 
-				UTexture* SolidTexture = NewObject<UTexture>();
+				UTexture* SolidTexture = NewObject<UTexture>(GetTransientPackage());
 
 				UTextureDesc TexDesc{};
 				TexDesc.ID = TextureId;
@@ -800,9 +800,7 @@ void FResourceLoader::LoadMtlMaterial(const std::filesystem::path& MtlFilePath, 
 			FArchive MaterialArchive;
 			MaterialArchive.SetString("Name", MaterialAssetPath.generic_string());
 
-			// TODO: TEMP: 다음에 바꿀것
-			// MaterialArchive.SetString("UPipelineID", "Pipeline/Textured.json");
-			MaterialArchive.SetString("UPipelineID", "Pipeline/Optimize.json");
+			MaterialArchive.SetString("UPipelineID", "Pipeline/Textured.json");
 
 			MaterialArchive.SetString("UTextureID", TextureId.ToString());
 			MaterialArchive.SetArchive("TextureSampler", SamplerArchive);

@@ -5,7 +5,9 @@
 #include "ThirdParty/Imgui/imgui_impl_win32.h"
 #include "ThirdParty/Imgui/implot.h"
 
-bool FImguiManager::Initialize_ImplWin32DX11(HWND& Window, ID3D11Device* Device, ID3D11DeviceContext* Context)
+#include "Runtime/ApplicationCore/FWindow.h"
+
+bool FImguiManager::Initialize_ImplWin32DX11(const FWindow& Window, ID3D11Device* Device, ID3D11DeviceContext* Context)
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -24,7 +26,7 @@ bool FImguiManager::Initialize_ImplWin32DX11(HWND& Window, ID3D11Device* Device,
 	IO.Fonts->AddFontDefault(&Config);
 
 	bool success = true;
-	success &= ImGui_ImplWin32_Init((void*)Window);
+	success &= ImGui_ImplWin32_Init(static_cast<void*>(Window.GetHandle()));
 	success &= ImGui_ImplDX11_Init(Device, Context);
 	if (success)
 		ImplType = EImplType::Win32DX11;

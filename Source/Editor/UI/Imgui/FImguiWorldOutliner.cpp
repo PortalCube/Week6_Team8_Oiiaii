@@ -3,6 +3,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/ULevel.h"
+#include "Editor/Core/FEditor.h"
 #include "ThirdParty/Imgui/imgui.h"
 #include <string>
 #include <algorithm>
@@ -16,7 +17,7 @@ void FImguiWorldOutliner::Process(FEditor& Editor, float DeltaTime)
 
 	ImGui::Begin("World Outliner");
 
-	ULevel* Scene = Editor.GetCurrentScene();
+	ULevel* Scene = Editor.GetCurrentLevel();
 	if (!Scene)
 	{
 		ImGui::TextDisabled("No Active Scene");

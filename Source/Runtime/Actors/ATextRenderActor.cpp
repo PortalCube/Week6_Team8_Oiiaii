@@ -6,7 +6,7 @@
 IMPLEMENT_UCLASS(ATextRenderActor, AActor)
 UCLASS_META(ATextRenderActor, DisplayName, "TextRender Actor")
 
-ATextRenderActor::ATextRenderActor()
+void ATextRenderActor::Initialize()
 {
 	// 기본 큐브 컴포넌트 장착
 	CreateRootComponent(UTextComponent::StaticClass());

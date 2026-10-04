@@ -5,6 +5,7 @@
 #include "FMaterial.h"
 #include "ShaderConstants.h"
 #include "Runtime/Core/TArray.h"
+#include <span>
 
 // 렌더링에 필요한 드로우 정보
 struct FDrawCommand

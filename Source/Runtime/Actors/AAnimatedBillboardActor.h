@@ -12,9 +12,7 @@ class AAnimatedBillboardActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit AAnimatedBillboardActor();
-	void Initialize() override;
-
+	virtual void Initialize() override;
 	UAnimatedBillboardComp* GetAnimatedBillboardComponent() const;
 };
 

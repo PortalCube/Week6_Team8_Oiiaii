@@ -20,8 +20,6 @@ protected:
 	TArray<USceneComponent*> AttachedComp;
 	bool bTickEnabled = false;
 
-	explicit AActor() = default;
-
 	virtual void Serialize(FArchive& Archive) const override;
 	virtual void Deserialize(const FArchive& Archive) override;
 
@@ -53,8 +51,13 @@ public:
 	virtual void EndPlay();
 	virtual void Unregister();
 
+	template <UObjectType T>
+	T* CreateDefaultSubobject();
+
 	[[nodiscard]] bool IsRegistered() const { return Owner != nullptr; }
 	[[nodiscard]] bool HasBegunPlay() const { return bHasBegunPlay; }
+
+	bool GetTickEnabled() const { return bTickEnabled; }
 
 	void Destroy();
 
@@ -62,3 +65,13 @@ private:
 	ULevel* Owner = nullptr; // SpawnActor될 때 설정됨
 	bool bHasBegunPlay = false;
 };
+
+template <UObjectType T>
+inline T* AActor::CreateDefaultSubobject()
+{
+	T* Subobject = Super::CreateDefaultSubobject<T>();
+
+	// 현재 컴포넌트 목록에 등록시키기
+
+	return Subobject;
+}

@@ -9,5 +9,5 @@ class ACubeActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit ACubeActor();
+	virtual void Initialize() override;
 };

@@ -8,9 +8,9 @@
 IMPLEMENT_UCLASS(AAppleNormalActor, AActor)
 UCLASS_META(AAppleNormalActor, DisplayName, "Apple Normal Actor")
 
-AAppleNormalActor::AAppleNormalActor()
+void AAppleNormalActor::Initialize()
 {
-	AppleStaticMeshComp = NewObject<UStaticMeshComponent>();
+	AppleStaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
 	SetRootComponent(AppleStaticMeshComp);
 
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();

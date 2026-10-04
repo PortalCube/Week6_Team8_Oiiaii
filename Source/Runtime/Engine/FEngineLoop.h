@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Runtime/Engine/UEngine.h"
 #include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/ApplicationCore/FWindowApplication.h"
 
-class FEngine;
 class FTimeManager;
 
 // 엔진의 하부 계층을 담당하는 클래스
@@ -12,8 +12,7 @@ class FEngineLoop
 {
 private:
 	TUniquePtr<FWindowsApplication> WindowsApplication;
-
-	TUniquePtr<FEngine> Engine{ nullptr };
+	UEngine* Engine = nullptr;
 
 public:
 	void Init(HINSTANCE Instance);
@@ -23,6 +22,8 @@ public:
 	void Exit();
 
 	HWND GetMainWindowHandle() const;
+
+	FWindow* GetMainWindow() const;
 
 private:
 	bool CheckWindowMessage();

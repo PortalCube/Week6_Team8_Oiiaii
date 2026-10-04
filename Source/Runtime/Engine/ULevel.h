@@ -19,6 +19,8 @@ class ULevel final : public UObject
 	DECLARE_UCLASS(ULevel, UObject)
 	GENERATED_BODY()
 
+	friend class UWorld;
+
 public:
 	void Initialize() override;
 	void Release() override;
@@ -33,75 +35,15 @@ public:
 
 	// 렌더링 컴포넌트 목록 반환
 	[[nodiscard]] const TArray<UPrimitiveComponent*>& GetRenderComponents() const;
-	[[nodiscard]] FRenderResourceLibrary* GetRenderResourceLibrary() const
-	{
-		return RenderResourceLibrary;
-	}
-	void SetRenderResourceLibrary(FRenderResourceLibrary* InRenderResourceLibrary);
 
 	// 액터 목록 반환
 	[[nodiscard]] const TArray<AActor*>& GetActors() const { return Actors; }
-
-	// 위치와 크기를 지정하여 액터 생성
-	template <typename TActor, typename... TArgs>
-	    requires std::derived_from<TActor, AActor>
-	TActor* SpawnActor(const FVector& Location, const FVector& Scale,
-	    TArgs&&... Args)
-	{
-		TActor* Actor = NewObject<TActor>(std::forward<TArgs>(Args)...);
-		Actor->Initialize();
-
-		if (Actor->GetRootComponent())
-		{
-			FTransform Transform{};
-			Transform.SetLocation(Location);
-			Transform.SetScale3D(Scale);
-			Actor->GetRootComponent()->SetRelativeTransform(Transform);
-		}
-
-		Actors.push_back(Actor);
-
-		if (bActive)
-		{
-			Actor->Register(*this);
-		}
-		if (bHasBegunPlay)
-		{
-			Actor->BeginPlay();
-		}
-		return Actor;
-	}
-
-	// 기본 위치와 크기로 액터 생성
-	template <typename TActor>
-	    requires std::derived_from<TActor, AActor>
-	TActor* SpawnActor()
-	{
-		return SpawnActor<TActor>(FVector(0.0f, 0.0f, 0.0f),
-		    FVector(1.0f, 1.0f, 1.0f));
-	}
-
-	// 첫번째 인자가 벡터가 아닐 때 기본 위치와 크기 전달
-	template <typename TActor, typename FirstArg, typename... RestArgs>
-	    requires std::derived_from<TActor, AActor> &&
-	             (!std::is_same_v<std::decay_t<FirstArg>, FVector>)
-	TActor* SpawnActor(FirstArg&& First, RestArgs&&... Rest)
-	{
-		return SpawnActor<TActor>(
-		    FVector(0.0f, 0.0f, 0.0f), FVector(1.0f, 1.0f, 1.0f),
-		    std::forward<FirstArg>(First), std::forward<RestArgs>(Rest)...);
-	}
 
 	virtual void Serialize(FArchive& Archive) const override;
 	virtual void Deserialize(const FArchive& Archive) override;
 
 	void AddRenderComponent(UPrimitiveComponent* prim);
 	void RemoveRenderComponent(UPrimitiveComponent* prim);
-	void RemoveActor(AActor* Actor);
-
-	void DestroyActor(AActor* Actor);
-
-	AActor* SpawnActor(UClass* ClassType);
 
 	FSceneBVH& GetSceneBVH() { return SceneBVH; }
 	const FSceneBVH& GetSceneBVH() const { return SceneBVH; }

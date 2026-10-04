@@ -1,14 +1,19 @@
 #pragma once
 
+#include "Runtime/Engine/Types/EngineTypes.h"
+#include "Runtime/Asset/UPackage.h"
+#include "Runtime/Core/Globals.h"
 #include "FUObjectArray.h"
 #include <concepts>
 
 // TODO: 참조를 확실하게 관리하려면 TObjectPtr<TObject>를 반환하도록 바꿔야 함
-template <typename TObject, typename... TArgs>
-    requires std::derived_from<TObject, UObject>
-TObject* NewObject(TArgs&&... Args)
+template <UObjectType T>
+T* NewObject(UObject* Outer)
 {
-	TObject* Object = new TObject(std::forward<TArgs>(Args)...);
+	// 생성자로 오브젝트 생성
+	T* Object = new T(Outer);
+
+	// 전역 객체에 등록
 	try
 	{
 		FUObjectArray::Get().AddObject(Object);
@@ -18,13 +23,17 @@ TObject* NewObject(TArgs&&... Args)
 		delete Object;
 		throw;
 	}
+
 	return Object;
 }
 
-inline UObject* NewObject(UClass* ClassType)
+template <UObjectType T>
+T* NewObject(UObject* Outer, UClass* ClassType)
 {
-	UObject* Object = ClassType->CreateDefaultObject();
-	return Object;
+	UObject* Object = ClassType->Create(Outer);
+
+	T* TargetObject = Object->Cast<T>();
+	return TargetObject;
 }
 
 /// <summary>
@@ -36,4 +45,10 @@ inline void DestroyObject(UObject* Object)
 {
 	FUObjectArray& ObjectArray = FUObjectArray::Get();
 	ObjectArray.DestroyObject(Object);
+}
+
+
+inline UPackage* GetTransientPackage()
+{
+	return Globals::TransientPackage;
 }

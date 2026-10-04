@@ -12,7 +12,6 @@ class ABillboardActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit ABillboardActor();
-
+	virtual void Initialize() override;
 	UBillboardComponent* GetBillboardComponent() const;
 };

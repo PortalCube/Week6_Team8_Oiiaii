@@ -386,7 +386,7 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 	FVector ImpactPoint;
 	bool bHit = false;
 
-	ULevel* PickScene = Editor.GetCurrentScene();
+	ULevel* PickScene = Editor.GetCurrentLevel();
 
 	// 1) 마우스 화면 좌표 획득
 	// 2) 화면 좌표 -> 월드 좌표로의 픽 레이(Pick Ray) 계산

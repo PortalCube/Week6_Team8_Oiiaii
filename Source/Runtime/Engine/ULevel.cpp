@@ -6,6 +6,8 @@
 #include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FArchive.h"
+#include "Runtime/Engine/UWorld.h"
+
 #include <algorithm>
 
 #include "Runtime/CoreUObject/TObjectIterator.h"
@@ -151,12 +153,6 @@ void ULevel::EndPlay()
 	bHasBegunPlay = false;
 }
 
-void ULevel::SetRenderResourceLibrary(
-    FRenderResourceLibrary* InRenderResourceLibrary)
-{
-	RenderResourceLibrary = InRenderResourceLibrary;
-}
-
 void ULevel::Serialize(FArchive& Archive) const
 {
 	Super::Serialize(Archive);
@@ -198,7 +194,7 @@ void ULevel::Deserialize(const FArchive& Archive)
 			continue;
 		}
 
-		AActor* Actor = SpawnActor(ClassType);
+		AActor* Actor = GetWorld()->SpawnActor(ClassType);
 		if (!Actor)
 		{
 			continue;
@@ -244,8 +240,8 @@ void ULevel::RemoveRenderComponent(UPrimitiveComponent* prim)
 {
 	if (prim == nullptr || prim->GetSceneIndex() < 0)
 		return;
-	// TODO 제거할 때 마지막 요소와 교환하는 방식의 Swap and Pop으로 처리하도록 수정할 것
 
+	// TODO 제거할 때 마지막 요소와 교환하는 방식의 Swap and Pop으로 처리하도록 수정할 것
 	std::erase(RenderComponents, prim);
 	SceneBVH.RemoveObject(prim);
 
@@ -270,37 +266,6 @@ void ULevel::RemoveRenderComponent(UPrimitiveComponent* prim)
 	}
 
 	prim->SetSceneIndex(-1);
-}
-
-void ULevel::RemoveActor(AActor* Actor)
-{
-	std::erase(Actors, Actor);
-}
-
-void ULevel::DestroyActor(AActor* Actor)
-{
-	if (Actor == nullptr)
-		return;
-
-	RemoveActor(Actor);
-	DestroyObject(Actor);
-}
-
-AActor* ULevel::SpawnActor(UClass* ClassType)
-{
-	UObject* Object = NewObject(ClassType);
-	AActor* Actor = Object->Cast<AActor>();
-	if (!Actor)
-	{
-		DestroyObject(Object);
-		return nullptr;
-	}
-	Actor->Initialize();
-	Actor->Register(*this);
-
-	Actors.push_back(Actor);
-
-	return Actor;
 }
 
 void ULevel::MarkBoundsDirty(UPrimitiveComponent* Prim)

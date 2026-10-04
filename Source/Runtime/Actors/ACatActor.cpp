@@ -9,19 +9,16 @@
 IMPLEMENT_UCLASS(ACatActor, AActor)
 UCLASS_META(ACatActor, DisplayName, "Cat Actor")
 
-ACatActor::ACatActor()
-{
-	CatStaticMeshComp = NewObject<UStaticMeshComponent>();
-	SetRootComponent(CatStaticMeshComp);
-
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	CatStaticMeshComp->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/oiia/oiia.json"));
-}
-
 void ACatActor::Initialize()
 {
 	Super::Initialize();
 	bTickEnabled = true;
+
+	CatStaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
+	SetRootComponent(CatStaticMeshComp);
+
+	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+	CatStaticMeshComp->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/oiia/oiia.json"));
 }
 
 void ACatActor::Update(float DeltaTime)

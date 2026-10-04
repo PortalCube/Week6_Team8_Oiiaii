@@ -27,6 +27,4 @@ public:
 
 	virtual EEngineShowFlags GetShowFlag() const override { return EEngineShowFlags::SF_Primitives; }
 
-protected:
-	UMeshComponent() = default;
 };

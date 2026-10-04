@@ -8,9 +8,11 @@
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/CoreUObject/TWeakObjectPtr.h"
 #include "Runtime/Actors/AActor.h"
-#include "Runtime/Engine/USceneManager.h"
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "Runtime/Components/UTextComponent.h"
+
+#include "Runtime/Engine/UWorld.h"
+#include "Runtime/Engine/ULevel.h"
 
 #include "Runtime/UI/SSplitter.h"
 enum class EEditorPrimitiveType : uint8
@@ -21,6 +23,8 @@ enum class EEditorPrimitiveType : uint8
 	Billboard,
 	Spotlight,
 };
+
+class UEditorEngine;
 
 class FEditor
 {
@@ -52,7 +56,7 @@ public:
 	}
 
 public:
-	void Initialize(USceneManager* SceneManager);
+	void Initialize(UEditorEngine* EditorEngine);
 	void Shutdown();
 
 	void Process();
@@ -60,7 +64,6 @@ public:
 	void NewScene();
 	void SaveScene(const FString& Path);
 	void LoadScene(const FString& Path);
-	bool CheckSceneExists();
 
 	void AddViewport(FEditorViewportClient Viewport);
 	void InitMultiViewport(FEditorViewportClient Viewport);
@@ -80,15 +83,14 @@ public:
 	{
 		return EditorViewports;
 	}
-	[[nodiscard]] ULevel* GetCurrentScene() const
-	{
-		return SceneManager ? SceneManager->CurrentScene : nullptr;
-	}
+
+	UWorld* GetCurrentWorld() const;
+	ULevel* GetCurrentLevel() const;
+
 	void SpawnActorToCurrentScene(UClass* Type, int Count = 1);
 	// 피킹 등에서 현재 씬의 렌더링 대상 컴포넌트가 필요할 때 사용
 	[[nodiscard]] const TArray<UPrimitiveComponent*>& GetPrimitiveComponents() const;
 	FGizmo& GetGizmo() { return Gizmo; }
-	FRenderResourceLibrary* GetRendererLibrary();
 
 	void ClearSelectionForGC();
 
@@ -105,9 +107,10 @@ public:
 	SSplitterH HorizonSplitter2; // 세로선
 	SSplitterV VerticalSplitter; // 가로선
 private:
-	USceneManager* SceneManager =
-	    nullptr; // 씬을 다중으로 가질 수 있도록 구조개선 가능-이경우 에디터쪽에
-	             // 클래스를 추가해 씬과 FEditorViewportClient들을 연관
+	UEditorEngine* EditorEngine = nullptr;
+
+	// 씬을 다중으로 가질 수 있도록 구조개선 가능-이경우 에디터쪽에
+	// 클래스를 추가해 씬과 FEditorViewportClient들을 연관
 	TArray<FEditorViewportClient> EditorViewports;
 	FGizmo Gizmo;
 	TWeakObjectPtr<AActor> SelectedActor;
