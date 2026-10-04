@@ -1,14 +1,19 @@
 #include "FEditor.h"
+
+#include <numbers>
+
 #include "Runtime/Actors/AActor.h"
-#include "Runtime/Actors/ACubeActor.h"
-#include "Runtime/Actors/ASphereActor.h"
-#include "Runtime/Actors/ACylinderActor.h"
 #include "Runtime/Actors/ABillboardActor.h"
+#include "Runtime/Actors/ACubeActor.h"
+#include "Runtime/Actors/ACylinderActor.h"
+#include "Runtime/Actors/ASphereActor.h"
 #include "Runtime/Actors/ASpotlightActor.h"
+#include "Runtime/Asset/FAssetRegistry.h"
+#include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/CoreUObject/UObject.h"
+#include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Input/FInputManager.h"
-#include "Runtime/Rendering/FRenderResourceLibrary.h"
 #include "Runtime/Math/Random.h"
 #include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Core/Globals.h"
@@ -86,18 +91,18 @@ void FEditor::Process()
 
 void FEditor::SaveState()
 {
-	const FEditorViewportClient* Viewport = GetActiveViewport();
+	SEditorViewport* Viewport = GetPerspectiveViewport();
 	if (!Viewport)
 	{
 		return;
 	}
 
-	const FCamera& Camera = Viewport->ViewportCamera;
+	const FCamera& Camera = Viewport->GetClient().GetViewportCamera();
 	State.SetCameraLocation(Camera.GetPosition());
 	State.SetCameraPitch(Camera.GetPitch());
 	State.SetCameraYaw(Camera.GetYaw());
 	State.SetCameraFOV(Camera.GetProjection().GetFOV());
-	State.SetGridCellSize(Viewport->GetGrid().GetCellSize());
+	State.SetGridCellSize(Viewport->GetClient().GetGrid().GetCellSize());
 	State.SetGizmoMode(static_cast<uint8>(Gizmo.Mode));
 	State.SetGizmoSpace(static_cast<uint8>(Gizmo.GetSpace()));
 	State.SetSelectedActor(SelectedActor ? SelectedActor->GetUUID() : static_cast<uint32>(-1));
@@ -105,32 +110,31 @@ void FEditor::SaveState()
 
 void FEditor::LoadState()
 {
-	FEditorViewportClient* Viewport = GetActiveViewport();
+	SEditorViewport* Viewport = GetPerspectiveViewport();
 	if (!Viewport)
 	{
 		return;
 	}
 
-	FCamera& Camera = Viewport->ViewportCamera;
+	FCamera& Camera = Viewport->GetClient().GetViewportCamera();
 
 	Camera.SetPosition(State.GetCameraLocation());
 	Camera.SetRotation(State.GetCameraPitch(), State.GetCameraYaw());
 	Camera.SetFOV(State.GetCameraFOV());
-	Viewport->GetGrid().SetCellSize(State.GetGridCellSize());
+	Viewport->GetClient().GetGrid().SetCellSize(State.GetGridCellSize());
 	Gizmo.Mode = static_cast<EGizmoMode>(State.GetGizmoMode());
 	Gizmo.SetGizmoSpace(static_cast<EGizmoSpace>(State.GetGizmoSpace()));
 
-	// viewmode관련
-	VerticalSplitter.Ratio = State.GetSplitter().X;
-	HorizonSplitter.Ratio = State.GetSplitter().Y;
-	HorizonSplitter2.Ratio = State.GetSplitter().Z;
+	ViewportLayout.SetSplitterRatio(State.GetSplitter());
 }
 
 void FEditor::NewScene()
 {
 	UnSelectActor();
 	Globals::Editor->OpenEmptyLevel(EWorldType::Editor);
+	const FEditorState::SplitViewMode SplitMode = State.GetSplitMode();
 	State.ResetToDefaults();
+	State.SetSplitMode(SplitMode);
 	LoadState();
 }
 
@@ -142,6 +146,7 @@ void FEditor::SaveScene(const FString& Path)
 void FEditor::LoadScene(const FString& Path)
 {
 	// 씬 로드
+	SEditorViewport* Viewport = GetPerspectiveViewport();
 	Globals::Editor->OpenLevel(Path, EWorldType::Editor);
 	SelectedActor = nullptr;
 
@@ -150,30 +155,33 @@ void FEditor::LoadScene(const FString& Path)
 	Level->GetSceneBVH().Build(Level->GetRenderComponents());
 }
 
-void FEditor::AddViewport(FEditorViewportClient Viewport)
+// 포커스된 뷰포트를 반환
+SEditorViewport* FEditor::GetActiveViewport()
 {
-	EditorViewports.push_back(Viewport);
+	return ViewportLayout.ActiveViewport;
 }
 
-void FEditor::InitMultiViewport(FEditorViewportClient Viewport)
+// Viewports 배열에 원근 뷰포트가 있으면 그걸 반환. 없으면 Active 뷰포트를 반환
+// 주로 save, load에 쓰임
+SEditorViewport* FEditor::GetPerspectiveViewport()
 {
-	EditorViewports.push_back(Viewport);
-	EditorViewports.push_back(Viewport);
-	EditorViewports.push_back(Viewport);
-	EditorViewports.push_back(Viewport);
-}
-void FEditor::DeleteViewport(int32 IndexOfViewport)
-{
-	EditorViewports.erase(EditorViewports.begin() + IndexOfViewport);
-}
-
-FEditorViewportClient* FEditor::GetActiveViewport()
-{
-	if (EditorViewports.empty())
+	SEditorViewport* HiddenPerspective = nullptr;
+	for (SEditorViewport& Viewport : ViewportLayout.Viewports)
 	{
-		return nullptr;
+		if (Viewport.GetClient().GetCameraMode() != ECameraMode::PERSPECTIVE)
+		{
+			continue;
+		}
+		if (Viewport.bVisible)
+		{
+			return &Viewport;
+		}
+		if (!HiddenPerspective) //원근 뷰포트를 찾음
+		{
+			HiddenPerspective = &Viewport;
+		}
 	}
-	return &EditorViewports[ActiveViewportIndex];
+	return HiddenPerspective ? HiddenPerspective : GetActiveViewport();
 }
 
 bool FEditor::SelectActor(AActor* Actor)
@@ -286,119 +294,66 @@ void FEditor::SpawnActorToCurrentScene(UClass* Type, int Size)
 	}
 }
 
-void FEditor::ResizeView(FEditorState::SplitViewMode mode)
+// Split View Mode가 바뀌었을때 ViewLayout을 그에 맞게 하드코딩된 기본값으로 업데이트함
+void FEditor::SetViewLayout(FEditorState::SplitViewMode Mode)
 {
-	// viewport를 가지고있는 splitter,window를 업데이트
-	ActiveViewportIndex = 0;
-	//=== 초기화 ===//
-	for (int32 i = 0; i < 4; ++i)
+	ViewportLayout.Rearrange(Mode);
+
+	auto SetCameraMode = [this](int32 ViewportIndex, ECameraMode Mode)
 	{
-		Leaf[i].ViewportIndex = i;
-		Leaf[i].bisActive = false;
-	}
-
-	HorizonSplitter2.bisActive = false;
-	VerticalSplitter.bisActive = false;
-	HorizonSplitter.bisActive = false;
-	//=== 초기화 ===//
-
-	//===람다함수===//
-	auto Connect = [](SSplitter& Splitter, SWindow& LT, SWindow& RB)
-	{
-		Splitter.SideLT = &LT;
-		Splitter.SideRB = &RB;
-
-		Splitter.bisActive = true;
-		LT.bisActive = true;
-		RB.bisActive = true;
+		GetViewportLayout().Viewports[ViewportIndex].GetClient().SetCameraMode(Mode);
 	};
 
-	switch (mode)
+	switch (Mode)
 	{
 	case FEditorState::SplitViewMode::SINGLE:
-		Leaf[0].bisActive = true;
-		Root = &Leaf[0];
-		break;
-
-	case FEditorState::SplitViewMode::HORIZONTAL:
-		Leaf[0].bisActive = true;
-		Leaf[1].bisActive = true;
-		Connect(HorizonSplitter, Leaf[0], Leaf[1]);
-		Root = &HorizonSplitter;
-		break;
-
-	case FEditorState::SplitViewMode::VERTICAL:
-		Leaf[0].bisActive = true;
-		Leaf[2].bisActive = true;
-		Connect(VerticalSplitter, Leaf[0], Leaf[2]);
-		Root = &VerticalSplitter;
-		break;
-
-	case FEditorState::SplitViewMode::QUAD:
-		Leaf[0].bisActive = true;
-		Leaf[1].bisActive = true;
-		Leaf[2].bisActive = true;
-		Leaf[3].bisActive = true;
-		Connect(VerticalSplitter, HorizonSplitter, HorizonSplitter2);
-		Connect(HorizonSplitter, Leaf[0], Leaf[1]);
-		Connect(HorizonSplitter2, Leaf[2], Leaf[3]);
-		Root = &VerticalSplitter;
-		break;
-	}
-}
-void FEditor::SetViewLayout(FEditorState::SplitViewMode mode)
-{
-	ResizeView(mode);
-
-	auto SetPerspectiveView = [this](int32 ViewportIndex)
-	{
-		FEditorViewportClient& Viewport = EditorViewports[ViewportIndex];
-		Viewport.eOrthogonalType = FEditorViewportClient::EOrthogonalType::PERSPECTIVE;
-		Viewport.ViewportCamera.SetProjectionType(EProjectionType::Perspective);
-	};
-
-	auto SetOrthographicView = [this](int32 ViewportIndex, FEditorViewportClient::EOrthogonalType Type)
-	{
-		EditorViewports[ViewportIndex].SetOrthograpihcView(Type);
-	};
-
-	switch (mode)
-	{
-	case FEditorState::SplitViewMode::SINGLE:
-		VerticalSplitter.bisActive = false;
-		HorizonSplitter.bisActive = false;
-		HorizonSplitter2.bisActive = false;
-		SetPerspectiveView(0);
+		SetCameraMode(0, ECameraMode::PERSPECTIVE);
 		State.SetSplitMode(FEditorState::SplitViewMode::SINGLE);
 		break;
 
 	case FEditorState::SplitViewMode::VERTICAL:
-		VerticalSplitter.bisActive = true;
-		HorizonSplitter.bisActive = false;
-		HorizonSplitter2.bisActive = false;
-		SetOrthographicView(0, FEditorViewportClient::EOrthogonalType::ORTHOGRAPHIC_TOP);
-		SetPerspectiveView(2);
+		SetCameraMode(0, ECameraMode::ORTHOGRAPHIC_TOP);
+		SetCameraMode(2, ECameraMode::PERSPECTIVE);
 		State.SetSplitMode(FEditorState::SplitViewMode::VERTICAL);
 		break;
 
 	case FEditorState::SplitViewMode::HORIZONTAL:
-		VerticalSplitter.bisActive = false;
-		HorizonSplitter.bisActive = true;
-		HorizonSplitter2.bisActive = false;
-		SetOrthographicView(0, FEditorViewportClient::EOrthogonalType::ORTHOGRAPHIC_TOP);
-		SetPerspectiveView(1);
+		SetCameraMode(0, ECameraMode::ORTHOGRAPHIC_TOP);
+		SetCameraMode(1, ECameraMode::PERSPECTIVE);
 		State.SetSplitMode(FEditorState::SplitViewMode::HORIZONTAL);
 		break;
 
 	case FEditorState::SplitViewMode::QUAD:
-		VerticalSplitter.bisActive = true;
-		HorizonSplitter.bisActive = true;
-		HorizonSplitter2.bisActive = true;
-		SetOrthographicView(0, FEditorViewportClient::EOrthogonalType::ORTHOGRAPHIC_TOP);
-		SetPerspectiveView(1);
-		SetOrthographicView(2, FEditorViewportClient::EOrthogonalType::ORTHOGRAPHIC_FRONT);
-		SetOrthographicView(3, FEditorViewportClient::EOrthogonalType::ORTHOGRAPHIC_RIGHT);
+		SetCameraMode(0, ECameraMode::ORTHOGRAPHIC_TOP);
+		SetCameraMode(1, ECameraMode::PERSPECTIVE);
+		SetCameraMode(2, ECameraMode::ORTHOGRAPHIC_FRONT);
+		SetCameraMode(3, ECameraMode::ORTHOGRAPHIC_RIGHT);
 		State.SetSplitMode(FEditorState::SplitViewMode::QUAD);
 		break;
 	}
+
+	ViewportLayout.SetActiveViewport(GetPerspectiveViewport());
+}
+
+// FEditorApplication::Render에서 필요한 EditorRenderContext을 만든다
+FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry)
+{
+	FEditorRenderContext EditorRenderContext{
+		.SelectedActor = SelectedActor,
+		.SelectedPrimitive = nullptr,
+		.Grid = &Viewport.GetClient().GetGrid(),
+		.VisualizerRegistry = VisualizerRegistry,
+		.SelectedTransform = SelectedTransform,
+		.Gizmo = ObjectSelected() ? &Gizmo : nullptr,
+		.TextComp = ObjectSelected() ? SelectedActorTextComp : nullptr,
+	};
+
+	if (SelectedActor)
+	{
+		if (USceneComponent* RootComp = SelectedActor->GetRootComponent())
+		{
+			EditorRenderContext.SelectedPrimitive = RootComp->Cast<UPrimitiveComponent>();
+		}
+	}
+	return EditorRenderContext;
 }

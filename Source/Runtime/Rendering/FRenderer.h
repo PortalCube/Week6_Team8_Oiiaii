@@ -26,8 +26,6 @@ class FCamera;
 class UTextComponent;
 struct FDrawCommand;
 
-#include "Runtime/Engine/ShowFlags.h"
-
 struct FFrameResource
 {
 	Microsoft::WRL::ComPtr<ID3D11Buffer> FrameConstantBuffer;
@@ -35,21 +33,45 @@ struct FFrameResource
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantBuffer;
 };
 
+// TODO: 임시 위치  헤더 파일로 분리
+// Screen Pass에 쓰이는 Color와 Depth Texture
+// 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리 헤더 파일로 분리
+struct FSceneTextures
+{
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneColorTexture;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> SceneColorRTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneColorSRV;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneDepthTexture;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> SceneDepthDSV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneDepthSRV;
+
+	void Reset()
+	{
+		SceneColorTexture.Reset();
+		SceneColorRTV.Reset();
+		SceneColorSRV.Reset();
+
+		SceneDepthTexture.Reset();
+		SceneDepthDSV.Reset();
+		SceneDepthSRV.Reset();
+	}
+};
+
+
 class FRenderer final
 {
 public:
 	bool Initialize(HWND Window);
 	void Shutdown();
 	void BeginFrame();
-	void BindEditorViewportRenderTargets();
-	void SetViewportUV(FVector2 TopLeftUV, FVector2 LengthUV);
+	void BindSceneRenderTargets();
+	void BindBackBufferRenderTargets();
+	void SetViewportPixel(FVector2 LeftTopPixel, FVector2 RightBottomPixel);
 	void ClearDepth();
 	void SwapBuffer();
 	void FlushDrawStats();
 	void OnWindowSize(UINT Width, UINT Height);
-
-	EViewModeIndex GetRenderMode() const { return CurrentRenderMode; }
-	void SetRenderMode(EViewModeIndex InMode) { CurrentRenderMode = InMode; }
 
 	[[nodiscard]]
 	TSharedPtr<FMesh> CreateMesh(const FMeshDesc& Desc);
@@ -58,15 +80,11 @@ public:
 	void GetDeviceAndContext_ImplDX11(ID3D11Device*& DeviceOut,
 	    ID3D11DeviceContext*& ContextOut);
 	[[nodiscard]] ID3D11Device* GetDevice() const { return Device.Get(); }
-	[[nodiscard]] ID3D11DeviceContext* GetContext() const
-	{
-		return Context.Get();
-	}
+	[[nodiscard]] ID3D11DeviceContext* GetContext() const { return Context.Get(); }
 
 	[[nodiscard]]
 	TSharedPtr<FRenderPipeline>
-	CreateRenderPipeline(const FRenderPipelineDesc& Desc,
-	    EViewModeIndex RenderMode = EViewModeIndex::VMI_Lit);
+	CreateRenderPipeline(const FRenderPipelineDesc& Desc);
 	[[nodiscard]]
 	TSharedPtr<FTexture> CreateTexture(const wchar_t* path);
 	TSharedPtr<FTexture> CreateSolidTexture(const FVector4& Color);
@@ -76,34 +94,32 @@ public:
 
 	FLineBatcher& GetLineBatcher() { return LineBatcher; }
 
-	void UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode);
+	void UpdateLightConstants(const FLightConstants& Constants);
 	void UpdateFrameConstants(const FFrameConstants& Constants);
 	void UpdateViewConstants(const FViewConstants& Constants);
 
 	// 텍스트 인스턴싱
 	void AddTextInstanceArray(const FDrawCommand& Command);
-	void DrawInstances(const FCamera& Camera);
+	void DrawInstances(const FCamera& Camera, FRenderPipeline* OverridePipeline, bool bDisableShading);
 	void DrawTextInstances(const FDrawCommand& Command);
 	void ClearTextInstances();
 
-	void Draw(const FDrawCommand& Command, uint32 Slot = 2,
-	    bool bApplyViewMode = true);
+	void Draw(const FDrawCommand& Command, FRenderPipeline* OverridePipeline, uint32 Slot = 2);
 
-	void DrawPrimitiveBatch(std::span<const FDrawCommand> Commands);
+	void DrawPrimitiveBatch(std::span<const FDrawCommand> Commands, FRenderPipeline* OverridePipeline);
 
 	bool UploadObjectConstants(std::span<const FDrawCommand> Commands);
 
 	void BindObjectConstantRange(uint32 Slot, uint32 ByteOffset);
-	void BindDrawResources(
-	    const FMesh& Mesh,
-	    const FMaterial& Material,
-	    bool bApplyViewMode);
+	void BindDrawResources(const FMesh& Mesh, const FMaterial& Material, FRenderPipeline* OverridePipeline);
 
-	void DrawUploadedCommand(const FDrawCommand& Command, bool bApplyViewMode = true);
+	void DrawUploadedCommand(const FDrawCommand& Command, FRenderPipeline* OverridePipeline);
 
-	void RenderOutline();
-	ID3D11RenderTargetView* GetBackBuffer() { return BackBufferRTV.Get(); }
-	ID3D11DepthStencilView* GetDepthStencilView() { return DepthStencilView.Get(); }
+	void DrawScreenPass(ID3D11ShaderResourceView* SRVs[], ID3D11RenderTargetView* BackBuffer);
+	void RenderSelectionOutline(FVector2 LeftTopPixel, FVector2 RightBottomPixel);
+	void RenderSceneDepth();
+	ID3D11RenderTargetView* GetBackBufferRTV() { return BackBufferRTV.Get(); }
+	ID3D11DepthStencilView* GetSceneDepthDSV() { return SceneDepthDSV.Get(); }
 
 	float GetWidth() const { return Viewport.Width; }
 	float GetHeight() const { return Viewport.Height; }
@@ -112,9 +128,12 @@ public:
 
 private:
 	bool InitializeDeviceAndSwapChain(HWND Window);
-	bool InitializeBackBufferAndDepthStencil();
+	bool InitializeBackBuffer();
+	bool InitializeSceneTextures();
 	bool InitializeConstantBuffers();
 	bool InitializeGPUTimerQueries();
+
+	void ResetSceneTexture();
 
 	// GPU 타임스탬프. 결과를 같은 프레임에 바로 읽으면 CPU가 GPU를 기다리게 되므로
 	// 쿼리 세트를 돌려 쓰고 가장 오래된 것만 회수한다.
@@ -140,10 +159,6 @@ private:
 	// D3D11_1 Extension
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> Context1;
 
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> BackBufferRTV;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> DepthStencilBuffer;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> DepthStencilView;
-
 	// 모든 ConstantBuffer의 최대 크기
 	static constexpr UINT ConstantBufferSize = 256u;
 
@@ -156,24 +171,27 @@ private:
 	// 임시 상수버퍼
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantUploadBuffer;
 
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> EditorViewPortRTV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> EditorViewPortSRV;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTexture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> DepthStencilSRV;
+	// Draw, ImGui 모두 다 포함하는 BackBuffer Texture
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> BackBufferTexture;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> BackBufferRTV;
+
+	// Screen Pass에서 쓰이는 텍스쳐
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneColorTexture;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> SceneColorRTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneColorSRV;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneDepthTexture; // 이전 DepthStencilBuffer
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> SceneDepthDSV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SceneDepthSRV;
 
 	TMap<FRasterizerDesc, Microsoft::WRL::ComPtr<ID3D11RasterizerState>> RasterizerStateMap;
 	TMap<FDepthStencilDesc, Microsoft::WRL::ComPtr<ID3D11DepthStencilState>> DepthStencilStateMap;
 	TMap<FBlendDesc, Microsoft::WRL::ComPtr<ID3D11BlendState>> BlendStateMap;
 	TMap<FTextureSamplerDesc, Microsoft::WRL::ComPtr<ID3D11SamplerState>> SamplerStateMap;
 
-	bool InitializeEditorViewportRenderTarget();
-
 	// 텍스트 인스턴싱 버퍼
-
 	Microsoft::WRL::ComPtr<ID3D11Buffer> InstanceBuffer;
 	UINT TextInstanceBufferSize = 0;
-
-	EViewModeIndex CurrentRenderMode = EViewModeIndex::VMI_Lit;
 
 	struct FGPUTimerQuery
 	{
@@ -211,29 +229,18 @@ private:
 
 public:
 	template <typename TConstants>
-	void FlushLineBatch(
-	    const TConstants& Constants,
-	    const FName& PipelineId = FName("Simple_Line"))
+	void FlushLineBatch( const TConstants& Constants, const FName& PipelineId = FName("Simple_Line"))
 	{
 		UpdateBuffer(Constants, 2);
 		LineBatcher.Flush(*Context.Get(), GetPipeline(PipelineId));
 	}
 
-	// bApplyViewMode=false면 뷰모드(와이어프레임) 오버라이드를 건너뛴다
 	template <typename TConstants>
-	void Draw(
-	    const FMesh& Mesh,
-	    const FMaterial& Material,
-	    const TConstants& Constants,
-	    uint32 Slot = 2,
-	    bool bApplyViewMode = true)
+	void Draw(const FMesh& Mesh, const FMaterial& Material, const TConstants& Constants, FRenderPipeline* OverridePipeline, uint32 Slot = 2)
 	{
 		UpdateBuffer(Constants, 2);
 
-		BindDrawResources(
-		    Mesh,
-		    Material,
-		    bApplyViewMode);
+		BindDrawResources(Mesh, Material, OverridePipeline);
 
 		if (Mesh.HasIndices())
 		{
@@ -249,21 +256,11 @@ public:
 	}
 
 	template <typename TConstants>
-	void DrawSection(
-	    const FMesh& Mesh,
-	    const FMaterial& Material,
-	    const TConstants& Constants,
-	    uint32 StartIndex,
-	    uint32 IndexCount,
-	    uint32 Slot = 2,
-	    bool bApplyViewMode = true)
+	void DrawSection(const FMesh& Mesh, const FMaterial& Material, const TConstants& Constants, FRenderPipeline* OverridePipeline, uint32 StartIndex, uint32 IndexCount, uint32 Slot = 2)
 	{
 		UpdateBuffer(Constants, Slot);
 
-		BindDrawResources(
-		    Mesh,
-		    Material,
-		    bApplyViewMode);
+		BindDrawResources(Mesh, Material, OverridePipeline);
 
 		if (Mesh.HasIndices())
 		{
@@ -319,8 +316,7 @@ public:
 		}
 
 		D3D11_MAPPED_SUBRESOURCE Mapped{};
-		if (FAILED(Context->Map(GetCurrentFrameResource()->ObjectConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD,
-		        0, &Mapped)))
+		if (FAILED(Context->Map(GetCurrentFrameResource()->ObjectConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped)))
 		{
 			return;
 		}

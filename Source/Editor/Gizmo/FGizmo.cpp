@@ -249,7 +249,9 @@ void FGizmo::DrawAxis(FRenderer& Renderer, EGizmoHandle Handle, const FMatrix& W
 	Constants.World = World;
 	Constants.Color = DrawColor;
 	Constants.DisableShading = 1.0f;
-	Renderer.Draw(*GizmoMesh, *GizmoMaterial, Constants);
+
+	// 기즈모는 항상 똑같이 렌더링 되도록 pipeline = nullptr (GizmoMaterial의 pipeline을 쓴다)
+	Renderer.Draw(*GizmoMesh, *GizmoMaterial, Constants, nullptr);
 }
 
 float FGizmo::CalculateGizmoScale(const FVector& GizmoLocation, const FCamera& Camera) const

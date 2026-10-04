@@ -76,9 +76,8 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 
 	// Editor 백엔드 초기화
 	Editor.Initialize(this);
-	Editor.InitMultiViewport(FEditorViewportClient{});
-	Editor.LoadState();
 	Editor.SetViewLayout(Editor.State.GetSplitMode());
+	Editor.LoadState();
 }
 
 void UEditorEngine::Tick(float DeltaTime)
@@ -94,17 +93,17 @@ void UEditorEngine::Tick(float DeltaTime)
 		// 렌더러 스왑체인 조정
 		Renderer.OnWindowSize(Globals::ResizeWidth, Globals::ResizeHeight);
 
-		FVector2 ViewportSize{
-			static_cast<float>(Globals::ResizeWidth),
-			static_cast<float>(Globals::ResizeHeight)
-		};
+		//FVector2 ViewportSize{
+		//	static_cast<float>(Globals::ResizeWidth),
+		//	static_cast<float>(Globals::ResizeHeight)
+		//};
 
-		// 뷰포트 종횡비 갱신
-		for (auto& Viewport : Editor.GetViewports())
-		{
-			const FVector2 SizePixels = Viewport.LengthUV * ViewportSize;
-			Viewport.ViewportCamera.SetAspectRatio(SizePixels.X / SizePixels.Y);
-		}
+		//// 뷰포트 종횡비 갱신
+		//for (auto& Viewport : Editor.GetViewports())
+		//{
+		//	const FVector2 SizePixels = Viewport.LengthUV * ViewportSize;
+		//	Viewport.ViewportCamera.SetAspectRatio(SizePixels.X / SizePixels.Y);
+		//}
 
 		Globals::bIsRequestingResize = false;
 	}
@@ -136,9 +135,7 @@ void UEditorEngine::Tick(float DeltaTime)
 
 		// 에디터 Tick
 		Editor.Process();
-
 	}
-
 
 	////////////////////////////////////////////////////////////
 	// 에디터 Render
@@ -148,97 +145,52 @@ void UEditorEngine::Tick(float DeltaTime)
 
 		Renderer.BeginFrame();
 
-		TArray<FEditorViewportClient>& EditorViewports = Editor.GetViewports();
-
 		// 렌더 준비
 		RenderView.PrepareRender();
 
 		// Active인 ViewportClient만 렌더링
-		for (SWindow& Leaf : Editor.Leaf)
+		for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
 		{
-			if (!Leaf.bisActive)
+			if (!Viewport.IsRenderable())
 			{
 				continue;
 			}
 
-			FEditorViewportClient& EditorViewport = EditorViewports[Leaf.ViewportIndex];
-
 			// 뷰포트 렌더링 명세 구성
-			FSceneView SceneView{
-				.Camera = EditorViewport.ViewportCamera,
-				.ViewProj = EditorViewport.ViewportCamera.GetViewProjectionMatrix(),
-				.TopLeftUV = EditorViewport.TopLeftUV,
-				.LengthUV = EditorViewport.LengthUV,
-				.ViewMode = EditorViewport.ViewMode,
-				.ShowFlags = EditorViewport.ShowFlags,
-				.LightConstants = Editor.GlobalLight
-			};
+			FSceneView SceneView = Viewport.GetClient().GetSceneView(Editor.GlobalLight);
 
 			// 에디터 렌더링 컨텍스트 구성
-			FEditorRenderContext EditorCtx
-			{
-				.SelectedActor = Editor.GetSelectedActor(),
-				.Grid = &EditorViewport.GetGrid(),
-				.VisualizerRegistry = &VisualizerRegistry,
-				.SelectedTransform = Editor.SelectedTransform,
-				.Gizmo = Editor.ObjectSelected() ? &Editor.GetGizmo() : nullptr,
-				.TextComp = Editor.ObjectSelected() ? Editor.GetTextcomp() : nullptr,
-			};
-
-			// 선택된 항목 있으면 EditorRenderContext에 넣기. (아웃라인 그리기용)
-			// TODO: 얘도 이렇게 넣지 말고 "이런걸 그려라" 라는 식으로 바꿀 것
-			if (EditorCtx.SelectedActor)
-			{
-				if (USceneComponent* RootComp = EditorCtx.SelectedActor->GetRootComponent())
-				{
-					EditorCtx.SelectedPrimitive = RootComp->Cast<UPrimitiveComponent>();
-				}
-			}
+			FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(Viewport, &VisualizerRegistry);
 
 			// 뷰포트 렌더링 일괄 수행
-			// TODO: Level이 여기 들어가면 안됨. 이미 만든 리스트만 받아올 수 있도록 리팩토링
-			RenderView.RenderView(SceneView, *WorldList[0].World->GetCurrentLevel(), EditorCtx);
+			RenderView.RenderView(SceneView, *GetEditorWorld()->GetCurrentLevel(), EditorRenderContext);
 		}
 
-		// 선택된 액터가 있다면 추가 그리기 수행
+		// 기즈모 그리기
 		if (Editor.ObjectSelected())
 		{
-			for (const SWindow& Leaf : Editor.Leaf)
+			for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
 			{
-				if (!Leaf.bisActive)
+				if (!Viewport.IsRenderable())
 				{
 					continue;
 				}
 
-				const auto& Viewport = EditorViewports[Leaf.ViewportIndex];
+				FSceneView SceneView = Viewport.GetClient().GetSceneView(Editor.GlobalLight);
 
-				FSceneView SceneView{
-					.Camera = Viewport.ViewportCamera,
-					.ViewProj = Viewport.ViewportCamera.GetViewProjectionMatrix(),
-					.TopLeftUV = Viewport.TopLeftUV,
-					.LengthUV = Viewport.LengthUV,
-					.ViewMode = Viewport.ViewMode,
-					.ShowFlags = Viewport.ShowFlags,
-					.LightConstants = Editor.GlobalLight
-				};
+				RenderView.RenderOverlayPass(SceneView, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
 
-				// 선택된 액터의 UUID 표시 그리기
-				RenderView.RenderOverlayPass(Viewport.ViewportCamera, SceneView, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
-
-				// 마지막으로 그린 뷰의 렌더 모드가 남지 않도록 설정
-				RenderView.SetRenderMode(Viewport.ViewMode);
-
-				// 기즈모 그리기
 				RenderView.RenderGizmo(
 				    Editor.SelectedTransform,
-				    Viewport.ViewportCamera,
-				    Viewport.TopLeftUV,
-				    Viewport.LengthUV,
+				    Viewport.GetClient().GetViewportCamera(),
+				    Viewport.GetClient().GetViewport().GetLeftTop(),
+				    Viewport.GetClient().GetViewport().GetRightBottom(),
 				    Editor.GetGizmo());
 			}
 		}
 
 		// ImGui 라이브러리 렌더링 수행
+		Renderer.BindBackBufferRenderTargets();
 		ImguiManager.RenderUI();
 
 		// 최종적으로 그리기

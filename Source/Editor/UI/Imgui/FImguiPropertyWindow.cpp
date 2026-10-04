@@ -243,9 +243,9 @@ void FImguiPropertyWindow::ShowTextSettings(UTextComponent& TextComp) const
 	if (ImGui::InputText("Text Content", &utfBuffer[0], sizeof(utfBuffer), ImGuiInputTextFlags_EnterReturnsTrue))
 	{
 		FString Buffer{ &utfBuffer[0] };
-		uint32 convertResult = MultiByteToWideChar(CP_UTF8, 0, Buffer.c_str(), Buffer.length(), NULL, 0);
+		uint32 convertResult = MultiByteToWideChar(CP_UTF8, 0, Buffer.c_str(), static_cast<int32>(Buffer.length()), NULL, 0);
 		FWString newText(convertResult, 0);
-		MultiByteToWideChar(CP_UTF8, 0, Buffer.c_str(), Buffer.length(), newText.data(), convertResult);
+		MultiByteToWideChar(CP_UTF8, 0, Buffer.c_str(), static_cast<uint32>(Buffer.length()), newText.data(), convertResult);
 		TextComp.SetText(newText);
 	}
 
