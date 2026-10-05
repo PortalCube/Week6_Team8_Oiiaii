@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "FImguiConsoleWindow.h"
 #include "FImguiControlPanelWindow.h"
 #include "FImguiEditorViewportWindow.h"
@@ -24,6 +24,7 @@ public:
 	bool PickSceneFile(FString& OutPath, bool bSave);
 	void ShowFileBar(FString CurrentScenePath, FEditor& Editor);
 	void ShowViewBar(FEditor& Editor, FImguiConsoleWindow& ConsoleWindow);
+	void ShowPIEBar(FEditor& Editor);
 
 	bool PickObjFile(FString& OutPath);
 };

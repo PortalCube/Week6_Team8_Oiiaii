@@ -1,4 +1,4 @@
-﻿#include "FImguiToolBar.h"
+#include "FImguiToolBar.h"
 #include "ThirdParty/Imgui/imgui.h"
 #include "Editor/Core/FEditor.h"
 #include "FImguiEditorViewportWindow.h"
@@ -23,6 +23,8 @@ void FImguiToolbar::Process(FEditor& Editor, FImguiConsoleWindow& ConsoleWindow,
 
 		// Imgui Window들 소환
 		ShowViewBar(Editor, ConsoleWindow);
+
+		ShowPIEBar(Editor);
 
 		ImGui::EndMainMenuBar();
 	}
@@ -152,6 +154,99 @@ void FImguiToolbar::ShowViewBar(FEditor& Editor, FImguiConsoleWindow& ConsoleWin
 	{
 		Gizmo.Mode = static_cast<EGizmoMode>((SelectedItem + 1) % 4);
 	}
+}
+
+void FImguiToolbar::ShowPIEBar(FEditor& Editor)
+{
+	// 임시 변수. 나중에 제거할 예정
+	bool bIsPIERunning = false;
+	if (!Editor.Root)
+		return;
+
+	// 전체 뷰포트 영역의 가로 중앙
+	const FRect& Rect = Editor.Root->Rect;
+	const float CenterX = ImGui::GetMainViewport()->Pos.x + (Rect.Left + Rect.Right) * 0.5f;
+
+	const ImVec2 ButtonSize{ 40.0f, ImGui::GetFrameHeight() };
+
+	// const float ButtonSpacing = ImGui::GetStyle().ItemSpacing.x;
+	const float ButtonSpacing = ButtonSize.x * 0.025f;
+	const float TotalWidth = ButtonSize.x * 2.0f + ButtonSpacing;
+	ImVec2 Cursor = ImGui::GetCursorScreenPos();
+	Cursor.x = CenterX - TotalWidth * 0.5f;
+	ImGui::SetCursorScreenPos(Cursor);
+
+	// 재생 / 일시정지
+	if (ImGui::Button("##PIE", ButtonSize))
+	{
+		if (bIsPIERunning)
+		{
+			// 실제 PIE 일시정지 요청 함수 호출
+			// Editor
+			// Editor.RequestPIE();
+			bIsPIERunning = false;
+		}
+		else
+		{
+			// Editor.RequestPIE();
+			bIsPIERunning = true;
+		}
+	}
+
+	const ImVec2 Min = ImGui::GetItemRectMin();
+	const ImVec2 Max = ImGui::GetItemRectMax();
+
+	const float X = (Min.x + Max.x) * 0.5f;
+	const float Y = (Min.y + Max.y) * 0.5f;
+	const float H = (Max.y - Min.y) * 0.3f;
+
+	ImDrawList* DrawList = ImGui::GetWindowDrawList();
+	const ImU32 Color = IM_COL32(160, 205, 90, 255);
+
+	if (bIsPIERunning)
+	{
+		// 일시정지 아이콘 Ⅱ
+		DrawList->AddRectFilled(
+		    ImVec2{ X - H * 0.7f, Y - H },
+		    ImVec2{ X - H * 0.2f, Y + H },
+		    Color);
+
+		DrawList->AddRectFilled(
+		    ImVec2{ X + H * 0.2f, Y - H },
+		    ImVec2{ X + H * 0.7f, Y + H },
+		    Color);
+	}
+	else
+	{
+		// 재생 아이콘 ▶
+		DrawList->AddTriangleFilled(
+		    ImVec2{ X - H * 0.5f, Y - H },
+		    ImVec2{ X + H, Y },
+		    ImVec2{ X - H * 0.5f, Y + H },
+		    Color);
+	}
+
+	ImGui::SameLine(0.0f, ButtonSpacing);
+
+	if (ImGui::Button("##StopPIE", ButtonSize))
+	{
+		// 실제 PIE 중지 요청 함수 호출
+	}
+
+	const ImVec2 StopMin = ImGui::GetItemRectMin();
+	const ImVec2 StopMax = ImGui::GetItemRectMax();
+	const float StopX = (StopMin.x + StopMax.x) * 0.5f;
+	const float StopY = (StopMin.y + StopMax.y) * 0.5f;
+	const float HalfSize = (StopMax.y - StopMin.y) * 0.3f;
+
+	// 중지 아이콘 ■
+
+	const ImU32 StopColor = bIsPIERunning ? IM_COL32(220, 70, 70, 255) : IM_COL32(180, 180, 180, 255); // 실행 중: 빨간색 / 기본: 회색 
+
+	DrawList->AddRectFilled(
+	    ImVec2{ StopX - HalfSize, StopY - HalfSize },
+	    ImVec2{ StopX + HalfSize, StopY + HalfSize },
+	    StopColor);
 }
 
 bool FImguiToolbar::PickObjFile(FString& OutPath)
