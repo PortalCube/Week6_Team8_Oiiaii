@@ -7,6 +7,7 @@ class UFireBallComponent;
 class UProjectileMovementComponent;
 
 class AFireBallActor : public AActor
+
 {
 	DECLARE_UCLASS(AFireBallActor, AActor)
 	GENERATED_BODY()

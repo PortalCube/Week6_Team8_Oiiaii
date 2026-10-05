@@ -9,7 +9,7 @@ struct FPointLightConstants
 	float Radius = 1.0f;
 
 	FVector Color{ 1.0f, 1.0f, 1.0f };
-	float Intensity = 1.0f;
+	float Intensity = 3.0f;
 
 	float FalloffExponent = 1.0f;
 	float Padding[3]{};
@@ -41,9 +41,17 @@ public:
 	const FVector4& GetFireColor() const { return FireColor; }
 	void SetFireColor(const FVector4& InColor) { FireColor = InColor; }
 
+	const FVector& GetEmissiveColor() const { return EmissiveColor; }
+	void SetEmissiveColor(const FVector& InColor) { EmissiveColor = InColor; }
+
+	float GetEmissiveIntensity() const { return EmissiveIntensity; }
+	void SetEmissiveIntensity(float InIntensity) { EmissiveIntensity = InIntensity; }
+
 private:
 	float Intensity = 1.0f;
 	float Radius = 1.0f;
 	float RadiusFalloff = 1.0f;
 	FVector4 FireColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+	FVector EmissiveColor{ 1.0f, 1.0f, 1.0f };
+	float EmissiveIntensity = 1.0f;
 };

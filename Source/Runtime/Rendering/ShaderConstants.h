@@ -35,6 +35,8 @@ struct FObjectConstants
 	float DisableShading = 0.0f;
 	FVector Padding;
 	FMatrix WorldInverseTranspose = FMatrix::Identity;
+	FVector EmissiveColor{ 0.0f, 0.0f, 0.0f };
+	float EmissiveIntensity = 0.0f;
 };
 static_assert(sizeof(FObjectConstants) % 16 == 0);
 
@@ -98,10 +100,10 @@ struct FLightConstants
 {
 	// 기본 조명 파라미터
 	FVector LightDirection{ -0.5f, -0.5f, -1.0f };
-	float Intensity = 1.0f;
+	float Intensity = 0.2f;
 
 	FVector LightColor{ 1.0f, 1.0f, 1.0f };
-	float AmbientIntensity = 0.2f;
+	float AmbientIntensity = 0.05f;
 };
 
 static_assert(sizeof(FLightConstants) % 16 == 0);

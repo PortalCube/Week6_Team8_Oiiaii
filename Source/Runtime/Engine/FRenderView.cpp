@@ -5,6 +5,7 @@
 #include "Editor/Visualizer/FVisualizerRegistry.h"
 #include "Editor/Visualizer/IVisualizer.h"
 #include "Runtime/Actors/AActor.h"
+#include "Runtime/Actors/AFireBallActor.h"
 #include "Runtime/Components/UBillboardComponent.h"
 #include "Runtime/Components/Mesh/UStaticMeshComponent.h"
 #include "Runtime/Components/UFireBallComponent.h"
@@ -175,6 +176,19 @@ void FRenderView::CollectScenePrimitives(const UScene& Scene, const FSceneView& 
 		}
 		DrawCommand.Constants.DisableShading = View.ViewMode == EViewModeIndex::VMI_Unlit ? 1.0f : 0.0f;
 
+		AActor* Owner = PrimitiveComponent->GetActorOwner();
+		AFireBallActor* FireBallActor = Owner ? Owner->Cast<AFireBallActor>() : nullptr;
+		UFireBallComponent* FireBall =
+		    FireBallActor && PrimitiveComponent == FireBallActor->GetSphereComponent()
+		        ? FireBallActor->GetFireBallComponent()
+		        : nullptr;
+
+		if (FireBall)
+		{
+			DrawCommand.Constants.EmissiveColor = FireBall->GetEmissiveColor();
+			DrawCommand.Constants.EmissiveIntensity = FireBall->GetEmissiveIntensity();
+		}
+
 		if (DrawCommand.Mesh)
 		{
 			const uint32 DebugLOD = std::min(DrawCommand.LODIndex, Globals::MaxDebugLODCount - 1);
@@ -191,15 +205,6 @@ void FRenderView::CollectScenePrimitives(const UScene& Scene, const FSceneView& 
 				};
 				DrawCommand.Constants.Color = LODColors[DebugLOD];
 			}
-		}
-
-		if (bSelected && DrawCommand.Constants.Color.W > 0.0f)
-		{
-			DrawCommand.Constants.Color = DrawCommand.Constants.Color * 0.7f + FVector4{ 0.3f, 0.3f, 0.3f, 0.0f };
-		}
-		else if (bSelected)
-		{
-			DrawCommand.Constants.Color = { 1.0f, 1.0f, 1.0f, 0.5f };
 		}
 
 		if (bCollectForOracleOnly)

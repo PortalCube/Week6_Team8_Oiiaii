@@ -19,7 +19,9 @@ AFireBallActor::AFireBallActor()
 	FireBallComponent = NewObject<UFireBallComponent>();
 	AddComponent(FireBallComponent);
 	FireBallComponent->SetFireColor(FVector4{ 1.0f, 0.0f, 0.0f, 1.0f });
-	FireBallComponent->SetIntensity(5.0f);
+	FireBallComponent->SetEmissiveColor(FVector{ 1.0f, 0.0f, 0.0f });
+	FireBallComponent->SetEmissiveIntensity(1.0f);
+	FireBallComponent->SetIntensity(1.0f);
 	FireBallComponent->SetRadius(10.0f);
 	FireBallComponent->SetRadiusFalloff(2.0f);
 

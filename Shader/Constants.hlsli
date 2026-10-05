@@ -24,6 +24,8 @@ cbuffer ObjectConstants : register(b2)
     float DisableShading;
     float3 ObjectPadding;
     row_major float4x4 WorldInverseTranspose;
+    float3 EmissiveColor;
+    float EmissiveIntensity;
 }
 
 cbuffer LightConstants : register(b4)

@@ -38,6 +38,9 @@ float4 MainPS(PS_INPUT Input) : SV_Target
     {
         FinalColor += EvaluatePointLight(PointLights[i], Input.WorldPosition, N, BaseColor);
     }
+
+	FinalColor += EmissiveColor * EmissiveIntensity;
+	
     return float4(FinalColor, Input.Color.a);
     
 }

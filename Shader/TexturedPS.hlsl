@@ -38,8 +38,8 @@ float4 MainPS(PS_INPUT Input) : SV_Target
     float3 N = normalize(Input.Normal);
     float NdotL = max(0.0f, dot(N, -normalize(LightDirection)));
     float3 Diffuse = LightColor * (Intensity * NdotL);
-    float3 Ambient = LightColor * max(AmbientIntensity, 0.4f);
-    float3 DirectionalLight = max(Ambient + Diffuse, 0.5f);
+    float3 Ambient = LightColor * AmbientIntensity;
+    float3 DirectionalLight = Ambient + Diffuse;
 
     float3 FinalColor = BaseColor * DirectionalLight;
 

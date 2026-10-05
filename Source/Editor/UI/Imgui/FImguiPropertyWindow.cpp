@@ -2,6 +2,7 @@
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Components/USpotLightComponent.h"
+#include "Runtime/Components/UFireBallComponent.h"
 #include "Runtime/Components/UTextComponent.h"
 #include "Runtime/Components/UBillboardComponent.h"
 #include "Runtime/Components/UAnimatedBillboardComp.h"
@@ -147,6 +148,10 @@ void FImguiPropertyWindow::ShowComponentDetails(FEditor& Editor, AActor& Actor,
 	else if (Comp.IsA<USpotLightComponent>())
 	{
 		ShowSpotLightSettings(static_cast<USpotLightComponent&>(Comp));
+	}
+	else if (Comp.IsA<UFireBallComponent>())
+	{
+		ShowFireBallSettings(static_cast<UFireBallComponent&>(Comp));
 	}
 
 	else if (Comp.IsA<UStaticMeshComponent>())
@@ -393,6 +398,51 @@ void FImguiPropertyWindow::ShowSpotLightSettings(USpotLightComponent& LightComp)
 	if (ImGui::DragFloat("Range", &LightRange, 0.1f, 0.1f, 100.0f))
 	{
 		LightComp.SetRange(LightRange);
+	}
+}
+
+void FImguiPropertyWindow::ShowFireBallSettings(UFireBallComponent& FireBallComp) const
+{
+	ImGui::Separator();
+	ImGui::Text("Point Light Settings");
+
+	FVector4 LightColor = FireBallComp.GetFireColor();
+	if (ImGui::ColorEdit3("Light Color", &LightColor.X))
+	{
+		FireBallComp.SetFireColor(LightColor);
+	}
+
+	float Intensity = FireBallComp.GetIntensity();
+	if (ImGui::DragFloat("Light Intensity", &Intensity, 0.05f, 0.0f, 50.0f))
+	{
+		FireBallComp.SetIntensity(Intensity);
+	}
+
+	float Radius = FireBallComp.GetRadius();
+	if (ImGui::DragFloat("Radius", &Radius, 0.1f, 0.0f, 100.0f))
+	{
+		FireBallComp.SetRadius(Radius);
+	}
+
+	float Falloff = FireBallComp.GetRadiusFalloff();
+	if (ImGui::DragFloat("Falloff", &Falloff, 0.05f, 0.01f, 10.0f))
+	{
+		FireBallComp.SetRadiusFalloff(Falloff);
+	}
+
+	ImGui::Separator();
+	ImGui::Text("Emissive Settings");
+
+	FVector EmissiveColor = FireBallComp.GetEmissiveColor();
+	if (ImGui::ColorEdit3("Emissive Color", &EmissiveColor.X))
+	{
+		FireBallComp.SetEmissiveColor(EmissiveColor);
+	}
+
+	float EmissiveIntensity = FireBallComp.GetEmissiveIntensity();
+	if (ImGui::DragFloat("Emissive Intensity", &EmissiveIntensity, 0.05f, 0.0f, 50.0f))
+	{
+		FireBallComp.SetEmissiveIntensity(EmissiveIntensity);
 	}
 }
 
