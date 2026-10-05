@@ -52,7 +52,7 @@ private:
 
 	// 창 전체를 덮는 클릭 판정용 아이템을 만들고 입력 상태를 모은다.
 	FViewportInput GatherInput(const FVector2& ViewportSizePixels,
-	    const FVector2& ViewportTopLeftPixels) const;
+	    const FVector2& ViewportLeftTopPixels) const;
 
 	// 창이 작업 영역 위로 올라가 타이틀바에 가리는 것을 막는다.
 	void ClampWindowToWorkArea() const;

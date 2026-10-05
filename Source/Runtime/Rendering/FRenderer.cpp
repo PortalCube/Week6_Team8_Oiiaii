@@ -73,7 +73,7 @@ void FRenderer::Shutdown()
 
 	BackBufferTexture.Reset();
 	BackBufferRTV.Reset();
-	ResetSceneTexture();
+	SceneTextures.Reset();
 
 	for (FGPUTimerQuery& Query : GPUTimerQueries)
 	{
@@ -96,39 +96,40 @@ void FRenderer::BeginFrame()
 	BeginGPUTimer();
 
 	Context->RSSetViewports(1, &Viewport);
-	BindSceneRenderTargets();
-
-	constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	// constexpr float ClearColor[] = {0.05f, 0.05f, 0.08f, 1.0f};
-	Context->ClearRenderTargetView(SceneColorRTV.Get(), ClearColor);
+	BindRenderTarget(SceneTextures.SceneColorRTV, SceneTextures.SceneDepthDSV);
+	
 	Context->ClearRenderTargetView(BackBufferRTV.Get(), ClearColor);
-	Context->ClearDepthStencilView(SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+}
+
+void FRenderer::BindRenderTarget(Microsoft::WRL::ComPtr<ID3D11RenderTargetView> RTV, Microsoft::WRL::ComPtr<ID3D11DepthStencilView> DSV)
+{
+	Context->OMSetRenderTargets(1, RTV.GetAddressOf(), DSV.Get());
 }
 
 void FRenderer::BindSceneRenderTargets()
 {
-	Context->OMSetRenderTargets(1, SceneColorRTV.GetAddressOf(), SceneDepthDSV.Get());
+	Context->OMSetRenderTargets(1, SceneTextures.SceneColorRTV.GetAddressOf(), SceneTextures.SceneDepthDSV.Get());
 }
 
 void FRenderer::BindBackBufferRenderTargets()
 {
-	Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), SceneDepthDSV.Get());
+	Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), SceneTextures.SceneDepthDSV.Get());
 }
 
-void FRenderer::SetViewportPixel(FVector2 LeftTopPixel, FVector2 RightBottomPixel)
+void FRenderer::SetViewportPixel(FVector2 ViewportSizePixel)
 {
 	// 뷰포트가 그릴 픽셀 영역을 컨텍스트에 바인딩
 	D3D11_VIEWPORT RenderViewport = Viewport;
-	RenderViewport.TopLeftX = LeftTopPixel.X;
-	RenderViewport.TopLeftY = LeftTopPixel.Y;
-	RenderViewport.Width = RightBottomPixel.X - LeftTopPixel.X;
-	RenderViewport.Height = RightBottomPixel.Y - LeftTopPixel.Y;
+	RenderViewport.TopLeftX = 0.f;
+	RenderViewport.TopLeftY = 0.f;
+	RenderViewport.Width = ViewportSizePixel.X;
+	RenderViewport.Height = ViewportSizePixel.Y;
 	Context->RSSetViewports(1, &RenderViewport);
 };
 
 void FRenderer::ClearDepth()
 {
-	Context->ClearDepthStencilView(SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	Context->ClearDepthStencilView(SceneTextures.SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void FRenderer::FlushDrawStats()
@@ -156,7 +157,7 @@ void FRenderer::OnWindowSize(UINT Width, UINT Height)
 	Context->OMSetRenderTargets(0, nullptr, nullptr);
 	BackBufferTexture.Reset();
 	BackBufferRTV.Reset();
-	ResetSceneTexture();
+	//SceneTextures.Reset();
 
 	SwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
 	Viewport.Width = static_cast<float>(Width);
@@ -248,6 +249,7 @@ TSharedPtr<FMesh> FRenderer::CreateMesh(const FMeshDesc& Desc)
 	return Mesh;
 }
 
+// 텍스트 렌더링용
 TSharedPtr<FMesh> FRenderer::CreateDynamicMesh(const FMeshDesc& Desc)
 {
 	if (!Desc.VertexData || Desc.VertexCount == 0 || Desc.VertexDataSize == 0 || Desc.VertexStride == 0)
@@ -786,90 +788,11 @@ bool FRenderer::InitializeSceneTextures()
 		return false;
 	}
 
-	D3D11_TEXTURE2D_DESC SceneDeptTexturehDesc = {
-		.Width = Width,
-		.Height = Height,
-		.MipLevels = 1u,
-		.ArraySize = 1u,
-		.Format = DXGI_FORMAT_R24G8_TYPELESS,
-		.SampleDesc = {
-		    .Count = 1u,
-		},
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
-	};
-
-	HRESULT Result = Device->CreateTexture2D(&SceneDeptTexturehDesc, nullptr, &SceneDepthTexture);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC SceneDepthDSVDesc = {
-		.Format = DXGI_FORMAT_D24_UNORM_S8_UINT,
-		.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D,
-	};
-	Result = Device->CreateDepthStencilView(SceneDepthTexture.Get(), &SceneDepthDSVDesc, &SceneDepthDSV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC SceneDepthSRVDesc = {
-		.Format = DXGI_FORMAT_X24_TYPELESS_G8_UINT,
-		.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-		.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
-	};
-	Result = Device->CreateShaderResourceView(SceneDepthTexture.Get(), &SceneDepthSRVDesc, &SceneDepthSRV);
-	if (FAILED(Result))
-	{
-		return false;
-	} // 지금 중복이 위 아래 둘다 있음  이걸 이제 인자로 받아야함
-
-	// Scene Depth Viwe Mode 용 SRV 생성
-	//D3D11_SHADER_RESOURCE_VIEW_DESC SceneDepthSrvDesc = {
-	//	.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS, // 포멧은 TYPELESS이어야함
-	//	.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-	//	.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
-	//};
-	//Result = Device->CreateShaderResourceView(SceneDepthTexture.Get(), &SceneDepthSrvDesc, &SceneDepthSRV);
-	//if (FAILED(Result))
-	//{
-	//	return false;
-	//}
-
-	D3D11_TEXTURE2D_DESC SceneColorTextureDesc{
-		.Width = Width,
-		.Height = Height,
-		.MipLevels = 1u,
-		.ArraySize = 1u,
-		.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
-		.SampleDesc = { .Count = 1u },
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
-	};
-
-	Result = Device->CreateTexture2D(&SceneColorTextureDesc, nullptr, &SceneColorTexture);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	Result = Device->CreateRenderTargetView(SceneColorTexture.Get(), nullptr, &SceneColorRTV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	Result = Device->CreateShaderResourceView(SceneColorTexture.Get(), nullptr, &SceneColorSRV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	return true;
+	return SceneTextures.InitializeSceneTextures(Device.Get(), Width, Height);
 }
 
+// 현재 깊이 버퍼 기준으로 각 명령이 실제로 보이는 픽셀 수를 GPU에 묻는다.
+// GPU가 끝날 때까지 기다리므로 느리다. 디버깅에서 쓰는 한 프레임 측정 전용
 void FRenderer::QueryVisibility(const TArray<const FDrawCommand*>& Commands, TArray<uint64>& OutSamples)
 {
 	OutSamples.assign(Commands.size(), 0);
@@ -1084,16 +1007,6 @@ bool FRenderer::InitializeConstantBuffers()
 	}
 
 	return true;
-}
-
-void FRenderer::ResetSceneTexture()
-{
-	SceneColorTexture.Reset();
-	SceneColorRTV.Reset();
-	SceneColorSRV.Reset();
-	SceneDepthTexture.Reset();
-	SceneDepthDSV.Reset();
-	SceneDepthSRV.Reset();
 }
 
 void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
@@ -1507,9 +1420,9 @@ void FRenderer::DrawScreenPass(ID3D11ShaderResourceView* SRVs[], ID3D11RenderTar
 	//Context->PSSetShaderResources(0, 2, NullSRVs);
 }
 
-void FRenderer::RenderSelectionOutline(FVector2 LeftTopPixel, FVector2 RightBottomPixel)
+void FRenderer::RenderSelectionOutline(FVector2 ViewportSizePixel, FViewport Viewport)
 {
-	SetViewportPixel(LeftTopPixel, RightBottomPixel);
+	SetViewportPixel(ViewportSizePixel);
 	Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context->IASetInputLayout(nullptr);
 
@@ -1517,9 +1430,11 @@ void FRenderer::RenderSelectionOutline(FVector2 LeftTopPixel, FVector2 RightBott
 	UINT Zero = 0;
 	Context->IASetVertexBuffers(0, 1, &NullVB, &Zero, &Zero);
 
-	Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), nullptr);
+	// 해당 뷰포트의 렌더타겟에 바인딩
+	BindRenderTarget(Viewport.RenderTarget.get()->RTV, nullptr);
+
 	// 씬 텍스처와 스텐실 텍스처 바인딩
-	ID3D11ShaderResourceView* SRVs[] = { SceneColorSRV.Get(), SceneDepthSRV.Get() };
+	ID3D11ShaderResourceView* SRVs[] = { SceneTextures.SceneColorSRV.Get(), SceneTextures.SceneStencilSRV.Get() };
 	Context->PSSetShaderResources(0, 2, SRVs);
 
 	FRenderResourceLibrary::Get().GetPipeline(FName("#PostProcess"))->Bind(*Context.Get());
@@ -1593,6 +1508,8 @@ void FRenderer::EndGPUTimer()
 	GPUTimerFrameIndex = (GPUTimerFrameIndex + 1u) % GPUTimerFrameCount;
 }
 
+// GPU 타임스탬프. 결과를 같은 프레임에 바로 읽으면 CPU가 GPU를 기다리게 되므로
+// 쿼리 세트를 돌려 쓰고 가장 오래된 것만 회수한다.
 void FRenderer::ResolveGPUTimer()
 {
 	for (uint32 Offset = 0u; Offset < GPUTimerFrameCount; ++Offset)

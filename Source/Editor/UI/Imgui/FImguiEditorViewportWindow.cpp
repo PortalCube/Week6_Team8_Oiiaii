@@ -3,6 +3,7 @@
 #include "Runtime/Actors/AActor.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Core/Log.h"
+#include "Runtime/Core/FRect.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Engine/FRayCastingManager.h"
@@ -10,6 +11,7 @@
 #include "Runtime/Engine/UScene.h"
 #include "Runtime/Input/FInputManager.h"
 #include "Runtime/Math/FVector.h"
+
 
 #include "ThirdParty/Imgui/imgui.h"
 #include "ThirdParty/Imgui/imgui_internal.h"
@@ -206,14 +208,14 @@ void FImguiEditorViewportWindow::EndWindow() const
 	ImGui::End();
 }
 
-FImguiEditorViewportWindow::FViewportInput FImguiEditorViewportWindow::GatherInput(const FVector2& ViewportSizePixels, const FVector2& ViewportTopLeftPixels) const
+FImguiEditorViewportWindow::FViewportInput FImguiEditorViewportWindow::GatherInput(const FVector2& ViewportSizePixels, const FVector2& ViewportLeftTopPixels) const
 {
 	// 상단바 아래 3D 영역만 등록한다. 드래그 중에는 영역 밖에서도 활성 상태를 유지한다.
 	ImGui::InvisibleButton("ViewportInput", ImVec2(ViewportSizePixels.X, ViewportSizePixels.Y), ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
 
 	FViewportInput Input;
 	Input.SizePixels = ViewportSizePixels;
-	Input.LocalMouse = FInputManager::Get().GetMousePosition() - ViewportTopLeftPixels;
+	Input.LocalMouse = FInputManager::Get().GetMousePosition() - ViewportLeftTopPixels;
 	Input.bHovered = ImGui::IsItemHovered();
 	Input.bFocused = ImGui::IsWindowFocused();
 	Input.bPickRequested = ImGui::IsItemClicked(ImGuiMouseButton_Left);

@@ -60,11 +60,12 @@ void FEditorViewportClient::SetCameraMode(ECameraMode Mode)
 // FEditorApplication::Render() 에서 필요한 FSceneView를 만들어 반환
 FSceneView FEditorViewportClient::GetSceneView(const FLightConstants& InLightConstants)
 {
-	FSceneView SceneView{
+	FSceneView SceneView
+	{
 		.Camera = ViewportCamera,
 		.ViewProj = ViewportCamera.GetViewProjectionMatrix(),
-		.LeftTopPixel = Viewport->GetLeftTop(),
-		.RightBottomPixel = Viewport->GetRightBottom(),
+		.Viewport = *Viewport,
+		.ViewportSizePixel = Viewport->GetViewportSize(),
 		.ViewMode = ViewMode,
 		.ShowFlags = ShowFlags,
 		.LightConstants = InLightConstants

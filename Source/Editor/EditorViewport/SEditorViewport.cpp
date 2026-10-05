@@ -7,10 +7,14 @@ void SEditorViewport::SetSceneRect(const FRect& SceneRect)
 	{
 		return;
 	}
-
-	Viewport.SetLeftTop(SceneRect.GetLeftTop());
-	Viewport.SetRightBottom(SceneRect.GetRightBottom());
-	Client.GetViewportCamera().SetAspectRatio(SceneRect.GetWidth() / SceneRect.GetHeight());
+	FRect RoundedRect = SceneRect.Round();
+	if (Viewport.Rect.GetWidth() != RoundedRect.GetWidth() || Viewport.Rect.GetHeight() != RoundedRect.GetHeight())
+	{
+		Viewport.SetLeftTop(RoundedRect.GetLeftTop());
+		Viewport.SetRightBottom(RoundedRect.GetRightBottom());
+		Viewport.bResizeRenderTarget = true;
+	}
+	Client.GetViewportCamera().SetAspectRatio(RoundedRect.GetWidth() / RoundedRect.GetHeight());
 }
 
 bool SEditorViewport::IsRenderable()
