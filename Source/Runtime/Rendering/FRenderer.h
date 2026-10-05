@@ -221,6 +221,8 @@ private:
 
 	void EvictUnusedSceneTextures();
 
+	bool InitializePointLightBuffers();
+
 private:
 	// 모든 ConstantBuffer의 최대 크기
 	static constexpr UINT ConstantBufferSize = 256u;
@@ -240,13 +242,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> LightConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantUploadBuffer; // 임시 상수버퍼
 
+	// 포인트 라이트
 	static constexpr uint32 MaxPointLightCount = 64;
-
 	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightBuffer;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> PointLightSRV;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightCountBuffer;
-
-	bool InitializePointLightBuffers();
 
 	// Draw, ImGui 모두 다 포함하는 BackBuffer Texture
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> BackBufferTexture;

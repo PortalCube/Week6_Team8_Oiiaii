@@ -166,19 +166,19 @@ SEditorViewport* FEditor::GetActiveViewport()
 SEditorViewport* FEditor::GetPerspectiveViewport()
 {
 	SEditorViewport* HiddenPerspective = nullptr;
-	for (SEditorViewport& Viewport : ViewportLayout.Viewports)
+	for (SEditorViewport& EditorViewport : ViewportLayout.Viewports)
 	{
-		if (Viewport.GetClient().GetCameraMode() != ECameraMode::PERSPECTIVE)
+		if (EditorViewport.GetClient().GetCameraMode() != ECameraMode::PERSPECTIVE)
 		{
 			continue;
 		}
-		if (Viewport.bVisible)
+		if (EditorViewport.bVisible)
 		{
-			return &Viewport;
+			return &EditorViewport;
 		}
 		if (!HiddenPerspective) //원근 뷰포트를 찾음
 		{
-			HiddenPerspective = &Viewport;
+			HiddenPerspective = &EditorViewport;
 		}
 	}
 	return HiddenPerspective ? HiddenPerspective : GetActiveViewport();
@@ -336,12 +336,12 @@ void FEditor::SetViewLayout(FEditorState::SplitViewMode Mode)
 }
 
 // FEditorApplication::Render에서 필요한 EditorRenderContext을 만든다
-FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry)
+FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& EditorViewport, FVisualizerRegistry* VisualizerRegistry)
 {
 	FEditorRenderContext EditorRenderContext{
 		.SelectedActor = SelectedActor,
 		.SelectedPrimitive = nullptr,
-		.Grid = &Viewport.GetClient().GetGrid(),
+		.Grid = &EditorViewport.GetClient().GetGrid(),
 		.VisualizerRegistry = VisualizerRegistry,
 		.SelectedTransform = SelectedTransform,
 		.Gizmo = ObjectSelected() ? &Gizmo : nullptr,

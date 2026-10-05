@@ -66,7 +66,7 @@ public:
 	SEditorViewport* GetActiveViewport();
 	void SetViewLayout(FEditorState::SplitViewMode mode);
 	FEditorViewportLayout& GetViewportLayout() { return ViewportLayout; }
-	FEditorRenderContext GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry);
+	FEditorRenderContext GetEditorRenderContext(SEditorViewport& EditorViewport, FVisualizerRegistry* VisualizerRegistry);
 	SEditorViewport* GetPerspectiveViewport();
 
 	// Actor

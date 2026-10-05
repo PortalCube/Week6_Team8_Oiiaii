@@ -152,24 +152,24 @@ void UEditorEngine::Tick(float DeltaTime)
 		GetEditorWorld()->GetCurrentLevel()->UpdateDirtyBounds();
 
 		// Active인 Viewport 마다 렌더링
-		for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
+		for (SEditorViewport& EditorViewport : Editor.GetViewportLayout().Viewports)
 		{
-			if (!Viewport.IsRenderable())
+			if (!EditorViewport.IsRenderable())
 			{
 				continue;
 			}
 
 			// 뷰포트 렌더링 명세 구성
-			FSceneView View = Viewport.GetClient().GetSceneView(Editor.GlobalLight);
+			FSceneView View = EditorViewport.GetClient().GetSceneView(Editor.GlobalLight);
 
 			// 뷰포트의 RT를 준비
-			if (!RenderView.GetRenderer().PrepareViewportRenderTarget(Viewport.GetViewport()))
+			if (!RenderView.GetRenderer().PrepareViewportRenderTarget(EditorViewport.GetViewport()))
 			{
 				continue; // 생성에 실패하면 이번 프레임은 이 뷰포트를 건너뛴다
 			}
 
 			// 에디터 렌더링 컨텍스트 구성
-			FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(Viewport, &VisualizerRegistry);
+			FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(EditorViewport, &VisualizerRegistry);
 
 			// 뷰포트 렌더링 일괄 수행
 			RenderView.RenderView(View, *GetEditorWorld()->GetCurrentLevel(), EditorRenderContext);
@@ -182,7 +182,7 @@ void UEditorEngine::Tick(float DeltaTime)
 			}
 
 			// 백버퍼 바인딩 후 셰이더로 합성
-			RenderView.GetRenderer().CompositeViewport(Viewport.GetViewport());
+			RenderView.GetRenderer().CompositeViewport(EditorViewport.GetViewport());
 
 		}
 
