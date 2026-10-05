@@ -25,6 +25,7 @@ struct FTextureDesc;
 class FCamera;
 class UTextComponent;
 struct FDrawCommand;
+struct FPointLightConstants;
 
 #include "Runtime/Engine/ShowFlags.h"
 
@@ -69,6 +70,8 @@ public:
 	FLineBatcher& GetLineBatcher() { return LineBatcher; }
 
 	void UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode);
+	void UploadPointLights(std::span<const FPointLightConstants> PointLights);
+	void BindPointLights();
 	void UpdateFrameConstants(const FFrameConstants& Constants);
 	void UpdateViewConstants(const FViewConstants& Constants);
 

@@ -27,7 +27,7 @@ PS_INPUT MainVS(VS_INPUT Input)
     Output.UV = Input.UV * UVScale + UVOffset;
 
     // 월드 공간 법선 변환
-    Output.Normal = mul(float4(Input.Normal, 0.0f), World).xyz;
+    Output.Normal = mul(float4(Input.Normal, 0.0f), WorldInverseTranspose).xyz;
 
     return Output;
 }

@@ -4,7 +4,7 @@
 Texture2D DiffuseTexture : register(t0);
 SamplerState DiffuseSampler : register(s0);
 
-StructuredBuffer<FPointLightConstants> PointLights : register(t1);
+StructuredBuffer<FPointLightConstants> PointLights : register(t3);
 
 cbuffer PointLightCountConstants : register(b5)
 {

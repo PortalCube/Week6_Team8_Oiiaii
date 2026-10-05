@@ -164,7 +164,15 @@ void FRenderView::CollectScenePrimitives(const UScene& Scene, const FSceneView& 
 			const FMatrix World = PrimitiveComponent->GetRenderMatrix(View.Camera);
 			DrawCommand.Constants.World = World;
 		}
-		DrawCommand.Constants.Color = { 1.0f, 1.0f, 1.0f, 0.0f };
+		FMatrix InverseWorld;
+		if (DrawCommand.Constants.World.Inverse(InverseWorld))
+		{
+			DrawCommand.Constants.WorldInverseTranspose = InverseWorld.Transpose();
+		}
+		else
+		{
+			DrawCommand.Constants.WorldInverseTranspose = FMatrix::Identity;
+		}
 		DrawCommand.Constants.DisableShading = View.ViewMode == EViewModeIndex::VMI_Unlit ? 1.0f : 0.0f;
 
 		if (DrawCommand.Mesh)
@@ -243,6 +251,8 @@ void FRenderView::RenderView(const FSceneView& View, const UScene& Scene, const 
 
 	TArray<FPointLightConstants> PointLights;
 	CollectPointLights(Scene, PointLights);
+	Renderer.UploadPointLights(PointLights);
+	Renderer.BindPointLights();
 
 	// 기본 씬 오브젝트 패스
 	FlushBasePass(View.Camera);

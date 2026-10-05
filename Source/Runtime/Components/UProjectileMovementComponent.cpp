@@ -4,3 +4,9 @@
 
 IMPLEMENT_UCLASS(UProjectileMovementComponent, UMovementComponent)
 UCLASS_META(UProjectileMovementComponent, DisplayName, "Projectile Movement")
+
+void UProjectileMovementComponent::Initialize()
+{
+	Super::Initialize();
+	bTickEnabled = true;
+}

@@ -34,6 +34,7 @@ struct FObjectConstants
 	FMatrix World = FMatrix::GetIdentity();
 	float DisableShading = 0.0f;
 	FVector Padding;
+	FMatrix WorldInverseTranspose = FMatrix::Identity;
 };
 static_assert(sizeof(FObjectConstants) % 16 == 0);
 

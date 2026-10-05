@@ -23,6 +23,7 @@ cbuffer ObjectConstants : register(b2)
     row_major float4x4 World;
     float DisableShading;
     float3 ObjectPadding;
+    row_major float4x4 WorldInverseTranspose;
 }
 
 cbuffer LightConstants : register(b4)

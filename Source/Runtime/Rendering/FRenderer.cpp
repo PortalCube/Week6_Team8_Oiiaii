@@ -1170,6 +1170,36 @@ bool FRenderer::InitializeConstantBuffers()
 	return true;
 }
 
+void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLights)
+{
+	const uint32 Count = PointLights.size() > MaxPointLightCount
+	    ? MaxPointLightCount
+	    : static_cast<uint32>(PointLights.size());
+
+	// Update the entire fixed-size buffer from equally sized CPU storage.
+	// Passing the collected array directly would be too short when Count < 64.
+	FPointLightConstants UploadData[MaxPointLightCount]{};
+	for (uint32 i = 0; i < Count; ++i)
+	{
+		UploadData[i] = PointLights[i];
+	}
+
+	Context->UpdateSubresource(PointLightBuffer.Get(), 0, nullptr, UploadData, 0, 0);
+
+	FPointLightCountConstants CountData{};
+	CountData.PointLightCount = Count;
+	Context->UpdateSubresource(PointLightCountBuffer.Get(), 0, nullptr, &CountData, 0, 0);
+}
+
+void FRenderer::BindPointLights()
+{
+	ID3D11ShaderResourceView* SRV = PointLightSRV.Get();
+	Context->PSSetShaderResources(3, 1, &SRV);
+
+	ID3D11Buffer* Buffer = PointLightCountBuffer.Get();
+	Context->PSSetConstantBuffers(5, 1, &Buffer);
+}
+
 void FRenderer::UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode)
 {
 	Context->UpdateSubresource(LightConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
