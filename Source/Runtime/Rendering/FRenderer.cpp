@@ -1629,7 +1629,7 @@ void FRenderer::DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VI
 	ClearLastRenderState();
 }
 
-// SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 쓴다
+// SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 그린다
 void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
 {
 	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
@@ -1663,17 +1663,19 @@ void FRenderer::CopySceneColorToViewport(const FViewport& TargetViewport)
 	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#Composite"));
 }
 
-// Scene Depth를 Full Screen Quad에 그린다
+// Scene Depth를 출력 RT에 그린다
 void FRenderer::RenderSceneDepth(const FViewport& TargetViewport)
 {
-	// TODO: SceneDepth ViewMode 구현
-	//  - ActiveSceneTextures->SceneDepthSRV (R24_UNORM_X8_TYPELESS)를 읽어서 깊이를 회색조로 출력하는 PS 작성
-	//  - DrawScreenPass(출력 RTV, (0,0,W,H), { SceneDepthSRV }, 1, FName("#SceneDepth"))
-	// 구현 전까지는 출력 RT가 이전 프레임/초기화 안 된 값으로 남지 않도록 SceneColor를 복사한다
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures)
+	{
+		return;
+	}
 
-	
-	// Scene Depth ViewMode. 아직 미구현이라 SceneColor를 그대로 복사해 출력 RT가 비지 않게 한다
-	CopySceneColorToViewport(TargetViewport);
+	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.f, 0.f, TargetViewport.Rect.GetWidth(), TargetViewport.Rect.GetHeight());
+
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get() };
+	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
 }
 
 bool FRenderer::InitializeGPUTimerQueries()
