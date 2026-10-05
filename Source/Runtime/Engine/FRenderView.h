@@ -17,6 +17,8 @@ class FGrid;
 class AActor;
 class ULevel;
 
+struct FPointLightConstants;
+
 // 커맨드로 제어하는 컬링 옵션
 struct FCullingSettings
 {
@@ -67,6 +69,8 @@ public:
 	void ClearTextInstances();
 	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("Simple_Line"));
 	void FlushQueue(const FSceneView& View);
+
+	void CollectPointLights(const UScene& Scene, TArray<FPointLightConstants>& OutLights);
 
 	FRenderQueue& GetRenderQueue() { return RenderQueue; }
 	const FRenderQueue& GetRenderQueue() const { return RenderQueue; }

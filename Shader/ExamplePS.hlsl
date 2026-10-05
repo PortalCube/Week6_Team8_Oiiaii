@@ -1,4 +1,13 @@
 #include "Constants.hlsli"
+#include "PointLight.hlsli"
+
+StructuredBuffer<FPointLightConstants> PointLights : register(t3);
+
+cbuffer PointLightCountConstants : register(b5)
+{
+    uint PointLightCount;
+    float3 PointLightPadding;
+};
 
 struct PS_INPUT
 {
@@ -6,6 +15,7 @@ struct PS_INPUT
     float4 Color : COLOR;
     float2 UV : TEXCOORD0;
     float3 Normal : NORMAL; // VS에서 넘어오는 법선
+    float3 WorldPosition : TEXCOORD1;
 };
 
 float4 MainPS(PS_INPUT Input) : SV_Target
@@ -24,6 +34,13 @@ float4 MainPS(PS_INPUT Input) : SV_Target
     float3 Ambient = LightColor * AmbientIntensity;
 
     float3 FinalColor = BaseColor * (Ambient + Diffuse);
+    for (uint i = 0; i < PointLightCount; ++i)
+    {
+        FinalColor += EvaluatePointLight(PointLights[i], Input.WorldPosition, N, BaseColor);
+    }
+
+	FinalColor += EmissiveColor * EmissiveIntensity;
+	
     return float4(FinalColor, Input.Color.a);
     
 }

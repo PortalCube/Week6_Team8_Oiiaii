@@ -14,6 +14,7 @@
 #include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Core/Globals.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
+#include "Runtime/Components/UFireBallComponent.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Engine/FSceneView.h"
 #include "Runtime/Rendering/FRenderQueue.h"
@@ -27,9 +28,9 @@
 bool FRenderer::Initialize(HWND Window)
 {
 	if (!InitializeDeviceAndSwapChain(Window) ||
-	    !InitializeBackBuffer() ||
-	    !InitializeSceneTextures() ||
-		!InitializeConstantBuffers())
+	    !InitializeBackBufferAndDepthStencil() ||
+	    !InitializeEditorViewportRenderTarget() || !InitializeConstantBuffers() ||
+	    !InitializePointLightBuffers())
 	{
 		Shutdown();
 		return false;
@@ -71,6 +72,9 @@ void FRenderer::Shutdown()
 		FrameResources[i].ViewConstantBuffer.Reset();
 	}
 	LightConstantBuffer.Reset();
+	PointLightSRV.Reset();
+	PointLightBuffer.Reset();
+	PointLightCountBuffer.Reset();
 
 	BackBufferTexture.Reset();
 	BackBufferRTV.Reset();
@@ -840,6 +844,73 @@ bool FRenderer::InitializeSceneTextures()
 	//}
 
 	D3D11_TEXTURE2D_DESC SceneColorTextureDesc{
+bool FRenderer::InitializePointLightBuffers()
+{
+	D3D11_BUFFER_DESC LightDesc{};
+	LightDesc.ByteWidth =
+	    sizeof(FPointLightConstants) * MaxPointLightCount;
+	LightDesc.Usage = D3D11_USAGE_DEFAULT;
+	LightDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	LightDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	LightDesc.StructureByteStride = sizeof(FPointLightConstants);
+
+	HRESULT Result = Device->CreateBuffer(
+	    &LightDesc, nullptr, PointLightBuffer.GetAddressOf());
+
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SrvDesc{};
+	SrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	SrvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	SrvDesc.Buffer.FirstElement = 0;
+	SrvDesc.Buffer.NumElements = MaxPointLightCount;
+
+	Result = Device->CreateShaderResourceView(
+	    PointLightBuffer.Get(),
+	    &SrvDesc,
+	    PointLightSRV.GetAddressOf());
+
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	FPointLightCountConstants InitialCount{};
+
+	D3D11_BUFFER_DESC CountDesc{};
+	CountDesc.ByteWidth = sizeof(FPointLightCountConstants);
+	CountDesc.Usage = D3D11_USAGE_DEFAULT;
+	CountDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	D3D11_SUBRESOURCE_DATA InitialData{};
+	InitialData.pSysMem = &InitialCount;
+
+	Result = Device->CreateBuffer(
+	    &CountDesc,
+	    &InitialData,
+	    PointLightCountBuffer.GetAddressOf());
+
+	return SUCCEEDED(Result);
+}
+
+bool FRenderer::InitializeEditorViewportRenderTarget()
+{
+	if (!Device)
+	{
+		return false;
+	}
+
+	const UINT Width = static_cast<UINT>(Viewport.Width);
+	const UINT Height = static_cast<UINT>(Viewport.Height);
+	if (Width == 0 || Height == 0)
+	{
+		return false;
+	}
+
+	D3D11_TEXTURE2D_DESC ColorTexDesc{
 		.Width = Width,
 		.Height = Height,
 		.MipLevels = 1u,
@@ -1098,6 +1169,37 @@ void FRenderer::ResetSceneTexture()
 }
 
 void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
+void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLights)
+{
+	const uint32 Count = PointLights.size() > MaxPointLightCount
+	    ? MaxPointLightCount
+	    : static_cast<uint32>(PointLights.size());
+
+	// Update the entire fixed-size buffer from equally sized CPU storage.
+	// Passing the collected array directly would be too short when Count < 64.
+	FPointLightConstants UploadData[MaxPointLightCount]{};
+	for (uint32 i = 0; i < Count; ++i)
+	{
+		UploadData[i] = PointLights[i];
+	}
+
+	Context->UpdateSubresource(PointLightBuffer.Get(), 0, nullptr, UploadData, 0, 0);
+
+	FPointLightCountConstants CountData{};
+	CountData.PointLightCount = Count;
+	Context->UpdateSubresource(PointLightCountBuffer.Get(), 0, nullptr, &CountData, 0, 0);
+}
+
+void FRenderer::BindPointLights()
+{
+	ID3D11ShaderResourceView* SRV = PointLightSRV.Get();
+	Context->PSSetShaderResources(3, 1, &SRV);
+
+	ID3D11Buffer* Buffer = PointLightCountBuffer.Get();
+	Context->PSSetConstantBuffers(5, 1, &Buffer);
+}
+
+void FRenderer::UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode)
 {
 	Context->UpdateSubresource(LightConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->PSSetConstantBuffers(4, 1, LightConstantBuffer.GetAddressOf());

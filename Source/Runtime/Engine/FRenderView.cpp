@@ -5,8 +5,10 @@
 #include "Editor/Visualizer/FVisualizerRegistry.h"
 #include "Editor/Visualizer/IVisualizer.h"
 #include "Runtime/Actors/AActor.h"
+#include "Runtime/Actors/AFireBallActor.h"
 #include "Runtime/Components/UBillboardComponent.h"
 #include "Runtime/Components/Mesh/UStaticMeshComponent.h"
+#include "Runtime/Components/UFireBallComponent.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Engine/FSceneView.h"
@@ -18,6 +20,7 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Core/Globals.h"
+
 #include <fstream>
 
 #include "Runtime/CoreUObject/FStatsManager.h"
@@ -162,8 +165,29 @@ void FRenderView::CollectScenePrimitives(const ULevel& Scene, const FSceneView& 
 			const FMatrix World = PrimitiveComponent->GetRenderMatrix(View.Camera);
 			DrawCommand.Constants.World = World;
 		}
-		DrawCommand.Constants.Color = { 1.0f, 1.0f, 1.0f, 0.0f };
+		FMatrix InverseWorld;
+		if (DrawCommand.Constants.World.Inverse(InverseWorld))
+		{
+			DrawCommand.Constants.WorldInverseTranspose = InverseWorld.Transpose();
+		}
+		else
+		{
+			DrawCommand.Constants.WorldInverseTranspose = FMatrix::Identity;
+		}
 		DrawCommand.Constants.DisableShading = View.ViewMode == EViewModeIndex::VMI_Unlit ? 1.0f : 0.0f;
+
+		AActor* Owner = PrimitiveComponent->GetActorOwner();
+		AFireBallActor* FireBallActor = Owner ? Owner->Cast<AFireBallActor>() : nullptr;
+		UFireBallComponent* FireBall =
+		    FireBallActor && PrimitiveComponent == FireBallActor->GetSphereComponent()
+		        ? FireBallActor->GetFireBallComponent()
+		        : nullptr;
+
+		if (FireBall)
+		{
+			DrawCommand.Constants.EmissiveColor = FireBall->GetEmissiveColor();
+			DrawCommand.Constants.EmissiveIntensity = FireBall->GetEmissiveIntensity();
+		}
 
 		if (DrawCommand.Mesh)
 		{
@@ -181,15 +205,6 @@ void FRenderView::CollectScenePrimitives(const ULevel& Scene, const FSceneView& 
 				};
 				DrawCommand.Constants.Color = LODColors[DebugLOD];
 			}
-		}
-
-		if (bSelected && DrawCommand.Constants.Color.W > 0.0f)
-		{
-			DrawCommand.Constants.Color = DrawCommand.Constants.Color * 0.7f + FVector4{ 0.3f, 0.3f, 0.3f, 0.0f };
-		}
-		else if (bSelected)
-		{
-			DrawCommand.Constants.Color = { 1.0f, 1.0f, 1.0f, 0.5f };
 		}
 
 		if (bCollectForOracleOnly)
@@ -238,6 +253,11 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	{
 		RenderQueue.Sort();
 	}
+
+	TArray<FPointLightConstants> PointLights;
+	CollectPointLights(Scene, PointLights);
+	Renderer.UploadPointLights(PointLights);
+	Renderer.BindPointLights();
 
 	// 기본 씬 오브젝트 패스
 	FlushBasePass(View);
@@ -512,6 +532,26 @@ void FRenderView::FlushQueue(const FSceneView& View)
 	}
 
 	RenderQueue.Clear();
+}
+
+void FRenderView::CollectPointLights(const UScene& Scene, TArray<FPointLightConstants>& OutLights)
+{
+	OutLights.clear();
+
+	for (UPrimitiveComponent* Component : Scene.GetRenderComponents())
+	{
+		if (!Component)
+		{
+			continue;
+		}
+
+		UFireBallComponent* Light = Component->Cast<UFireBallComponent>();
+
+		if (Light)
+		{
+			OutLights.push_back(Light->GetPointLightData());
+		}
+	}
 }
 
 FCullingSettings& FRenderView::GetCullingSettings()

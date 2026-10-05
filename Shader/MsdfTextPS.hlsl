@@ -28,9 +28,11 @@ float4 MainPS(PS_INPUT Input) : SV_Target
     clip(opacity - 0.1f);
     
     float3 baseColor = float3(1.0f, 1.0f, 1.0f);
-    float3 finalColor = lerp(baseColor, ColorOverride, ColorOverrideAmount);
-    
-    return float4(finalColor, Input.Color.a * opacity);
+    //float3 finalColor = lerp(baseColor, ColorOverride, ColorOverrideAmount);
+
+	float3 finalColor = lerp(Input.Color.rgb, ColorOverride, ColorOverrideAmount);
+
+	return float4(finalColor, Input.Color.a * opacity);
     //return float4(1.0f, 0.0f, 0.0f, 1.0f); // 강제 빨간색 출력
 }
     

@@ -6,6 +6,7 @@ class AActor;
 class USceneComponent;
 class UStaticMeshComponent;
 class USpotLightComponent;
+class UFireBallComponent;
 class UTextComponent;
 class UBillboardComponent;
 class UAnimatedBillboardComp;
@@ -43,6 +44,7 @@ private:
 	void ShowBillboardSettings(UBillboardComponent& BillboardComp) const;
 	void ShowAnimatedBillboardSettings(UAnimatedBillboardComp& BillboardComp) const;
 	void ShowSpotLightSettings(USpotLightComponent& LightComp) const;
+	void ShowFireBallSettings(UFireBallComponent& FireBallComp) const;
 	void ShowStaticMeshSettings(AActor& Actor, UStaticMeshComponent& MeshComp, bool bIsRoot) const;
 
 	// 머티리얼의 텍스처 미리보기 겸 드롭 타깃.
