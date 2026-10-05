@@ -469,11 +469,11 @@ void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedA
 	DrawCommand.Constants.World = ModelMatrix;
 	DrawCommand.Constants.DisableShading = true;
 
-	auto OutlineMaterial = FRenderResourceLibrary::Get().GetMaterial("#Outline");
-	if (OutlineMaterial)
+	auto SelectionStencilMaterial = FRenderResourceLibrary::Get().GetMaterial("#SelectionStencil");
+	if (SelectionStencilMaterial)
 	{
-		OutlineMaterial->GetPipeline()->SetStencilRef(1);
-		DrawCommand.Materials = std::span<const FMaterial>(OutlineMaterial.get(), 1);
+		SelectionStencilMaterial->GetPipeline()->SetStencilRef(1);
+		DrawCommand.Materials = std::span<const FMaterial>(SelectionStencilMaterial.get(), 1);
 		Renderer.Draw(DrawCommand, nullptr, 2);
 	}
 }

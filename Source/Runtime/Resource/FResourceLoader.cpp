@@ -133,32 +133,32 @@ void FResourceLoader::LoadCodeGeneratedRenderAssets()
 {
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 	FRenderResourceLibrary& Library = FRenderResourceLibrary::Get();
-	TSharedPtr<FRenderPipeline> Pipeline = Library.GetPipeline("#Outline");
+	TSharedPtr<FRenderPipeline> Pipeline = Library.GetPipeline("#SelectionStencil");
 	if (!Pipeline)
 	{
 		throw EngineUtil::CreateError(
-		    "[FResourceLoader::LoadCodeGeneratedRenderAssets] Outline Pipeline 생성에 실패했습니다.");
+		    "[FResourceLoader::LoadCodeGeneratedRenderAssets] SelectionStencil Pipeline 생성에 실패했습니다.");
 	}
 
 	UPipeline* PipelineAsset = NewObject<UPipeline>(GetTransientPackage());
 	UPipelineDesc PipelineDesc{};
-	PipelineDesc.ID = "#Pipeline/Outline";
-	PipelineDesc.Name = "#Outline";
+	PipelineDesc.ID = "#Pipeline/SelectionStencil";
+	PipelineDesc.Name = "#SelectionStencil";
 	PipelineDesc.Pipeline = Pipeline.get();
 	PipelineAsset->Load(PipelineDesc);
 	Registry.Register(PipelineDesc.ID, PipelineAsset);
 
 	UMaterial* MaterialAsset = NewObject<UMaterial>(GetTransientPackage());
 	UMaterialDesc MaterialDesc{};
-	MaterialDesc.ID = "#Material/Outline";
-	MaterialDesc.Name = "#Outline";
+	MaterialDesc.ID = "#Material/SelectionStencil";
+	MaterialDesc.Name = "#SelectionStencil";
 	MaterialDesc.Pipeline = PipelineAsset;
 	MaterialAsset->Load(MaterialDesc);
 	Registry.Register(MaterialDesc.ID, MaterialAsset);
 
 	TSharedPtr<FMaterial> Material = MakeShared<FMaterial>();
 	Material->SetPipeLine(Pipeline.get());
-	Library.RegisterMaterial("#Outline", Material);
+	Library.RegisterMaterial("#SelectionStencil", Material);
 }
 
 void FResourceLoader::LoadAssets()

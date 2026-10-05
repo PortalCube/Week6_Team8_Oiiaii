@@ -1638,12 +1638,12 @@ void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
 	}
 
 	// 출력 RT와 SceneTextures는 같은 크기이고 둘 다 (0,0)부터 시작한다.
-	// 그래서 OutlinePostProcessPS가 SV_Position으로 Load해도 좌표가 그대로 맞는다.
+	// 그래서 SelectionOutlinePS가 SV_Position으로 Load해도 좌표가 그대로 맞는다.
 	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
 
 	// t0: SceneColor, t1: Stencil
 	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneColorSRV.Get(), ActiveSceneTextures->SceneStencilSRV.Get() };
-	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#PostProcess"));
+	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#SelectionOutline"));
 }
 
 // SceneColor를 그대로 출력 RT에 복사

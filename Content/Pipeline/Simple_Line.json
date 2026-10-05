@@ -2,8 +2,8 @@
     "Version": 1,
     "Name": "Simple_Line",
     "AssetType": "Pipeline",
-    "VertexShaderFilePath": "Shader/ExampleVS.cso",
-    "PixelShaderFilePath": "Shader/ExamplePS.cso",
+    "VertexShaderFilePath": "Shader/BasePassVS.cso",
+    "PixelShaderFilePath": "Shader/BasePassPS.cso",
     "Rasterizer": {
         "FillMode": "Solid",
         "CullMode": "Back",
