@@ -10,7 +10,10 @@ cbuffer ViewConstants : register(b1)
     row_major float4x4 View;
     row_major float4x4 Projection;
     float2 ViewportSize;
-    float2 ViewPadding;
+	float NearZ;
+	float FarZ;
+	float IsPerspective;
+	float3 ViewPadding;
 }
 
 cbuffer ObjectConstants : register(b2)
@@ -26,6 +29,12 @@ cbuffer ObjectConstants : register(b2)
     row_major float4x4 WorldInverseTranspose;
     float3 EmissiveColor;
     float EmissiveIntensity;
+}
+
+cbuffer PostProcessConstants : register(b3)
+{
+	float VisMax;
+	float4 PostProcessPadding;
 }
 
 cbuffer LightConstants : register(b4)

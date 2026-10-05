@@ -12,7 +12,6 @@
 #include "Runtime/Core/Globals.h"
 #include "Runtime/Core/Log.h"
 #include "Runtime/Engine/Types/PointerTypes.h"
-#include "Runtime/Core/Globals.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Components/UFireBallComponent.h"
 #include "Runtime/Engine/FCamera.h"
@@ -1050,6 +1049,20 @@ void FRenderer::QueryVisibility(const TArray<const FDrawCommand*>& Commands, TAr
 	ClearLastRenderState();
 }
 
+void FRenderer::BindPointLights()
+{
+	ID3D11ShaderResourceView* SRV = PointLightSRV.Get();
+	Context->PSSetShaderResources(3, 1, &SRV);
+
+	ID3D11Buffer* Buffer = PointLightCountBuffer.Get();
+	Context->PSSetConstantBuffers(5, 1, &Buffer);
+}
+
+
+
+// =====================================================================
+// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Constants Buffer ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
+
 bool FRenderer::InitializeConstantBuffers()
 {
 	// Dynamic Constant Buffer
@@ -1070,47 +1083,6 @@ bool FRenderer::InitializeConstantBuffers()
 	{
 		return false;
 	}
-
-	// b2를 쓰는 Object/Grid 상수 타입이 공유하는 버퍼.
-	// 가장 큰 구조체보다 크게 잡아두고, 초과 여부는 UpdateBuffer의
-	// static_assert가 잡는다.
-	/*D3D11_BUFFER_DESC ObjectConstantBufferDesc = {
-	    .ByteWidth = ConstantBufferSize,
-	    .Usage = D3D11_USAGE_DYNAMIC,
-	    .BindFlags = D3D11_BIND_CONSTANT_BUFFER,
-	    .CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
-	};
-
-	Result = Device->CreateBuffer(&ObjectConstantBufferDesc, nullptr, &ObjectConstantBuffer);
-	if (FAILED(Result)) {
-	  return false;
-	}*/
-
-	/*D3D11_BUFFER_DESC FrameConstantBufferDesc = {
-	    .ByteWidth = sizeof(FFrameConstants),
-	    .Usage = D3D11_USAGE_DEFAULT,
-	    .BindFlags = D3D11_BIND_CONSTANT_BUFFER,
-	};
-
-	Result = Device->CreateBuffer(&FrameConstantBufferDesc, nullptr,
-	                              &FrameConstantBuffer);
-
-	if (FAILED(Result)) {
-	  return false;
-	}*/
-
-	/*D3D11_BUFFER_DESC ViewConstantBufferDesc = {
-	    .ByteWidth = sizeof(FViewConstants),
-	    .Usage = D3D11_USAGE_DEFAULT,
-	    .BindFlags = D3D11_BIND_CONSTANT_BUFFER,
-	};
-
-	Result = Device->CreateBuffer(&ViewConstantBufferDesc, nullptr,
-	                              &ViewConstantBuffer);
-
-	if (FAILED(Result)) {
-	  return false;
-	}*/
 
 	D3D11_BUFFER_DESC LightConstantBufferDesc = {
 		.ByteWidth = sizeof(FLightConstants),
@@ -1160,16 +1132,103 @@ bool FRenderer::InitializeConstantBuffers()
 		{
 			return false;
 		}
+
+		D3D11_BUFFER_DESC FrameResourcePostProcessConstantBufferDesc = {
+			.ByteWidth = sizeof(FPostProcessConstants),
+			.Usage = D3D11_USAGE_DEFAULT,
+			.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
+		};
+		Result = Device->CreateBuffer(&FrameResourcePostProcessConstantBufferDesc, nullptr, &FrameResources[i].PostProcessConstantBuffer);
+		if (FAILED(Result))
+		{
+			return false;
+		}
 	}
 
 	return true;
 }
 
+void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
+{
+	Context->UpdateSubresource(LightConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
+	Context->PSSetConstantBuffers(4, 1, LightConstantBuffer.GetAddressOf());
+}
+
+void FRenderer::UpdateFrameConstants(const FFrameConstants& Constants)
+{
+	Context->UpdateSubresource(GetCurrentFrameResource()->FrameConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
+	Context->VSSetConstantBuffers(0, 1, GetCurrentFrameResource()->FrameConstantBuffer.GetAddressOf());
+	Context->PSSetConstantBuffers(0, 1, GetCurrentFrameResource()->FrameConstantBuffer.GetAddressOf());
+}
+
+void FRenderer::UpdateViewConstants(const FViewConstants& Constants)
+{
+	FViewConstants ShaderConstants = Constants;
+	ShaderConstants.Projection = ShaderConstants.Projection.ToD3DMatrix();
+
+	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &ShaderConstants, 0, 0);
+	Context->VSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
+	Context->PSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
+}
+
+void FRenderer::UpdatePostProcessConstants(const FPostProcessConstants& Constants)
+{
+	Context->UpdateSubresource(GetCurrentFrameResource()->PostProcessConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
+	Context->PSSetConstantBuffers(3, 1, GetCurrentFrameResource()->PostProcessConstantBuffer.GetAddressOf());
+}
+
+bool FRenderer::UploadObjectConstants(std::span<const FDrawCommand> Commands)
+{
+	if (Commands.empty())
+	{
+		return true;
+	}
+	if (Commands.size() > MaxObjectDrawCount)
+	{
+		return false;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE Mapped{};
+
+	HRESULT Result = Context->Map(ObjectConstantUploadBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	std::byte* Destination = static_cast<std::byte*>(Mapped.pData);
+
+	for (size_t Index = 0; Index < Commands.size(); ++Index)
+	{
+		const uint32 ByteOffset = static_cast<uint32>(Index) * ObjectConstantStride;
+		const FObjectConstants& ShaderConstants = Commands[Index].Constants;
+		std::memcpy(Destination + ByteOffset, &ShaderConstants, sizeof(FObjectConstants));
+	}
+	Context->Unmap(ObjectConstantUploadBuffer.Get(), 0);
+
+	return true;
+}
+
+void FRenderer::BindObjectConstantRange(uint32 Slot, uint32 ByteOffset)
+{
+	assert(Context1);
+	assert(ByteOffset % 256u == 0);
+
+	ID3D11Buffer* Buffer = ObjectConstantUploadBuffer.Get();
+
+	// SetConstantBuffers1의 단위는 16바이트 shader constant.
+	UINT FirstConstant = ByteOffset / 16u;
+	UINT NumConstants = ObjectConstantStride / 16u;
+
+	Context1->VSSetConstantBuffers1(Slot, 1, &Buffer, &FirstConstant, &NumConstants);
+	Context1->PSSetConstantBuffers1(Slot, 1, &Buffer, &FirstConstant, &NumConstants);
+}
+
 void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLights)
 {
 	const uint32 Count = PointLights.size() > MaxPointLightCount
-	    ? MaxPointLightCount
-	    : static_cast<uint32>(PointLights.size());
+	                         ? MaxPointLightCount
+	                         : static_cast<uint32>(PointLights.size());
 
 	// Update the entire fixed-size buffer from equally sized CPU storage.
 	// Passing the collected array directly would be too short when Count < 64.
@@ -1186,51 +1245,15 @@ void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLig
 	Context->UpdateSubresource(PointLightCountBuffer.Get(), 0, nullptr, &CountData, 0, 0);
 }
 
-void FRenderer::BindPointLights()
-{
-	ID3D11ShaderResourceView* SRV = PointLightSRV.Get();
-	Context->PSSetShaderResources(3, 1, &SRV);
+// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Constants Buffer ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+// =====================================================================
 
-	ID3D11Buffer* Buffer = PointLightCountBuffer.Get();
-	Context->PSSetConstantBuffers(5, 1, &Buffer);
-}
 
-void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
-{
-	Context->UpdateSubresource(LightConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
-	Context->PSSetConstantBuffers(4, 1, LightConstantBuffer.GetAddressOf());
-}
 
-void FRenderer::UpdateFrameConstants(const FFrameConstants& Constants)
-{
-	/*Context->UpdateSubresource(FrameConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
-	Context->VSSetConstantBuffers(0, 1, FrameConstantBuffer.GetAddressOf());
-	Context->PSSetConstantBuffers(0, 1, FrameConstantBuffer.GetAddressOf());*/
 
-	Context->UpdateSubresource(GetCurrentFrameResource()->FrameConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
-	Context->VSSetConstantBuffers(0, 1, GetCurrentFrameResource()->FrameConstantBuffer.GetAddressOf());
-	Context->PSSetConstantBuffers(0, 1, GetCurrentFrameResource()->FrameConstantBuffer.GetAddressOf());
-}
 
-void FRenderer::UpdateViewConstants(const FViewConstants& Constants)
-{
-	/*FViewConstants ShaderConstants = Constants;
-	ShaderConstants.View = ShaderConstants.View;
-	ShaderConstants.Projection = ShaderConstants.Projection.ToD3DMatrix();
-
-	Context->UpdateSubresource(ViewConstantBuffer.Get(), 0, nullptr,
-	                           &ShaderConstants, 0, 0);
-	Context->VSSetConstantBuffers(1, 1, ViewConstantBuffer.GetAddressOf());
-	Context->PSSetConstantBuffers(1, 1, ViewConstantBuffer.GetAddressOf());*/
-
-	FViewConstants ShaderConstants = Constants;
-	ShaderConstants.View = ShaderConstants.View;
-	ShaderConstants.Projection = ShaderConstants.Projection.ToD3DMatrix();
-
-	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &ShaderConstants, 0, 0);
-	Context->VSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
-	Context->PSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
-}
+// =====================================================================
+// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Draw ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ 
 
 // OverridePipeline이 있으면 그 파이프라인을 쓰고 없으면 nullptr
 void FRenderer::Draw(const FDrawCommand& Command, FRenderPipeline* OverridePipeline, uint32 Slot)
@@ -1280,53 +1303,6 @@ void FRenderer::DrawPrimitiveBatch(std::span<const FDrawCommand> Commands, FRend
 		}
 		Begin += ChunkCount;
 	}
-}
-
-bool FRenderer::UploadObjectConstants(std::span<const FDrawCommand> Commands)
-{
-	if (Commands.empty())
-	{
-		return true;
-	}
-	if (Commands.size() > MaxObjectDrawCount)
-	{
-		return false;
-	}
-
-	D3D11_MAPPED_SUBRESOURCE Mapped{};
-
-	HRESULT Result = Context->Map(ObjectConstantUploadBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	std::byte* Destination = static_cast<std::byte*>(Mapped.pData);
-
-	for (size_t Index = 0; Index < Commands.size(); ++Index)
-	{
-		const uint32 ByteOffset = static_cast<uint32>(Index) * ObjectConstantStride;
-		const FObjectConstants& ShaderConstants = Commands[Index].Constants;
-		std::memcpy(Destination + ByteOffset, &ShaderConstants, sizeof(FObjectConstants));
-	}
-	Context->Unmap(ObjectConstantUploadBuffer.Get(), 0);
-
-	return true;
-}
-
-void FRenderer::BindObjectConstantRange(uint32 Slot, uint32 ByteOffset)
-{
-	assert(Context1);
-	assert(ByteOffset % 256u == 0);
-
-	ID3D11Buffer* Buffer = ObjectConstantUploadBuffer.Get();
-
-	// SetConstantBuffers1의 단위는 16바이트 shader constant.
-	UINT FirstConstant = ByteOffset / 16u;
-	UINT NumConstants = ObjectConstantStride / 16u;
-
-	Context1->VSSetConstantBuffers1(Slot, 1, &Buffer, &FirstConstant, &NumConstants);
-	Context1->PSSetConstantBuffers1(Slot, 1, &Buffer, &FirstConstant, &NumConstants);
 }
 
 void FRenderer::BindDrawResources(const FMesh& Mesh, const FMaterial& Material, FRenderPipeline* OverridePipeline)
@@ -1401,6 +1377,18 @@ void FRenderer::DrawUploadedCommand(const FDrawCommand& Command, FRenderPipeline
 		INC_DWORD_STAT("Draws");
 	}
 }
+
+// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Draw ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+// =====================================================================
+
+
+
+
+
+
+
+// =====================================================================
+// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Text ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ 
 
 void FRenderer::AddTextInstanceArray(const FDrawCommand& Command)
 {
@@ -1629,6 +1617,17 @@ void FRenderer::DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VI
 	ClearLastRenderState();
 }
 
+// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Draw ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+// =====================================================================
+
+
+
+
+
+
+// =====================================================================
+// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Post Process ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
+
 // SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 그린다
 void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
 {
@@ -1696,6 +1695,18 @@ bool FRenderer::InitializeGPUTimerQueries()
 
 	return true;
 }
+
+// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Post Process ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+// =====================================================================
+
+
+
+
+
+
+
+// =====================================================================
+// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Perfomance ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
 
 void FRenderer::BeginGPUTimer()
 {
@@ -1783,3 +1794,6 @@ void FRenderer::ResolveGPUTimer()
 	// 한 프레임에 세트를 여러 개 회수할 수 있으므로, 누적이 아니라 프레임당 한 번만 넣는다.
 	SET_CYCLE_COUNTER("GPU Time", LastGPUTimeMs);
 }
+
+// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Perfomamce ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+// =====================================================================

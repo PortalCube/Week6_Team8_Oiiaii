@@ -64,10 +64,8 @@ public:
 
 	void DrawStencilMask(const FCamera& Camera, const AActor* SelectedActor);
 
-	void UpdateLightConstants(const FLightConstants& Constants);
 	void DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline);
-	void ClearTextInstances();
-	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("Simple_Line"));
+	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("#Simple_Line"));
 	void FlushQueue(const FSceneView& View);
 
 	void CollectPointLights(const ULevel& Scene, TArray<FPointLightConstants>& OutLights);

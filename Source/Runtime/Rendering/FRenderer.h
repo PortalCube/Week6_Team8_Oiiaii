@@ -39,6 +39,7 @@ struct FFrameResource
 	Microsoft::WRL::ComPtr<ID3D11Buffer> FrameConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ViewConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> PostProcessConstantBuffer;
 };
 
 constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
@@ -91,6 +92,7 @@ public:
 	void BindPointLights();
 	void UpdateFrameConstants(const FFrameConstants& Constants);
 	void UpdateViewConstants(const FViewConstants& Constants);
+	void UpdatePostProcessConstants(const FPostProcessConstants& Constants);
 
 	// Object Constant Buffer를 갱신한다.
 	template <typename TConstants>
@@ -179,7 +181,7 @@ public:
 
 	// 라인 배치
 	template <typename TConstants>
-	void FlushLineBatch(const TConstants& Constants, const FName& PipelineId = FName("Simple_Line"))
+	void FlushLineBatch(const TConstants& Constants, const FName& PipelineId = FName("#Simple_Line"))
 	{
 		UpdateBuffer(Constants, 2);
 		LineBatcher.Flush(*Context.Get(), GetPipeline(PipelineId));
@@ -227,7 +229,7 @@ private:
 	// 모든 ConstantBuffer의 최대 크기
 	static constexpr UINT ConstantBufferSize = 256u;
 	static constexpr uint32 GPUTimerFrameCount = 3u;
-	static constexpr uint32 NumFrameResourceCount = 3;
+	static constexpr uint32 NumFrameResourceCount = 4;
 
 	FLineBatcher LineBatcher;
 
@@ -241,12 +243,12 @@ private:
 	// 상수 버퍼 (Frame/View/Object는 FrameResources에 있음)
 	Microsoft::WRL::ComPtr<ID3D11Buffer> LightConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantUploadBuffer; // 임시 상수버퍼
+	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightCountBuffer;
 
 	// 포인트 라이트
 	static constexpr uint32 MaxPointLightCount = 64;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightBuffer;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> PointLightSRV;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightCountBuffer;
 
 	// Draw, ImGui 모두 다 포함하는 BackBuffer Texture
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> BackBufferTexture;
