@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include <cassert>
 #include <cmath>
 #include "FMathSSE.h"

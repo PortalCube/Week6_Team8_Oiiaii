@@ -2,7 +2,7 @@
 
 #include "UObject.h"
 #include "Runtime/Core/TArray.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include <utility>
 
 class UObject;
@@ -67,10 +67,12 @@ private:
 	TArray<UObject*> Objects;
 	uint32 NextUUID = 1u;
 
-	template <typename TObject, typename... TArgs>
-	    requires std::derived_from<TObject, UObject>
-	friend TObject* NewObject(TArgs&&... Args);
-	friend UObject* NewObject(UClass* ClassType);
+	template <UObjectType T>
+	friend T* NewObject(UObject* Outer);
+
+	template <UObjectType T>
+	friend T* NewObject(UObject* Outer, UClass* ClassType);
+
 	friend void DestroyObject(UObject* Object);
 
 	void DestroyObject(UObject* Object);

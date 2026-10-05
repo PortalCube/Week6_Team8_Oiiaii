@@ -1,7 +1,8 @@
 #pragma once
+#include "Editor/UI/IEditorWindow.h"
 #include "Editor/Core/FEditor.h"
 
-class FImguiControlPanelWindow final
+class FImguiControlPanelWindow final : public IEditorWindow
 {
 public:
 	FImguiControlPanelWindow() = default;
@@ -12,7 +13,7 @@ public:
 	// 복사 대입 금지
 	FImguiControlPanelWindow& operator=(const FImguiControlPanelWindow&) = delete;
 
-	void Process(FEditor& Editor);
+	void Process(FEditor& Editor, float DeltaTime) override;
 
 private:
 	void ActorSpawnSetting(FEditor& Editor);

@@ -1,6 +1,6 @@
 #pragma once
-#include "Runtime/Core/IntTypes.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Rendering/FMesh.h"
 #include "Runtime/Rendering/FMaterial.h"
 
@@ -10,7 +10,7 @@ class FGrid
 {
 private:
 	float CellSize = 1.0f;
-	bool bIsActive = true;
+	bool bVisible = true;
 
 public:
 	void DrawLine(FRenderer& Renderer, const FCamera& Camera);

@@ -1,13 +1,13 @@
 #pragma once
-#include "Source/Runtime/Math/FVector.h"
-#include "Source/Runtime/Math/FVector2.h"
-#include "Source/Runtime/Math/FVector4.h"
-#include "Source/Runtime/Core/TArray.h"
-#include "Source/Runtime/Core/TMap.h"
-#include "Source/Runtime/Core/FString.h"
-#include "Source/Runtime/Core/IntTypes.h"
-#include "Source/Runtime/Rendering/Vertices.h"
-#include "Source/Runtime/Rendering/FMesh.h"
+#include "Runtime/Math/FVector.h"
+#include "Runtime/Math/FVector2.h"
+#include "Runtime/Math/FVector4.h"
+#include "Runtime/Core/TArray.h"
+#include "Runtime/Core/TMap.h"
+#include "Runtime/Core/FString.h"
+#include "Runtime/Engine/Types/IntTypes.h"
+#include "Runtime/Rendering/Vertices.h"
+#include "Runtime/Rendering/FMesh.h"
 
 #include <fstream>
 #include <sstream>

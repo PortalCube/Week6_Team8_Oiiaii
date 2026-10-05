@@ -7,7 +7,7 @@
 #include "FRenderPipeline.h"
 #include "Runtime/Core/FString.h"
 #include "Runtime/Core/FName.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Core/TMap.h"
 #include "Vertices.h"
@@ -38,22 +38,17 @@ public:
 	TMap<FName, TSharedPtr<FTexture>> AllTextureMap;
 	// 폰트 보관 맵
 	TMap<FName, TSharedPtr<FFont>> AllFontMap;
-
 	// 인스턴싱 배치 배열 맵
 	TMap<FInstanceBatchKey, TArray<FInstanceData>> AllInstancingArrayMap;
-
-	// 인스턴싱 배열 조회
-	TArray<FInstanceData>& GetInstancingArray(const FMesh* Mesh, const FMaterial* Material)
-	{
-		return AllInstancingArrayMap[{ Mesh, Material }];
-	}
 
 	// 파이프라인 조회
 	[[nodiscard]] TSharedPtr<FRenderPipeline> GetPipeline(const FName& Id) const
 	{
 		auto it = AllPipelineMap.find(Id);
 		if (it != AllPipelineMap.end())
+		{
 			return it->second;
+		}
 		return nullptr;
 	}
 
@@ -67,7 +62,9 @@ public:
 	{
 		auto it = AllMaterialMap.find(Id);
 		if (it != AllMaterialMap.end())
+		{
 			return it->second;
+		}
 		return nullptr;
 	}
 
@@ -76,8 +73,16 @@ public:
 	{
 		auto it = AllMeshMap.find(ID);
 		if (it != AllMeshMap.end())
+		{
 			return it->second;
+		}
 		return nullptr;
+	}
+
+	// 인스턴싱 배열 조회
+	TArray<FInstanceData>& GetInstancingArray(const FMesh* Mesh, const FMaterial* Material)
+	{
+		return AllInstancingArrayMap[{ Mesh, Material }];
 	}
 
 	// 메쉬 등록
@@ -101,7 +106,9 @@ public:
 	{
 		auto it = AllTextureMap.find(name);
 		if (it != AllTextureMap.end())
+		{
 			return it->second;
+		}
 		return nullptr;
 	}
 
@@ -114,6 +121,7 @@ public:
 	// 파이프라인 전체 해제
 	void DestroyAllPipelines() { AllPipelineMap.clear(); }
 
+	// 인스턴싱 전체 해제
 	void DestroyAllInstancingArray() { AllInstancingArrayMap.clear(); }
 
 	// 전체 머티리얼 맵 조회
@@ -133,17 +141,21 @@ public:
 	}
 
 	// 렌더러 참조 조회
-	FRenderer* GetRenderer() const { return RendererRef; }
+	FRenderer* GetRenderer() const
+	{
+		return RendererRef;
+	}
 
 	// 정점 배열 메쉬 캐싱 생성
-	TSharedPtr<FMesh> GetOrCreateMesh(const FName& ID,
-	    const TArray<FVertexData>& vertices);
+	TSharedPtr<FMesh> GetOrCreateMesh(const FName& ID, const TArray<FVertexData>& vertices);
 
 	[[nodiscard]] TSharedPtr<FFont> GetFont(const FName& InName) const
 	{
 		auto it = AllFontMap.find(InName);
 		if (it != AllFontMap.end())
+		{
 			return it->second;
+		}
 		return nullptr;
 	}
 
@@ -152,7 +164,7 @@ private:
 	bool CreateWireframePipeline(FRenderer& Renderer);
 	bool CreateOutlinePipeline(FRenderer& Renderer);
 	bool CreatePostProcessPipeline(FRenderer& Renderer);
-
+	bool CreateCompositePipeline(FRenderer& Renderer);
 	bool CreateInstancingArrayMap();
 	FRenderer* RendererRef = nullptr;
 };

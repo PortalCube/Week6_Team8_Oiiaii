@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Math/FVector2.h"
 
 enum class EMouseButton : uint8;

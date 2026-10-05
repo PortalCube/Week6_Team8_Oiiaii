@@ -10,8 +10,7 @@ class AAppleBittenActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit AAppleBittenActor();
-
+	virtual void Initialize() override;
 	virtual void Update(float DeltaTime) override;
 
 private:

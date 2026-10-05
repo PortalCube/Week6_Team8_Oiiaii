@@ -6,21 +6,19 @@
 #include <type_traits>
 #include <concepts>
 
-class UScene;
+class ULevel;
 
 class AActor : public UObject
 {
 	DECLARE_UCLASS(AActor, UObject)
 	GENERATED_BODY()
 
-	friend class UScene;
+	friend class ULevel;
 
 protected:
 	USceneComponent* RootComponent = nullptr;
 	TArray<USceneComponent*> AttachedComp;
 	bool bTickEnabled = false;
-
-	explicit AActor() = default;
 
 	virtual void Serialize(FArchive& Archive) const override;
 	virtual void Deserialize(const FArchive& Archive) override;
@@ -28,7 +26,7 @@ protected:
 public:
 	void Initialize() override;
 	void Release() override;
-	UScene* GetOwner() const { return Owner; }
+	ULevel* GetOwner() const { return Owner; }
 
 	void CreateRootComponent(UClass* ClassType);
 
@@ -47,18 +45,33 @@ public:
 	void MarkComponentsTransformDirty();
 
 	void AddComponent(USceneComponent* Addcomp);
-	virtual void Register(UScene& Scene);
+	virtual void Register(ULevel& Scene);
 	virtual void BeginPlay();
 	virtual void Update(float DeltaTime);
 	virtual void EndPlay();
 	virtual void Unregister();
 
+	template <UObjectType T>
+	T* CreateDefaultSubobject();
+
 	[[nodiscard]] bool IsRegistered() const { return Owner != nullptr; }
 	[[nodiscard]] bool HasBegunPlay() const { return bHasBegunPlay; }
+
+	bool GetTickEnabled() const { return bTickEnabled; }
 
 	void Destroy();
 
 private:
-	UScene* Owner = nullptr; // SpawnActor될 때 설정됨
+	ULevel* Owner = nullptr; // SpawnActor될 때 설정됨
 	bool bHasBegunPlay = false;
 };
+
+template <UObjectType T>
+inline T* AActor::CreateDefaultSubobject()
+{
+	T* Subobject = Super::CreateDefaultSubobject<T>();
+
+	// 현재 컴포넌트 목록에 등록시키기
+
+	return Subobject;
+}

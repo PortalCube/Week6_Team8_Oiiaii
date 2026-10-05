@@ -5,7 +5,7 @@
 IMPLEMENT_UCLASS(ASpotlightActor, AActor)
 UCLASS_META(ASpotlightActor, DisplayName, "Spotlight Actor")
 
-ASpotlightActor::ASpotlightActor()
+void ASpotlightActor::Initialize()
 {
 	CreateRootComponent(USpotLightComponent::StaticClass());
 

@@ -2,7 +2,7 @@
 
 #include "Runtime/Core/TMap.h"
 #include "Runtime/Core/FString.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "FTexture.h"
 
 class FArchive;

@@ -7,8 +7,11 @@
 IMPLEMENT_UCLASS(AAnimatedBillboardActor, AActor)
 UCLASS_META(AAnimatedBillboardActor, DisplayName, "Animated Billboard Actor")
 
-AAnimatedBillboardActor::AAnimatedBillboardActor()
+void AAnimatedBillboardActor::Initialize()
 {
+	Super::Initialize();
+	bTickEnabled = true;
+
 	// 루트 컴포넌트 생성 및 장착
 	CreateRootComponent(UAnimatedBillboardComp::StaticClass());
 	UAnimatedBillboardComp* Comp = GetAnimatedBillboardComponent();
@@ -24,12 +27,6 @@ AAnimatedBillboardActor::AAnimatedBillboardActor()
 		Comp->SetLooping(true);
 		Comp->Play();
 	}
-}
-
-void AAnimatedBillboardActor::Initialize()
-{
-	Super::Initialize();
-	bTickEnabled = true;
 }
 
 UAnimatedBillboardComp* AAnimatedBillboardActor::GetAnimatedBillboardComponent() const

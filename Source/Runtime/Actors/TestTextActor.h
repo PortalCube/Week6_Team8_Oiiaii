@@ -11,8 +11,7 @@ class ATestTextActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit ATestTextActor();
-
+	virtual void Initialize() override;
 	UTextComponent* GetTextInstanceComponent() const;
 };
 

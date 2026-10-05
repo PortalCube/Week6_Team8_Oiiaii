@@ -1,16 +1,18 @@
 #pragma once
+#include "Editor/UI/IEditorWindow.h"
 #include "Editor/Core/FEditor.h"
 
 class AActor;
 class USceneComponent;
 class UStaticMeshComponent;
 class USpotLightComponent;
+class UFireBallComponent;
 class UTextComponent;
 class UBillboardComponent;
 class UAnimatedBillboardComp;
 
 // 선택된 액터의 컴포넌트 속성을 편집하는 창.
-class FImguiPropertyWindow final
+class FImguiPropertyWindow final : public IEditorWindow
 {
 public:
 	FImguiPropertyWindow() = default;
@@ -21,7 +23,7 @@ public:
 	// 복사 대입 금지
 	FImguiPropertyWindow& operator=(const FImguiPropertyWindow&) = delete;
 
-	void Process(FEditor& Editor);
+	void Process(FEditor& Editor, float DeltaTime) override;
 
 private:
 	// 액터 클래스명과 UUID.
@@ -42,6 +44,7 @@ private:
 	void ShowBillboardSettings(UBillboardComponent& BillboardComp) const;
 	void ShowAnimatedBillboardSettings(UAnimatedBillboardComp& BillboardComp) const;
 	void ShowSpotLightSettings(USpotLightComponent& LightComp) const;
+	void ShowFireBallSettings(UFireBallComponent& FireBallComp) const;
 	void ShowStaticMeshSettings(AActor& Actor, UStaticMeshComponent& MeshComp, bool bIsRoot) const;
 
 	// 머티리얼의 텍스처 미리보기 겸 드롭 타깃.

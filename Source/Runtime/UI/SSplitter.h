@@ -1,5 +1,6 @@
 #pragma once
 #include "Runtime/UI/SWindow.h"
+#include "Runtime/Core/FRect.h"
 
 /*
 SSplitterH(좌 | 우)					  ┌──────────┬
@@ -17,8 +18,6 @@ public:
 	SWindow* SideLT = nullptr; // Left or Top
 	SWindow* SideRB = nullptr; // Right or Bottom
 	float Ratio = 0.5f;
-
-	bool isSplitter = false;
 };
 // SSplitterH: 자식을 수평 나열(좌 | 우).분할선은 세로.마우스 X로 드래그.
 class SSplitterH : public SSplitter
@@ -28,9 +27,9 @@ public:
 	{
 		Rect = In;
 		const float SplitX = In.Left + In.GetWidth() * Ratio;
-		if (SideLT && SideLT->bisActive)
+		if (SideLT && SideLT->bVisible)
 			SideLT->OnResize({ In.Left, In.Top, SplitX, In.Bottom });
-		if (SideRB && SideRB->bisActive)
+		if (SideRB && SideRB->bVisible)
 			SideRB->OnResize({ SplitX, In.Top, In.Right, In.Bottom });
 	}
 };
@@ -44,9 +43,9 @@ public:
 		Rect = In;
 
 		const float SplitY = In.Top + In.GetHeight() * Ratio;
-		if (SideLT && SideLT->bisActive)
+		if (SideLT && SideLT->bVisible)
 			SideLT->OnResize({ In.Left, In.Top, In.Right, SplitY });
-		if (SideRB && SideRB->bisActive)
+		if (SideRB && SideRB->bVisible)
 			SideRB->OnResize({ In.Left, SplitY, In.Right, In.Bottom });
 	}
 };

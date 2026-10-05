@@ -1,7 +1,7 @@
 #include "FGrid.h"
 
 #include "Editor/Core/FEditor.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Runtime/Math/FMatrix.h"

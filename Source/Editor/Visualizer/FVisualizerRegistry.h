@@ -2,7 +2,7 @@
 
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Core/TMap.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Editor/Visualizer/IVisualizer.h"
 
 class UClass;

@@ -7,10 +7,10 @@
 IMPLEMENT_UCLASS(ABillboardActor, AActor)
 UCLASS_META(ABillboardActor, DisplayName, "Billboard Actor")
 
-ABillboardActor::ABillboardActor()
+void ABillboardActor::Initialize()
 {
 	// 기본 큐브 컴포넌트 장착
-	UBillboardComponent* Object = NewObject<UBillboardComponent>();
+	UBillboardComponent* Object = CreateDefaultSubobject<UBillboardComponent>();
 	SetRootComponent(Object);
 
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();

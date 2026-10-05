@@ -1,7 +1,7 @@
 #include "UTextComponent.h"
 #include "Runtime/Asset/UFont.h"
 #include "Runtime/Engine/FArchive.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
 #include "Runtime/Rendering/FRenderResourceLibrary.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Rendering/ShaderConstants.h"
@@ -85,6 +85,20 @@ void UTextComponent::SetFont(UFont* InFont)
 	    std::filesystem::path(InFont->GetID().ToString()).stem().string());
 	SetTexture(InFont->GetTexture());
 	RebuildTextMesh();
+}
+
+void UTextComponent::SetTextColor(const FVector4& InColor)
+{
+	TextColor = InColor;
+
+	for (FInstanceData& Instance : Instances)
+	{
+		Instance.Color = TextColor;
+	}
+}
+
+void UTextComponent::SetTextSize(float InSize)
+{
 }
 
 void UTextComponent::RebuildTextMesh()
@@ -192,7 +206,7 @@ void UTextComponent::RebuildTextMesh()
 		// 글자별 순수 로컬 변환 (크기 * 위치)
 		FInstanceData Data{
 			.World = CharMatrix,
-			.Color = FVector4(1.0f, 1.0f, 1.0f, 1.0f),
+			.Color = TextColor,
 			.UVScale = FVector2(CharInfo.width, CharInfo.height),
 			.UVOffset = FVector2(tv[0].u, tv[0].v),
 		};
@@ -238,6 +252,8 @@ void UTextComponent::Serialize(FArchive& Archive) const
 	Super::Serialize(Archive);
 
 	Archive.SetWString("Text", Text);
+	Archive.SetVector4("TextColor", TextColor);
+	Archive.SetFloat("TextSize", TextSize);
 
 	if (FontAsset)
 	{

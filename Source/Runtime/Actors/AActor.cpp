@@ -4,7 +4,8 @@
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FArchive.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
+#include "Runtime/Engine/UWorld.h"
 
 IMPLEMENT_UCLASS(AActor, UObject)
 
@@ -18,7 +19,6 @@ void AActor::Initialize()
 
 void AActor::Release()
 {
-	UScene* RegisteredScene = Owner;
 	if (bHasBegunPlay)
 	{
 		EndPlay();
@@ -29,10 +29,7 @@ void AActor::Release()
 		Unregister();
 	}
 
-	if (RegisteredScene)
-	{
-		RegisteredScene->RemoveActor(this);
-	}
+	GetWorld()->RemoveActor(this);
 
 	while (!AttachedComp.empty())
 	{
@@ -83,8 +80,8 @@ void AActor::Deserialize(const FArchive& Archive)
 		{
 			UE_LOG_WARN("[%s::Deserialize] RootComponent(%s)에 대한 직렬화 데이터가 "
 			            "누락되었습니다.",
-			    GetClass()->GetUClassName(),
-			    RootComponent->GetClass()->GetUClassName());
+			    GetClass()->GetName(),
+			    RootComponent->GetClass()->GetName());
 		}
 		return;
 	}
@@ -96,7 +93,7 @@ void AActor::Deserialize(const FArchive& Archive)
 	if (SavedClass == nullptr)
 	{
 		UE_LOG_WARN("[%s::Deserialize] 알 수 없는 타입 %s",
-		    GetClass()->GetUClassName(), SavedTypeName);
+		    GetClass()->GetName(), SavedTypeName);
 		return;
 	}
 
@@ -107,7 +104,7 @@ void AActor::Deserialize(const FArchive& Archive)
 		if (RootComponent == nullptr)
 		{
 			UE_LOG_WARN("[%s::Deserialize] RootComponent %s를 생성할 수 없습니다.",
-			    GetClass()->GetUClassName(), SavedTypeName);
+			    GetClass()->GetName(), SavedTypeName);
 			return;
 		}
 	}
@@ -116,8 +113,8 @@ void AActor::Deserialize(const FArchive& Archive)
 	{
 		UE_LOG_WARN("[%s::Deserialize] 기본 RootComponent (%s)와 저장된 타입 "
 		            "(%s)가 일치하지 않습니다.",
-		    GetClass()->GetUClassName(),
-		    RootComponent->GetClass()->GetUClassName(), SavedTypeName);
+		    GetClass()->GetName(),
+		    RootComponent->GetClass()->GetName(), SavedTypeName);
 		return;
 	}
 
@@ -131,15 +128,7 @@ void AActor::CreateRootComponent(UClass* ClassType)
 		return;
 	}
 
-	UObject* Object = NewObject(ClassType);
-	USceneComponent* Component = Object->Cast<USceneComponent>();
-
-	if (!Component)
-	{
-		DestroyObject(Object);
-		return;
-	}
-
+	USceneComponent* Component = NewObject<USceneComponent>(this, ClassType);
 	SetRootComponent(Component);
 }
 
@@ -213,7 +202,7 @@ void AActor::AddComponent(USceneComponent* Addcomp)
 	}
 }
 
-void AActor::Register(UScene& Scene)
+void AActor::Register(ULevel& Scene)
 {
 	if (Owner == &Scene)
 	{
@@ -309,10 +298,6 @@ void AActor::Unregister()
 
 void AActor::Destroy()
 {
-	if (Owner)
-	{
-		Owner->DestroyActor(this);
-		return;
-	}
+	GetWorld()->DestroyActor(this);
 	DestroyObject(this);
 }

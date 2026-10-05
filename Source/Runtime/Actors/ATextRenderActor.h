@@ -12,7 +12,8 @@ class ATextRenderActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit ATextRenderActor();
+
+	virtual void Initialize() override;
 
 	UTextComponent* GetTextComponent() const;
 };

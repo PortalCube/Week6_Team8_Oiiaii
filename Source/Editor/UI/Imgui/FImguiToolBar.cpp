@@ -7,7 +7,7 @@
 constexpr wchar_t SceneFilter[] = L"Scene Files (*.Scene)\0*.Scene\0All Files (*.*)\0*.*\0";
 constexpr wchar_t ObjFilter[] = L"Scene Files (*.obj)\0*.obj\0All Files (*.*)\0*.*\0";
 
-void FImguiToolbar::Process(FEditor& Editor, FImguiConsoleWindow& ConsoleWindow, FImguiControlPanelWindow& ControlPanelWindow, FImguiPropertyWindow& PropertyWindow)
+void FImguiToolbar::Process(FEditor& Editor, float DeltaTime)
 {
 	if (Editor.bZenMode)
 	{
@@ -22,7 +22,7 @@ void FImguiToolbar::Process(FEditor& Editor, FImguiConsoleWindow& ConsoleWindow,
 		ShowFileBar(CurrentScenePath, Editor);
 
 		// Imgui Window들 소환
-		ShowViewBar(Editor, ConsoleWindow);
+		ShowViewBar(Editor);
 
 		ShowPIEBar(Editor);
 
@@ -114,7 +114,7 @@ void FImguiToolbar::ShowFileBar(FString CurrentScenePath, FEditor& Editor)
 	}
 }
 
-void FImguiToolbar::ShowViewBar(FEditor& Editor, FImguiConsoleWindow& ConsoleWindow)
+void FImguiToolbar::ShowViewBar(FEditor& Editor)
 {
 	if (ImGui::BeginMenu("View"))
 	{

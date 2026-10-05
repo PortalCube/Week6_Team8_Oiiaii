@@ -2,7 +2,10 @@
 
 #include "Runtime/Core/Globals.h"
 #include "Runtime/Engine/FTimeManager.h"
-#include "Runtime/Engine/FEngine.h"
+#include "Runtime/Engine/UEngine.h"
+#include "Runtime/Asset/UPackage.h"
+#include "Runtime/CoreUObject/UObjectGlobals.h"
+#include "Editor/Engine/UEditorEngine.h"
 
 #include <format>
 #include <Windows.h>
@@ -19,10 +22,15 @@ void FEngineLoop::Init(HINSTANCE Instance)
 	    .Height = Globals::WindowHeight,
 	});
 
-	// 엔진 객체 초기화
-	Engine = MakeUnique<FEngine>(*this);
+	// UObject 시스템 초기화
 
-	Engine->Init();
+	// TransientPackage 생성
+	Globals::TransientPackage = NewObject<UPackage>(nullptr);
+	
+	// 엔진 객체 초기화
+	Engine = NewObject<UEditorEngine>(GetTransientPackage());
+
+	Engine->Init(this);
 }
 
 void FEngineLoop::Tick()
@@ -53,12 +61,7 @@ void FEngineLoop::Exit()
 
 HWND FEngineLoop::GetMainWindowHandle() const
 {
-	if (!WindowsApplication)
-	{
-		return nullptr;
-	}
-
-	const FWindow* MainWindow = WindowsApplication->GetMainWindow();
+	const FWindow* MainWindow = GetMainWindow();
 
 	if (!MainWindow)
 	{
@@ -66,4 +69,14 @@ HWND FEngineLoop::GetMainWindowHandle() const
 	}
 
 	return MainWindow->GetHandle();
+}
+
+FWindow* FEngineLoop::GetMainWindow() const
+{
+	if (!WindowsApplication)
+	{
+		return nullptr;
+	}
+
+	return WindowsApplication->GetMainWindow();
 }

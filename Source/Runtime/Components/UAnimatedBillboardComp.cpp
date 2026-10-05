@@ -1,5 +1,5 @@
 #include "UAnimatedBillboardComp.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
 #include "Runtime/Engine/FArchive.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include <algorithm>

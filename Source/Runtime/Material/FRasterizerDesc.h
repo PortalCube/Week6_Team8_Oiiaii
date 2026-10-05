@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 
 enum class ERasterizerFillMode : uint8
 {

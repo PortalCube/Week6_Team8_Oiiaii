@@ -1,4 +1,5 @@
 #pragma once
+#include "Editor/UI/IEditorWindow.h"
 #include "Editor/Core/FEditor.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Core/TSet.h"
@@ -21,12 +22,12 @@ struct FOutlinerItem
 };
 
 // 월드 아웃라이너 창 클래스
-class FImguiWorldOutliner final
+class FImguiWorldOutliner final : public IEditorWindow
 {
 
 public:
-	void Process(FEditor& Editor);
-	void RefreshCache(UScene* Scene);
+	void Process(FEditor& Editor, float DeltaTime) override;
+	void RefreshCache(ULevel* Scene);
 	void UpdateFilter(const FString& FilterStr);
 
 private:
@@ -42,7 +43,7 @@ private:
 	// 펼쳐진 상태를 연속해서 저장하고 삽입한다.
 	void RebuildDisplayList();
 
-	UScene* LastScene = nullptr;
+	ULevel* LastScene = nullptr;
 	// 원본 액터 데이터 캐시
 	TArray<FOutlinerItem> CachedActors;
 	TArray<int32> FilteredIndices;

@@ -9,5 +9,5 @@ class ACylinderActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit ACylinderActor();
+	virtual void Initialize() override;
 };

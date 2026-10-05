@@ -2,7 +2,7 @@
 
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Core/FString.h"
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Core/FName.h"
 
 // 값을 적절하게 조절할 것

@@ -15,7 +15,9 @@ class FCamera;
 class FGizmo;
 class FGrid;
 class AActor;
-class UScene;
+class ULevel;
+
+struct FPointLightConstants;
 
 // 커맨드로 제어하는 컬링 옵션
 struct FCullingSettings
@@ -39,19 +41,20 @@ public:
 	void PrepareRender();
 
 	// 전체 뷰포트 렌더링
-	void RenderView(const FSceneView& View, const UScene& Scene, const FEditorRenderContext& EditorCtx);
-	void CollectScenePrimitives(const UScene& Scene, const FSceneView& View, const AActor* SelectedActor);
+	void RenderView(const FSceneView& View, const ULevel& Scene, const FEditorRenderContext& EditorCtx);
+	void CollectScenePrimitives(const ULevel& Scene, const FSceneView& View, const AActor* SelectedActor);
 
 	// 뷰포트 패스 파이프라인
-	void BeginView(const FSceneView& View);
+	bool BeginView(const FSceneView& View);
+	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
 	void DrawGrid(const FCamera& Camera, FGrid& Grid);
-	void FlushBasePass(const FCamera& Camera);
+	void FlushBasePass(const FSceneView& View);
 	void FlushLinePass(const FCamera& Camera);
-	void RenderPostProcessPass(const FCamera& Camera, const AActor* SelectedActor);
-	void RenderOverlayPass(const FCamera& Camera, const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp);
+	void RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor);
+	void RenderOverlayPass(const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp);
 
 	// 개별 렌더 및 디버그 라인
-	void RenderGizmo(const FTransform& Transform, const FCamera& Camera, FVector2 TopLeftUV, FVector2 LengthUV, const FGizmo& Gizmo);
+	void RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo);
 
 	void RenderLine(const FVector& Start, const FVector& End, const FVector4& Color);
 	void RenderBoxCenterExtent(const FVector& Center, const FVector& Extent, const FVector4& Color);
@@ -59,16 +62,15 @@ public:
 	void RenderQuad(const FVector& A, const FVector& B, const FVector& C, const FVector& D, const FVector4& Color);
 	void RenderSphere(const FVector& Center, float Radius, const FVector4& Color, uint32 Segments = 16);
 
-	void RenderOutline(const FCamera& Camera, const AActor* SelectedActor);
 	void DrawStencilMask(const FCamera& Camera, const AActor* SelectedActor);
-	void RenderVerticetoline();
 
-	void SetRenderMode(EViewModeIndex InMode);
-	void UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode);
-	void DrawInstances(const FCamera& Camera);
+	void UpdateLightConstants(const FLightConstants& Constants);
+	void DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline);
 	void ClearTextInstances();
 	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("Simple_Line"));
-	void FlushQueue(const FCamera& Camera);
+	void FlushQueue(const FSceneView& View);
+
+	void CollectPointLights(const ULevel& Scene, TArray<FPointLightConstants>& OutLights);
 
 	FRenderQueue& GetRenderQueue() { return RenderQueue; }
 	const FRenderQueue& GetRenderQueue() const { return RenderQueue; }
@@ -79,7 +81,7 @@ public:
 	void SetCullingEnabled(bool pCullingEnable);
 
 	// 렌더 전에 컬링 판정
-	void CullScene(const FSceneView& View, const UScene& Scene);
+	void CullScene(const FSceneView& View, const ULevel& Scene);
 
 	// void SetOcclusionEnabled(bool bEnable) { bOcclusionEnabled = bEnable; }
 	// bool IsOcclusionEnabled() const { return bOcclusionEnabled; }

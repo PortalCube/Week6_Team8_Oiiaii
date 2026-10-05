@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Runtime/Components/Mesh/UMeshComponent.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
 #include "Runtime/Engine/ShowFlags.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Material/FMaterialInstance.h"
@@ -58,8 +58,6 @@ public:
 	static uint32 SelectLOD(const UStaticMesh* Mesh, const FAxisAlignedBoundingBox& WorldBounds, const FLODView& View);
 
 protected:
-	UStaticMeshComponent() = default;
-
 	virtual void Serialize(FArchive& Archive) const override;
 	virtual void Deserialize(const FArchive& Archive) override;
 };

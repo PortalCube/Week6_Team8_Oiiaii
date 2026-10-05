@@ -9,7 +9,7 @@
 
 void FViewerCameraController::UpdateMouseInput(FCamera& Camera)
 {
-	if (FInputManager::Get().IsMouseDown(EMouseButton::Left))
+	if (FInputManager::Get().IsMousePressed(EMouseButton::Left))
 	{
 		FVector2 Delta = FInputManager::Get().GetMouseDelta() * CameraRotateSpeed;
 		Yaw += Delta.X;

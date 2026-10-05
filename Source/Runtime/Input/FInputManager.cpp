@@ -1,6 +1,6 @@
 #include "FInputManager.h"
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include <Windows.h>
 #include <cstring>
 

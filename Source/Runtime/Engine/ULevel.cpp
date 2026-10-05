@@ -1,4 +1,4 @@
-#include "UScene.h"
+#include "ULevel.h"
 
 #include "Runtime/Core/FString.h"
 #include "Runtime/Core/TArray.h"
@@ -6,20 +6,22 @@
 #include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FArchive.h"
+#include "Runtime/Engine/UWorld.h"
+
 #include <algorithm>
 
 #include "Runtime/CoreUObject/TObjectIterator.h"
 #include "Runtime/Core/Log.h"
 
-IMPLEMENT_UCLASS(UScene, UObject)
-UCLASS_META(UScene, SerializeName, "Scene")
+IMPLEMENT_UCLASS(ULevel, UObject)
+UCLASS_META(ULevel, SerializeName, "Level")
 
-const TArray<UPrimitiveComponent*>& UScene::GetRenderComponents() const
+const TArray<UPrimitiveComponent*>& ULevel::GetRenderComponents() const
 {
 	return RenderComponents;
 }
 
-void UScene::Initialize()
+void ULevel::Initialize()
 {
 	if (bInitialized)
 	{
@@ -29,7 +31,7 @@ void UScene::Initialize()
 	bInitialized = true;
 }
 
-void UScene::Release()
+void ULevel::Release()
 {
 	if (bHasBegunPlay)
 	{
@@ -57,7 +59,7 @@ void UScene::Release()
 	Super::Release();
 }
 
-void UScene::Activate()
+void ULevel::Activate()
 {
 	if (bActive)
 	{
@@ -74,7 +76,7 @@ void UScene::Activate()
 	bActive = true;
 }
 
-void UScene::Deactivate()
+void ULevel::Deactivate()
 {
 	if (!bActive)
 	{
@@ -95,7 +97,7 @@ void UScene::Deactivate()
 	bActive = false;
 }
 
-void UScene::BeginPlay()
+void ULevel::BeginPlay()
 {
 	if (!bActive || bHasBegunPlay)
 	{
@@ -112,7 +114,7 @@ void UScene::BeginPlay()
 	}
 }
 
-void UScene::Update(float DeltaTime)
+void ULevel::Update(float DeltaTime)
 {
 	if (bHasBegunPlay)
 	{
@@ -134,7 +136,7 @@ void UScene::Update(float DeltaTime)
 	}*/
 }
 
-void UScene::EndPlay()
+void ULevel::EndPlay()
 {
 	if (!bHasBegunPlay)
 	{
@@ -151,13 +153,7 @@ void UScene::EndPlay()
 	bHasBegunPlay = false;
 }
 
-void UScene::SetRenderResourceLibrary(
-    FRenderResourceLibrary* InRenderResourceLibrary)
-{
-	RenderResourceLibrary = InRenderResourceLibrary;
-}
-
-void UScene::Serialize(FArchive& Archive) const
+void ULevel::Serialize(FArchive& Archive) const
 {
 	Super::Serialize(Archive);
 
@@ -178,7 +174,7 @@ void UScene::Serialize(FArchive& Archive) const
 	Archive.SetArchiveArray("Actors", ActorArchives);
 }
 
-void UScene::Deserialize(const FArchive& Archive)
+void ULevel::Deserialize(const FArchive& Archive)
 {
 	Super::Deserialize(Archive);
 
@@ -198,7 +194,7 @@ void UScene::Deserialize(const FArchive& Archive)
 			continue;
 		}
 
-		AActor* Actor = SpawnActor(ClassType);
+		AActor* Actor = GetWorld()->SpawnActor(ClassType);
 		if (!Actor)
 		{
 			continue;
@@ -216,7 +212,7 @@ void UScene::Deserialize(const FArchive& Archive)
 	}
 }
 
-void UScene::AddRenderComponent(UPrimitiveComponent* prim)
+void ULevel::AddRenderComponent(UPrimitiveComponent* prim)
 {
 	if (prim == nullptr)
 		return;
@@ -240,12 +236,12 @@ void UScene::AddRenderComponent(UPrimitiveComponent* prim)
 	}
 }
 
-void UScene::RemoveRenderComponent(UPrimitiveComponent* prim)
+void ULevel::RemoveRenderComponent(UPrimitiveComponent* prim)
 {
 	if (prim == nullptr || prim->GetSceneIndex() < 0)
 		return;
-	// TODO 제거할 때 마지막 요소와 교환하는 방식의 Swap and Pop으로 처리하도록 수정할 것
 
+	// TODO 제거할 때 마지막 요소와 교환하는 방식의 Swap and Pop으로 처리하도록 수정할 것
 	std::erase(RenderComponents, prim);
 	SceneBVH.RemoveObject(prim);
 
@@ -272,38 +268,7 @@ void UScene::RemoveRenderComponent(UPrimitiveComponent* prim)
 	prim->SetSceneIndex(-1);
 }
 
-void UScene::RemoveActor(AActor* Actor)
-{
-	std::erase(Actors, Actor);
-}
-
-void UScene::DestroyActor(AActor* Actor)
-{
-	if (Actor == nullptr)
-		return;
-
-	RemoveActor(Actor);
-	DestroyObject(Actor);
-}
-
-AActor* UScene::SpawnActor(UClass* ClassType)
-{
-	UObject* Object = NewObject(ClassType);
-	AActor* Actor = Object->Cast<AActor>();
-	if (!Actor)
-	{
-		DestroyObject(Object);
-		return nullptr;
-	}
-	Actor->Initialize();
-	Actor->Register(*this);
-
-	Actors.push_back(Actor);
-
-	return Actor;
-}
-
-void UScene::MarkBoundsDirty(UPrimitiveComponent* Prim)
+void ULevel::MarkBoundsDirty(UPrimitiveComponent* Prim)
 {
 	// 씬에 아직 추가 전이거나 이미 대기 중이면 무시
 	if (Prim == nullptr || Prim->GetSceneIndex() < 0 || Prim->GetBoundDirtyQueued())
@@ -313,7 +278,7 @@ void UScene::MarkBoundsDirty(UPrimitiveComponent* Prim)
 	DirtyBoundsList.push_back(Prim);
 }
 
-void UScene::UpdateDirtyBounds()
+void ULevel::UpdateDirtyBounds()
 {
 	for (UPrimitiveComponent* Prim : DirtyBoundsList)
 	{

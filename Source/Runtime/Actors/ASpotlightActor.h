@@ -7,7 +7,6 @@ class ASpotlightActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit ASpotlightActor();
-
+	virtual void Initialize() override;
 	USpotLightComponent* GetSpotlightComponent() const;
 };

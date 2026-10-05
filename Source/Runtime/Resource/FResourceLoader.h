@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Core/FString.h"
 #include "Runtime/Core/FName.h"
 

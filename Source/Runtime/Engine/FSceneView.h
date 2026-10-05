@@ -1,10 +1,13 @@
 #pragma once
-#include "Runtime/Engine/FCamera.h"
+
 #include "Runtime/Math/FMatrix.h"
 #include "Runtime/Math/FVector2.h"
 #include "Runtime/Engine/ShowFlags.h"
+#include "Runtime/Engine/FViewport.h"
+#include "Runtime/Engine/FCamera.h"
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "Runtime/Geometry/FTransform.h"
+
 class AActor;
 class FGizmo;
 class FGrid;
@@ -17,8 +20,8 @@ struct FSceneView
 {
 	const FCamera& Camera;
 	FMatrix ViewProj;
-	FVector2 TopLeftUV;
-	FVector2 LengthUV;
+	const FViewport& Viewport;
+	FVector2 ViewportSizePixel; // 뷰포트의 width, height. 뷰포트는 각자의 RTV를 가지기 때문에 0,0에서부터 시작한다
 	EViewModeIndex ViewMode = EViewModeIndex::VMI_Lit;
 	uint64 ShowFlags = static_cast<uint64>(EEngineShowFlags::SF_Primitives);
 	FLightConstants LightConstants{};

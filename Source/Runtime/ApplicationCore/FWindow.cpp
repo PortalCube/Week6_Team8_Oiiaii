@@ -221,13 +221,13 @@ LRESULT FWindow::MessageCallback(HWND Window, UINT Message, WPARAM WParam, LPARA
 
 	case WM_KEYDOWN:
 	{
-		FInputManager::Get().SetKey(WParam, true);
+		FInputManager::Get().SetKey(static_cast<uint32>(WParam), true);
 		break;
 	}
 
 	case WM_KEYUP:
 	{
-		FInputManager::Get().SetKey(WParam, false);
+		FInputManager::Get().SetKey(static_cast<uint32>(WParam), false);
 		break;
 	}
 

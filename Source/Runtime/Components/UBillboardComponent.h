@@ -4,7 +4,7 @@
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "UPrimitiveComponent.h"
 
-class UScene;
+class ULevel;
 class FArchive;
 
 class UBillboardComponent : public UPrimitiveComponent
@@ -13,8 +13,6 @@ class UBillboardComponent : public UPrimitiveComponent
 	GENERATED_BODY()
 
 protected:
-	explicit UBillboardComponent() = default;
-
 	virtual void Serialize(FArchive& Archive) const;
 	virtual void Deserialize(const FArchive& Archive);
 

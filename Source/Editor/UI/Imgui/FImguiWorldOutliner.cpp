@@ -2,12 +2,13 @@
 #include "Runtime/Actors/AActor.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Components/USceneComponent.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
+#include "Editor/Core/FEditor.h"
 #include "ThirdParty/Imgui/imgui.h"
 #include <string>
 #include <algorithm>
 
-void FImguiWorldOutliner::Process(FEditor& Editor)
+void FImguiWorldOutliner::Process(FEditor& Editor, float DeltaTime)
 {
 	if (Editor.bHideUI || Editor.bZenMode)
 	{
@@ -16,7 +17,7 @@ void FImguiWorldOutliner::Process(FEditor& Editor)
 
 	ImGui::Begin("World Outliner");
 
-	UScene* Scene = Editor.GetCurrentScene();
+	ULevel* Scene = Editor.GetCurrentLevel();
 	if (!Scene)
 	{
 		ImGui::TextDisabled("No Active Scene");
@@ -108,7 +109,7 @@ void FImguiWorldOutliner::Process(FEditor& Editor)
 	ImGui::End();
 }
 
-void FImguiWorldOutliner::RefreshCache(UScene* Scene)
+void FImguiWorldOutliner::RefreshCache(ULevel* Scene)
 {
 	CachedActors.clear();
 	const auto& Actors = Scene->GetActors();

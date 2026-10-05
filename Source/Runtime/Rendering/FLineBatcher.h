@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Runtime/Core/IntTypes.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Math/FMatrix.h"
 #include "Runtime/Math/FVector.h"

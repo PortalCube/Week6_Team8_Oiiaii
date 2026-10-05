@@ -4,14 +4,14 @@
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "UPrimitiveComponent.h"
 #include "Runtime/Engine/FArchive.h"
-#include "Runtime/Engine/UScene.h"
+#include "Runtime/Engine/ULevel.h"
 
 IMPLEMENT_UCLASS(USceneComponent, UObject)
 
 void USceneComponent::Initialize()
 {
 	Super::Initialize();
-	Scene = nullptr;
+	Level = nullptr;
 	bHasBegunPlay = false;
 	bTickEnabled = false;
 }
@@ -21,35 +21,35 @@ void USceneComponent::Release()
 	{
 		EndPlay();
 	}
-	if (Scene)
+	if (Level)
 	{
 		Unregister();
 	}
 
 	ActorOwner = nullptr;
 	SceneOwner = nullptr;
-	Scene = nullptr;
+	Level = nullptr;
 
 	Super::Release();
 }
 
-void USceneComponent::Register(UScene& InScene)
+void USceneComponent::Register(ULevel& InScene)
 {
-	if (Scene == &InScene)
+	if (Level == &InScene)
 	{
 		return;
 	}
-	if (Scene)
+	if (Level)
 	{
 		Unregister();
 	}
 
-	Scene = &InScene;
+	Level = &InScene;
 }
 
 void USceneComponent::BeginPlay()
 {
-	if (!Scene || bHasBegunPlay)
+	if (!Level || bHasBegunPlay)
 	{
 		return;
 	}
@@ -71,7 +71,7 @@ void USceneComponent::Unregister()
 	{
 		EndPlay();
 	}
-	Scene = nullptr;
+	Level = nullptr;
 }
 
 void USceneComponent::SetupAttachment(USceneComponent* InParent)

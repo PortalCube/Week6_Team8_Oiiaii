@@ -9,5 +9,5 @@ class ASphereActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit ASphereActor();
+	virtual void Initialize() override;
 };
