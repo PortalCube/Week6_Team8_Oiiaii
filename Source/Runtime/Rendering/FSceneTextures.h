@@ -4,7 +4,7 @@
 #include <wrl/client.h>
 #include <functional>
 #include <utility>
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 
 // 뷰포트 하나를 그리는 동안 쓰이는 텍스처. 크기는 그 뷰포트와 같아야 한다.
 // (출력 RT와 SceneDepthDSV를 함께 바인딩하므로 크기가 다르면 OMSetRenderTargets가 실패한다)

@@ -1,7 +1,7 @@
 #pragma once
 #include "Runtime/UI/SWindow.h"
 #include "Runtime/Core/FRect.h"
-#include "Runtime/Core/PointerTypes.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
 
 struct FViewportRenderTarget;
 

@@ -895,75 +895,6 @@ bool FRenderer::InitializeBackBuffer()
 	return true;
 }
 
-// SceneColor, SceneDepth 생성
-bool FRenderer::InitializeSceneTextures()
-{
-	const UINT Width = static_cast<UINT>(Viewport.Width);
-	const UINT Height = static_cast<UINT>(Viewport.Height);
-
-	if (Width == 0 || Height == 0)
-	{
-		return false;
-	}
-
-	if (!Device)
-	{
-		return false;
-	}
-
-	D3D11_TEXTURE2D_DESC SceneDeptTexturehDesc = {
-		.Width = Width,
-		.Height = Height,
-		.MipLevels = 1u,
-		.ArraySize = 1u,
-		.Format = DXGI_FORMAT_R24G8_TYPELESS,
-		.SampleDesc = {
-		    .Count = 1u,
-		},
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE,
-	};
-
-	HRESULT Result = Device->CreateTexture2D(&SceneDeptTexturehDesc, nullptr, &SceneDepthTexture);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC SceneDepthDSVDesc = {
-		.Format = DXGI_FORMAT_D24_UNORM_S8_UINT,
-		.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D,
-	};
-	Result = Device->CreateDepthStencilView(SceneDepthTexture.Get(), &SceneDepthDSVDesc, &SceneDepthDSV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC SceneDepthSRVDesc = {
-		.Format = DXGI_FORMAT_X24_TYPELESS_G8_UINT,
-		.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-		.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
-	};
-	Result = Device->CreateShaderResourceView(SceneDepthTexture.Get(), &SceneDepthSRVDesc, &SceneDepthSRV);
-	if (FAILED(Result))
-	{
-		return false;
-	} // 지금 중복이 위 아래 둘다 있음  이걸 이제 인자로 받아야함
-
-	// Scene Depth Viwe Mode 용 SRV 생성
-	//D3D11_SHADER_RESOURCE_VIEW_DESC SceneDepthSrvDesc = {
-	//	.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS, // 포멧은 TYPELESS이어야함
-	//	.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-	//	.Texture2D = { .MostDetailedMip = 0, .MipLevels = 1 },
-	//};
-	//Result = Device->CreateShaderResourceView(SceneDepthTexture.Get(), &SceneDepthSrvDesc, &SceneDepthSRV);
-	//if (FAILED(Result))
-	//{
-	//	return false;
-	//}
-
-	D3D11_TEXTURE2D_DESC SceneColorTextureDesc{
 bool FRenderer::InitializePointLightBuffers()
 {
 	D3D11_BUFFER_DESC LightDesc{};
@@ -1014,52 +945,6 @@ bool FRenderer::InitializePointLightBuffers()
 	    PointLightCountBuffer.GetAddressOf());
 
 	return SUCCEEDED(Result);
-}
-
-bool FRenderer::InitializeEditorViewportRenderTarget()
-{
-	if (!Device)
-	{
-		return false;
-	}
-
-	const UINT Width = static_cast<UINT>(Viewport.Width);
-	const UINT Height = static_cast<UINT>(Viewport.Height);
-	if (Width == 0 || Height == 0)
-	{
-		return false;
-	}
-
-	D3D11_TEXTURE2D_DESC ColorTexDesc{
-		.Width = Width,
-		.Height = Height,
-		.MipLevels = 1u,
-		.ArraySize = 1u,
-		.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
-		.SampleDesc = { .Count = 1u },
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
-	};
-
-	Result = Device->CreateTexture2D(&SceneColorTextureDesc, nullptr, &SceneColorTexture);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	Result = Device->CreateRenderTargetView(SceneColorTexture.Get(), nullptr, &SceneColorRTV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	Result = Device->CreateShaderResourceView(SceneColorTexture.Get(), nullptr, &SceneColorSRV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	return true;
 }
 
 // 현재 깊이 버퍼 기준으로 각 명령이 실제로 보이는 픽셀 수를 GPU에 묻는다.
@@ -1280,7 +1165,6 @@ bool FRenderer::InitializeConstantBuffers()
 	return true;
 }
 
-void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
 void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLights)
 {
 	const uint32 Count = PointLights.size() > MaxPointLightCount
@@ -1311,7 +1195,7 @@ void FRenderer::BindPointLights()
 	Context->PSSetConstantBuffers(5, 1, &Buffer);
 }
 
-void FRenderer::UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode)
+void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
 {
 	Context->UpdateSubresource(LightConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->PSSetConstantBuffers(4, 1, LightConstantBuffer.GetAddressOf());

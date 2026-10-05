@@ -9,14 +9,17 @@
 IMPLEMENT_UCLASS(AFireBallActor, AActor)
 UCLASS_META(AFireBallActor, DisplayName, "FireBall Actor")
 
-AFireBallActor::AFireBallActor()
+void AFireBallActor::Initialize()
 {
-	UStaticMeshComponent* SphereComponent = NewObject<UStaticMeshComponent>();
+	Super::Initialize();
+	bTickEnabled = true;
+
+	UStaticMeshComponent* SphereComponent = NewObject<UStaticMeshComponent>(this);
 	SetRootComponent(SphereComponent);
 	SphereComponent->SetMesh(FAssetRegistry::GetInstance().Get<UStaticMesh>("#Sphere"));
 	SphereComponent->SetColor(FVector4{ 1.0f, 0.0f, 0.0f, 1.0f });
 
-	FireBallComponent = NewObject<UFireBallComponent>();
+	FireBallComponent = NewObject<UFireBallComponent>(this);
 	AddComponent(FireBallComponent);
 	FireBallComponent->SetFireColor(FVector4{ 1.0f, 0.0f, 0.0f, 1.0f });
 	FireBallComponent->SetEmissiveColor(FVector{ 1.0f, 0.0f, 0.0f });
@@ -25,14 +28,8 @@ AFireBallActor::AFireBallActor()
 	FireBallComponent->SetRadius(10.0f);
 	FireBallComponent->SetRadiusFalloff(2.0f);
 
-	ProjectileMovementComponent = NewObject<UProjectileMovementComponent>();
+	ProjectileMovementComponent = NewObject<UProjectileMovementComponent>(this);
 	AddComponent(ProjectileMovementComponent);
-}
-
-void AFireBallActor::Initialize()
-{
-	Super::Initialize();
-	bTickEnabled = true;
 }
 
 UStaticMeshComponent* AFireBallActor::GetSphereComponent() const

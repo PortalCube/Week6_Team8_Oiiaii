@@ -15,6 +15,7 @@
 #include "Runtime/Core/FRect.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Engine/FViewport.h"
+#include "Runtime/Engine/ShowFlags.h"
 #include "Runtime/Material/FTextureSamplerDesc.h"
 #include "Runtime/Math/FVector2.h"
 #include "Runtime/Rendering/FLineBatcher.h"
@@ -59,9 +60,6 @@ public:
 	void FlushDrawStats();
 	void ClearLastRenderState();
 
-	EViewModeIndex GetRenderMode() const { return CurrentRenderMode; }
-	void SetRenderMode(EViewModeIndex InMode) { CurrentRenderMode = InMode; }
-
 	bool PrepareViewportRenderTarget(FViewport& InViewport);
 	FSceneTextures* AcquireSceneTextures(UINT Width, UINT Height);
 	FSceneTextures* GetSceneTextures() { return ActiveSceneTextures; }
@@ -85,11 +83,10 @@ public:
 	TSharedPtr<FRenderPipeline> CreateRenderPipeline(const FRenderPipelineDesc& Desc);
 	TSharedPtr<FTexture> CreateTexture(const wchar_t* path);
 	TSharedPtr<FTexture> CreateSolidTexture(const FVector4& Color);
-
 	TSharedPtr<FRenderPipeline> GetPipeline(const FName& Id) const;
 
 	// 상수 버퍼 갱신
-	void UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode);
+	void UpdateLightConstants(const FLightConstants& Constants);
 	void UploadPointLights(std::span<const FPointLightConstants> PointLights);
 	void BindPointLights();
 	void UpdateFrameConstants(const FFrameConstants& Constants);
@@ -250,10 +247,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> PointLightCountBuffer;
 
 	bool InitializePointLightBuffers();
-
-
-	// 임시 상수버퍼
-	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantUploadBuffer;
 
 	// Draw, ImGui 모두 다 포함하는 BackBuffer Texture
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> BackBufferTexture;

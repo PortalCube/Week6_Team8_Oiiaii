@@ -8,7 +8,7 @@ struct FViewportRenderTarget
 public:
 	friend class FRenderer;
 
-	//ID3D11Texture2D* GetTexture() const { return Texture.Get(); }
+	ID3D11Texture2D* GetTexture() const { return Texture.Get(); }
 	ID3D11RenderTargetView* GetRTV() const { return RTV.Get(); }
 	ID3D11ShaderResourceView* GetSRV() const { return SRV.Get(); }
 
@@ -22,7 +22,7 @@ public:
 private:
 	FViewportRenderTarget() = default;
 
-	//Microsoft::WRL::ComPtr<ID3D11Texture2D> Texture;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> Texture;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> RTV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> SRV;
 
