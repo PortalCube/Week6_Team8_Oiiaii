@@ -9,7 +9,6 @@
 #include "ShaderConstants.h"
 #include "Vertices.h"
 
-
 #include "Runtime/Core/IntTypes.h"
 #include "Runtime/Core/PointerTypes.h"
 #include "Runtime/Core/TMap.h"
@@ -25,6 +24,7 @@
 #include <d3d11_1.h>
 #include <wrl/client.h>
 #include <span>
+#include <utility>
 
 class FTexture;
 struct FTextureDesc;
@@ -51,70 +51,17 @@ public:
 
 	// 프레임 진행 / 렌더 타깃 / 뷰포트
 	void BeginFrame();
-	void BindRenderTarget(Microsoft::WRL::ComPtr<ID3D11RenderTargetView> RTV, Microsoft::WRL::ComPtr<ID3D11DepthStencilView> DSV);
-	void BindSceneRenderTargets();
-	void BindBackBufferRenderTargets();
+	void BindRenderTarget(ID3D11RenderTargetView* RTV, ID3D11DepthStencilView* DSV);
 	void SetViewportPixel(FVector2 ViewportSizePixel);
 	void ClearDepth();
 	void SwapBuffer();
 	void FlushDrawStats();
 	void ClearLastRenderState();
-	void PrepareViewportRenderTarget(FViewport& InViewport, UINT Width, UINT Height)
-	{
-		if (!InViewport.RenderTarget || InViewport.IsResizeRenderTarget())
-		{
-			auto RenderTarget = TSharedPtr<FViewportRenderTarget>{ new FViewportRenderTarget() };
-			InViewport.RenderTarget = RenderTarget;
 
-			// 뷰포트의 FViewportRenderTarget 생성: Texture, SRV, RTV 생성
-			InViewport.RenderTarget->Initialize(Device.Get(), Width, Height); 
-			InViewport.SetResizeRenderTarget(false);
-		}
-		UpdateSceneTextures(Width, Height);
-	}
-
-	void UpdateSceneTextures(UINT Width, UINT Height)
-	{
-		// Width, Height이 현재보다 크면 더 큰걸 새로 만든다
-		if (Width > SceneTextures.Width || Height > SceneTextures.Height)
-		{
-			const UINT MULTIPLIER = 2u; 
-			SceneTextures.InitializeSceneTextures(Device.Get(), Width * MULTIPLIER, Height * MULTIPLIER);
-			SceneTextures.Width = Width * MULTIPLIER;
-			SceneTextures.Height = Height * MULTIPLIER;
-		}
-	}
-
-	// 백버퍼에 각 뷰포트를 합성한다
-	void CompositeViewport(FViewport InViewport, FRect InRect)
-	{
-		// 백버퍼를 바인딩
-		BindRenderTarget(BackBufferRTV, nullptr);
-
-		// 해당 뷰포트가 어디에 그려질지 설정
-		D3D11_VIEWPORT RenderViewport = Viewport;
-		RenderViewport.TopLeftX = InRect.GetLeftTop().X; // 여기서는 스크린 좌표를 쓴다
-		RenderViewport.TopLeftY = InRect.GetLeftTop().Y;
-		RenderViewport.Width = InRect.GetWidth();
-		RenderViewport.Height = InRect.GetHeight();
-		Context->RSSetViewports(1, &RenderViewport);
-
-		Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		Context->IASetInputLayout(nullptr);
-
-		ID3D11Buffer* NullVB = nullptr;
-		UINT Zero = 0;
-		Context->IASetVertexBuffers(0, 1, &NullVB, &Zero, &Zero);
-
-		Context->PSSetShaderResources(0, 1, InViewport.RenderTarget.get()->GetSRV().GetAddressOf());
-
-		FRenderResourceLibrary::Get().GetPipeline(FName("#Composite"))->Bind(*Context.Get());
-		Context->Draw(3, 0);
-
-		// 슬롯 해제
-		 ID3D11ShaderResourceView* NullSRV[] = { nullptr };
-		Context->PSSetShaderResources(0, 1, NullSRV);
-	}
+	bool PrepareViewportRenderTarget(FViewport& InViewport);
+	FSceneTextures* AcquireSceneTextures(UINT Width, UINT Height);
+	FSceneTextures* GetSceneTextures() { return ActiveSceneTextures; }
+	void CompositeViewport(const FViewport& InViewport);
 
 	// 접근자
 	void GetDeviceAndContext_ImplDX11(ID3D11Device*& DeviceOut, ID3D11DeviceContext*& ContextOut);
@@ -122,7 +69,6 @@ public:
 	ID3D11DeviceContext* GetContext() const { return Context.Get(); }
 
 	ID3D11RenderTargetView* GetBackBufferRTV() { return BackBufferRTV.Get(); }
-	FSceneTextures* GetSceneTextures() { return &SceneTextures; }
 
 	float GetWidth() const { return Viewport.Width; }
 	float GetHeight() const { return Viewport.Height; }
@@ -144,7 +90,6 @@ public:
 	void UpdateViewConstants(const FViewConstants& Constants);
 
 	// Object Constant Buffer를 갱신한다.
-	// 크기가 맞는지는 컴파일 타임에 검사한다.
 	template <typename TConstants>
 	void UpdateBuffer(const TConstants& Constants, uint32 Slot)
 	{
@@ -238,9 +183,10 @@ public:
 	}
 
 	// 스크린 패스 / 후처리
-	void RenderSceneDepth();
-	void RenderSelectionOutline(FVector2 ViewportSizePixel, FViewport Viewport);
-	void DrawScreenPass(ID3D11ShaderResourceView* SRVs[], ID3D11RenderTargetView* BackBuffer);
+	void RenderSceneDepth(const FViewport& TargetViewport);
+	void RenderSelectionOutline(const FViewport& TargetViewport);
+	void CopySceneColorToViewport(const FViewport& TargetViewport);
+	void DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VIEWPORT& TargetD3DViewport, ID3D11ShaderResourceView* const* SRVs, UINT NumSRVs, const FName& PipelineId);
 
 	// 디버그
 	void QueryVisibility(const TArray<const FDrawCommand*>& Commands, TArray<uint64>& OutSamples);
@@ -249,7 +195,6 @@ private:
 	// 초기화
 	bool InitializeDeviceAndSwapChain(HWND Window);
 	bool InitializeBackBuffer();
-	bool InitializeSceneTextures();
 	bool InitializeConstantBuffers();
 	bool InitializeGPUTimerQueries();
 
@@ -267,6 +212,11 @@ private:
 	// 프레임 리소스 링
 	FFrameResource* GetCurrentFrameResource() { return &FrameResources[CurrentFrameResourceIndex]; }
 	FFrameResource* GetNextFrameResource() { return &FrameResources[(CurrentFrameResourceIndex + 1) % NumFrameResourceCount]; }
+
+
+	D3D11_VIEWPORT MakeD3DViewport(float Left, float Top, float Width, float Height) const;
+
+	void EvictUnusedSceneTextures();
 
 private:
 	// 모든 ConstantBuffer의 최대 크기
@@ -291,8 +241,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> BackBufferTexture;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> BackBufferRTV;
 
-	// Screen Pass에서 쓰이는 텍스쳐
-	FSceneTextures SceneTextures;
+	// SceneTextures
+	TMap<std::pair<UINT, UINT>, FSceneTextures, FPairHash> SceneTexturesPool;
+	FSceneTextures* ActiveSceneTextures = nullptr;
+
+	uint64 FrameCounter = 0;
+	static constexpr uint64 SceneTexturesKeepFrames = 2;
 
 	// 파이프라인 상태 캐시
 	TMap<FRasterizerDesc, Microsoft::WRL::ComPtr<ID3D11RasterizerState>> RasterizerStateMap;

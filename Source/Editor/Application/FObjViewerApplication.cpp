@@ -55,13 +55,19 @@ void FObjViewerApplication::Render()
 	ID3D11DeviceContext* Context = nullptr;
 	Renderer->GetDeviceAndContext_ImplDX11(Device, Context);
 	ID3D11RenderTargetView* BackBufferRTV = Renderer->GetBackBufferRTV();
-	ID3D11DepthStencilView* SceneDepthDSV = Renderer->GetSceneTextures()->SceneDepthDSV.Get();
+	// ObjViewer는 백버퍼에 바로 그리므로 백버퍼와 같은 크기의 SceneTextures를 풀에서 받아 DSV만 쓴다.
+	FSceneTextures* SceneTextures = Renderer->AcquireSceneTextures(static_cast<UINT>(Renderer->GetWidth()), static_cast<UINT>(Renderer->GetHeight()));
+	ID3D11DepthStencilView* SceneDepthDSV = SceneTextures ? SceneTextures->SceneDepthDSV.Get() : nullptr;
 
 	if (BackBufferRTV && Context)
 	{
 		Context->OMSetRenderTargets(1, &BackBufferRTV, SceneDepthDSV);
 
 		Context->ClearRenderTargetView(BackBufferRTV, BackgroundColor);
+		if (SceneDepthDSV)
+		{
+			Context->ClearDepthStencilView(SceneDepthDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		}
 	}
 
 	if (CurrentMesh)
@@ -106,7 +112,6 @@ void FObjViewerApplication::Render()
 					Constants.Color = FVector4{ Mtl.Kd, 0.0f };
 					Renderer->DrawSection(*CurrentMesh, *TextureMaterial, Constants, TextureMaterial->GetPipeline(), Section.StartIndex, Section.IndexCount);
 				}
-
 				continue;
 			}
 

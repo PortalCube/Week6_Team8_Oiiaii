@@ -43,7 +43,7 @@ public:
 	void CollectScenePrimitives(const UScene& Scene, const FSceneView& View, const AActor* SelectedActor);
 
 	// 뷰포트 패스 파이프라인
-	void BeginView(const FSceneView& View);
+	bool BeginView(const FSceneView& View);
 	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
 	void DrawGrid(const FCamera& Camera, FGrid& Grid);
 	void FlushBasePass(const FSceneView& View);

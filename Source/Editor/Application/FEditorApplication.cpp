@@ -80,48 +80,8 @@ void FEditorApplication::Render()
 	// 렌더 준비
 	RenderView->PrepareRender();
 
-	{
-		// 컬링 준비 시간 기록?
-		//
-		// 이동한 오브젝트는 월드 AABB 재계산
-		SceneManager->CurrentScene->UpdateDirtyBounds();
-	}
-
-	//// Active인 ViewportClient만 렌더링
-	//for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
-	//{
-	//	if (!Viewport.IsRenderable())
-	//		continue;
-
-	//	// 뷰포트 렌더링 명세 구성
-	//	FSceneView SceneView = Viewport.GetClient().GetSceneView(Editor.GlobalLight);
-
-	//	// 에디터 렌더링 컨텍스트 구성
-	//	FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(Viewport, &VisualizerRegistry);
-
-	//	// 뷰포트 렌더링 일괄 수행
-	//	RenderView->RenderView(SceneView, *SceneManager->CurrentScene, EditorRenderContext);
-	//}
-
-	//// 기즈모 그리기
-	//if (Editor.ObjectSelected())
-	//{
-	//	for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
-	//	{
-	//		if (!Viewport.IsRenderable())
-	//			continue;
-
-	//		FSceneView SceneView = Viewport.GetClient().GetSceneView(Editor.GlobalLight);
-
-	//		RenderView->RenderOverlayPass(SceneView, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
-
-	//		RenderView->RenderGizmo(
-	//		    Editor.SelectedTransform,
-	//		    Viewport.GetClient().GetViewportCamera(),
-	//		    Viewport.GetClient().GetViewport().GetViewportSize(),
-	//		    Editor.GetGizmo());
-	//	}
-	//}
+	// 컬링 준비 시간 기록? 이동한 오브젝트는 월드 AABB 재계산
+	SceneManager->CurrentScene->UpdateDirtyBounds();
 
 	// Active인 Viewport 마다 렌더링
 	for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
@@ -133,7 +93,10 @@ void FEditorApplication::Render()
 		FSceneView View = Viewport.GetClient().GetSceneView(Editor.GlobalLight);
 
 		// 뷰포트의 RT를 준비
-		RenderView->GetRenderer().PrepareViewportRenderTarget(Viewport.GetViewport(), static_cast<UINT>(View.ViewportSizePixel.X), static_cast<UINT>(View.ViewportSizePixel.Y));
+		if (!RenderView->GetRenderer().PrepareViewportRenderTarget(Viewport.GetViewport()))
+		{
+			continue; //생성에 실패하면 이번 프레임은 이 뷰포트를 건너뛴다
+		}
 
 		// 에디터 렌더링 컨텍스트 구성
 		FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(Viewport, &VisualizerRegistry);
@@ -149,7 +112,7 @@ void FEditorApplication::Render()
 		}
 
 		// 백버퍼 바인딩 후 셰이더로 합성
-		RenderView->GetRenderer().CompositeViewport(Viewport.GetViewport(), Viewport.GetViewport().Rect);
+		RenderView->GetRenderer().CompositeViewport(Viewport.GetViewport());
 	}
 
 	// ImGui는 마지막에 그림

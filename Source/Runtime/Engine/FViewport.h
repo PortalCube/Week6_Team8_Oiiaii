@@ -11,8 +11,6 @@ struct FViewport
 	TSharedPtr<FViewportRenderTarget> RenderTarget;
 	bool bResizeRenderTarget = false; // 리사이즈 되었을 때에만 RenderTarget의 Texture를 재생성. 매 프레임 Texture 재성성 막음
 
-	// TSharedPtr<FViewportRenderTarget>의 소멸/대입에는 FViewportRenderTarget의 완전한 정의가 필요하다.
-	// 헤더에는 전방 선언만 두고, 특수 멤버 함수는 FViewportRenderTarget.h를 include하는 FViewport.cpp에서 정의한다.
 	FViewport();
 	~FViewport();
 	FViewport(const FViewport& Other);
