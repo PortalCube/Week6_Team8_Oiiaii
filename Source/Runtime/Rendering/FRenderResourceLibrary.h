@@ -164,6 +164,7 @@ private:
 	bool CreateWireframePipeline(FRenderer& Renderer);
 	bool CreateOutlinePipeline(FRenderer& Renderer);
 	bool CreatePostProcessPipeline(FRenderer& Renderer);
+	bool CreateCompositePipeline(FRenderer& Renderer);
 	bool CreateInstancingArrayMap();
 	FRenderer* RendererRef = nullptr;
 };

@@ -28,8 +28,8 @@
 bool FRenderer::Initialize(HWND Window)
 {
 	if (!InitializeDeviceAndSwapChain(Window) ||
-	    !InitializeBackBufferAndDepthStencil() ||
-	    !InitializeEditorViewportRenderTarget() || !InitializeConstantBuffers() ||
+	    !InitializeBackBuffer() ||
+		!InitializeConstantBuffers() ||
 	    !InitializePointLightBuffers())
 	{
 		Shutdown();
@@ -78,7 +78,8 @@ void FRenderer::Shutdown()
 
 	BackBufferTexture.Reset();
 	BackBufferRTV.Reset();
-	ResetSceneTexture();
+	SceneTexturesPool.clear();
+	ActiveSceneTextures = nullptr;
 
 	for (FGPUTimerQuery& Query : GPUTimerQueries)
 	{
@@ -100,40 +101,156 @@ void FRenderer::BeginFrame()
 	CurrentFrameResourceIndex = (CurrentFrameResourceIndex + 1) % NumFrameResourceCount;
 	BeginGPUTimer();
 
+	ActiveSceneTextures = nullptr;
+	// 안 쓰는 SceneTexture 정리
+	++FrameCounter;
+	EvictUnusedSceneTextures();
+
 	Context->RSSetViewports(1, &Viewport);
-	BindSceneRenderTargets();
 
-	constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	// constexpr float ClearColor[] = {0.05f, 0.05f, 0.08f, 1.0f};
-	Context->ClearRenderTargetView(SceneColorRTV.Get(), ClearColor);
+	// 백버퍼만 바인딩, Clear
+	BindRenderTarget(BackBufferRTV.Get(), nullptr);
 	Context->ClearRenderTargetView(BackBufferRTV.Get(), ClearColor);
-	Context->ClearDepthStencilView(SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
-void FRenderer::BindSceneRenderTargets()
+// RTV와 DSV를 컨텍스트에 바인딩
+void FRenderer::BindRenderTarget(ID3D11RenderTargetView* RTV, ID3D11DepthStencilView* DSV)
 {
-	Context->OMSetRenderTargets(1, SceneColorRTV.GetAddressOf(), SceneDepthDSV.Get());
+	ID3D11RenderTargetView* RTVs[] = { RTV };
+	Context->OMSetRenderTargets(1, RTVs, DSV);
 }
 
-void FRenderer::BindBackBufferRenderTargets()
+// 뷰포트가 그릴 픽셀 영역을 컨텍스트에 바인딩
+void FRenderer::SetViewportPixel(FVector2 ViewportSizePixel)
 {
-	Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), SceneDepthDSV.Get());
-}
-
-void FRenderer::SetViewportPixel(FVector2 LeftTopPixel, FVector2 RightBottomPixel)
-{
-	// 뷰포트가 그릴 픽셀 영역을 컨텍스트에 바인딩
 	D3D11_VIEWPORT RenderViewport = Viewport;
-	RenderViewport.TopLeftX = LeftTopPixel.X;
-	RenderViewport.TopLeftY = LeftTopPixel.Y;
-	RenderViewport.Width = RightBottomPixel.X - LeftTopPixel.X;
-	RenderViewport.Height = RightBottomPixel.Y - LeftTopPixel.Y;
+	RenderViewport.TopLeftX = 0.f;
+	RenderViewport.TopLeftY = 0.f;
+	RenderViewport.Width = ViewportSizePixel.X;
+	RenderViewport.Height = ViewportSizePixel.Y;
 	Context->RSSetViewports(1, &RenderViewport);
 };
 
+// 현재 뷰포트의 SceneTextures 깊이/스텐실을 비운다
 void FRenderer::ClearDepth()
 {
-	Context->ClearDepthStencilView(SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	if (!ActiveSceneTextures)
+	{
+		return;
+	}
+	Context->ClearDepthStencilView(ActiveSceneTextures->SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+}
+
+// 크기에 맞는 뷰포트를 만들어 반환한다
+D3D11_VIEWPORT FRenderer::MakeD3DViewport(float Left, float Top, float Width, float Height) const
+{
+	D3D11_VIEWPORT Result = Viewport; // MinDepth / MaxDepth 유지
+	Result.TopLeftX = Left;
+	Result.TopLeftY = Top;
+	Result.Width = Width;
+	Result.Height = Height;
+	return Result;
+}
+
+// 뷰포트의 출력 렌더 타깃을 준비
+bool FRenderer::PrepareViewportRenderTarget(FViewport& InViewport)
+{
+	if (!Device)
+	{
+		return false;
+	}
+
+	// 크기는 뷰포트 Rect에서 읽는다
+	const FVector2 Size = InViewport.GetViewportSize();
+	if (Size.X <= 0.0f || Size.Y <= 0.0f)
+	{
+		return false;
+	}
+	const UINT Width = static_cast<UINT>(Size.X);
+	const UINT Height = static_cast<UINT>(Size.Y);
+
+	const FViewportRenderTarget* Current = InViewport.RenderTarget.get();
+	
+	// 없거나, 리사이즈 플래그가 켜졌거나, 크기가 다르면 새로 만든다.
+	const bool bNeedCreate = !Current || InViewport.IsResizeRenderTarget() || Current->GetWidth() != Width || Current->GetHeight() != Height;
+
+	if (bNeedCreate)
+	{
+		// 뷰포트의 FViewportRenderTarget 생성: Texture, SRV, RTV 생성
+		TSharedPtr<FViewportRenderTarget> NewRenderTarget{ new FViewportRenderTarget() };
+		if (!NewRenderTarget || !NewRenderTarget->Initialize(Device.Get(), Width, Height))
+		{
+			// 실패: 이번 프레임은 이 뷰포트를 건너뛰고, 플래그를 유지해서 다음 프레임에 다시 시도한다
+			InViewport.SetResizeRenderTarget(true);
+			return false;
+		}
+
+		InViewport.RenderTarget = std::move(NewRenderTarget);
+		InViewport.SetResizeRenderTarget(false);
+	}
+
+	return true;
+}
+
+// Width, Height 크기의 SceneTextures를 찾거나 만들어서 ActiveSceneTextures로 설정
+FSceneTextures* FRenderer::AcquireSceneTextures(UINT Width, UINT Height)
+{
+	ActiveSceneTextures = nullptr;
+
+	if (!Device || Width == 0 || Height == 0)
+	{
+		return nullptr;
+	}
+
+	const std::pair<UINT, UINT> Key{ Width, Height };
+	auto It = SceneTexturesPool.find(Key);
+	if (It == SceneTexturesPool.end())
+	{
+		// 이 크기는 처음 -> 정확히 이 크기로 만든다
+		FSceneTextures NewTextures;
+		if (!NewTextures.InitializeSceneTextures(Device.Get(), Width, Height))
+		{
+			return nullptr;
+		}
+		It = SceneTexturesPool.emplace(Key, std::move(NewTextures)).first;
+	}
+
+	It->second.LastUsedFrame = FrameCounter;
+	ActiveSceneTextures = &It->second;
+	return ActiveSceneTextures;
+}
+
+void FRenderer::EvictUnusedSceneTextures()
+{
+	// 스플리터를 드래그하면 매 프레임 새로운 크기가 생기므로, 최근에 안 쓰인 크기는 지움
+	for (auto It = SceneTexturesPool.begin(); It != SceneTexturesPool.end();)
+	{
+		if (FrameCounter - It->second.LastUsedFrame > SceneTexturesKeepFrames)
+		{
+			It = SceneTexturesPool.erase(It);
+		}
+		else
+		{
+			++It;
+		}
+	}
+}
+
+//백버퍼의 InViewport.Rect 위치에 뷰포트 출력 렌더 타깃을 합성
+void FRenderer::CompositeViewport(const FViewport& InViewport)
+{
+	const FViewportRenderTarget* RenderTarget = InViewport.RenderTarget.get();
+	if (!RenderTarget || !RenderTarget->GetSRV())
+	{
+		return;
+	}
+
+	// 백버퍼 안에서 이 뷰포트가 그려질 위치 (메인 창 클라이언트 영역 기준 픽셀 좌표)
+	const FRect& Rect = InViewport.Rect;
+	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(Rect.Left, Rect.Top, Rect.GetWidth(), Rect.GetHeight());
+
+	ID3D11ShaderResourceView* SRVs[] = { RenderTarget->GetSRV() };
+	DrawScreenPass(BackBufferRTV.Get(), TargetD3DViewport, SRVs, 1, FName("#Composite"));
 }
 
 void FRenderer::FlushDrawStats()
@@ -161,14 +278,16 @@ void FRenderer::OnWindowSize(UINT Width, UINT Height)
 	Context->OMSetRenderTargets(0, nullptr, nullptr);
 	BackBufferTexture.Reset();
 	BackBufferRTV.Reset();
-	ResetSceneTexture();
+	// 창 크기가 바뀌면 기존 크기의 SceneTextures는 더 이상 쓰이지 않으므로 풀을 비운다.
+	ActiveSceneTextures = nullptr;
+	SceneTexturesPool.clear();
+
 
 	SwapChain->ResizeBuffers(0, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
 	Viewport.Width = static_cast<float>(Width);
 	Viewport.Height = static_cast<float>(Height);
 
 	InitializeBackBuffer();
-	InitializeSceneTextures();
 }
 
 TSharedPtr<FMesh> FRenderer::CreateMesh(const FMeshDesc& Desc)
@@ -253,6 +372,7 @@ TSharedPtr<FMesh> FRenderer::CreateMesh(const FMeshDesc& Desc)
 	return Mesh;
 }
 
+// 텍스트 렌더링용
 TSharedPtr<FMesh> FRenderer::CreateDynamicMesh(const FMeshDesc& Desc)
 {
 	if (!Desc.VertexData || Desc.VertexCount == 0 || Desc.VertexDataSize == 0 || Desc.VertexStride == 0)
@@ -942,6 +1062,8 @@ bool FRenderer::InitializeEditorViewportRenderTarget()
 	return true;
 }
 
+// 현재 깊이 버퍼 기준으로 각 명령이 실제로 보이는 픽셀 수를 GPU에 묻는다.
+// GPU가 끝날 때까지 기다리므로 느리다. 디버깅에서 쓰는 한 프레임 측정 전용
 void FRenderer::QueryVisibility(const TArray<const FDrawCommand*>& Commands, TArray<uint64>& OutSamples)
 {
 	OutSamples.assign(Commands.size(), 0);
@@ -1156,16 +1278,6 @@ bool FRenderer::InitializeConstantBuffers()
 	}
 
 	return true;
-}
-
-void FRenderer::ResetSceneTexture()
-{
-	SceneColorTexture.Reset();
-	SceneColorRTV.Reset();
-	SceneColorSRV.Reset();
-	SceneDepthTexture.Reset();
-	SceneDepthDSV.Reset();
-	SceneDepthSRV.Reset();
 }
 
 void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
@@ -1581,64 +1693,103 @@ void FRenderer::ClearTextInstances()
 	FRenderResourceLibrary::Get().DestroyAllInstancingArray();
 }
 
-void FRenderer::DrawScreenPass(ID3D11ShaderResourceView* SRVs[], ID3D11RenderTargetView* BackBuffer)
+// 풀스크린 패스 공통 처리 (Draw(3,0))
+// 후처리 규칙: 후처리 체인의 마지막 패스는 반드시 뷰포트 출력 RT 전체를 쓴다.
+void FRenderer::DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VIEWPORT& TargetD3DViewport,
+    ID3D11ShaderResourceView* const* SRVs, UINT NumSRVs, const FName& PipelineId)
 {
-	//// 백버퍼 뷰포트 및 토폴로지 복구
-	//Context->RSSetViewports(1, &Viewport);
+	if (!TargetRTV)
+	{
+		return;
+	}
 
-	//Context->IASetInputLayout(nullptr);
+	TSharedPtr<FRenderPipeline> Pipeline = FRenderResourceLibrary::Get().GetPipeline(PipelineId);
+	if (!Pipeline)
+	{
+		return;
+	}
 
+	// SRV 최댓값 = 8
+	constexpr UINT MaxScreenPassSRVs = 8u;
+	NumSRVs = std::min(NumSRVs, MaxScreenPassSRVs);
 
-	//Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// 출력 대상 바인딩. 풀스크린 패스는 깊이를 쓰지 않으므로 DSV는 비운다 (같은 깊이 텍스처를 SRV로 읽을 수 있도록)
+	BindRenderTarget(TargetRTV, nullptr);
+	Context->RSSetViewports(1, &TargetD3DViewport);
 
-	//ID3D11Buffer* NullVB = nullptr;
-	//UINT Zero = 0;
-	//Context->IASetVertexBuffers(0, 1, &NullVB, &Zero, &Zero);
-
-	//Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), nullptr);
-	//// 씬 텍스처와 스텐실 텍스처 바인딩
-	//ID3D11ShaderResourceView* SRVs[] = { SceneColorSRV.Get(), SceneDepthSRV.Get() };
-	//Context->PSSetShaderResources(0, 2, SRVs);
-
-	//FRenderResourceLibrary::Get().GetPipeline(FName("#PostProcess"))->Bind(*Context.Get());
-	//Context->Draw(3, 0);
-	//INC_DWORD_STAT("Draws");
-	//INC_DWORD_STAT_BY("Prims", 1);
-
-	//// 슬롯 해제
-	//ID3D11ShaderResourceView* NullSRVs[] = { nullptr, nullptr };
-	//Context->PSSetShaderResources(0, 2, NullSRVs);
-}
-
-void FRenderer::RenderSelectionOutline(FVector2 LeftTopPixel, FVector2 RightBottomPixel)
-{
-	SetViewportPixel(LeftTopPixel, RightBottomPixel);
+	// ScreenQuadVS로 Full screen quad를 만든다
 	Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Context->IASetInputLayout(nullptr);
-
 	ID3D11Buffer* NullVB = nullptr;
 	UINT Zero = 0;
 	Context->IASetVertexBuffers(0, 1, &NullVB, &Zero, &Zero);
 
-	Context->OMSetRenderTargets(1, BackBufferRTV.GetAddressOf(), nullptr);
-	// 씬 텍스처와 스텐실 텍스처 바인딩
-	ID3D11ShaderResourceView* SRVs[] = { SceneColorSRV.Get(), SceneDepthSRV.Get() };
-	Context->PSSetShaderResources(0, 2, SRVs);
+	if (NumSRVs > 0 && SRVs)
+	{
+		Context->PSSetShaderResources(0, NumSRVs, SRVs);
+	}
 
-	FRenderResourceLibrary::Get().GetPipeline(FName("#PostProcess"))->Bind(*Context.Get());
+	Pipeline->Bind(*Context.Get());
 	Context->Draw(3, 0);
 	INC_DWORD_STAT("Draws");
 	INC_DWORD_STAT_BY("Prims", 1);
 
-	// 슬롯 해제
-	ID3D11ShaderResourceView* NullSRVs[] = { nullptr, nullptr };
-	Context->PSSetShaderResources(0, 2, NullSRVs);
+	// 슬롯 해제: 다음 패스에서 이 텍스처를 RTV로 바인딩할 수 있도록
+	if (NumSRVs > 0)
+	{
+		ID3D11ShaderResourceView* NullSRVs[MaxScreenPassSRVs] = {};
+		Context->PSSetShaderResources(0, NumSRVs, NullSRVs);
+	}
+
+	// 캐시 무효화
+	ClearLastRenderState();
+}
+
+// SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 쓴다
+void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
+{
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures)
+	{
+		return;
+	}
+
+	// 출력 RT와 SceneTextures는 같은 크기이고 둘 다 (0,0)부터 시작한다.
+	// 그래서 OutlinePostProcessPS가 SV_Position으로 Load해도 좌표가 그대로 맞는다.
+	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
+
+	// t0: SceneColor, t1: Stencil
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneColorSRV.Get(), ActiveSceneTextures->SceneStencilSRV.Get() };
+	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#PostProcess"));
+}
+
+// SceneColor를 그대로 출력 RT에 복사
+void FRenderer::CopySceneColorToViewport(const FViewport& TargetViewport)
+{
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures)
+	{
+		return;
+	}
+
+	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
+
+	// 합성용 파이프라인(CompositePS: t0을 UV로 샘플링)을 그대로 복사에 재사용한다
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneColorSRV.Get() };
+	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#Composite"));
 }
 
 // Scene Depth를 Full Screen Quad에 그린다
-void FRenderer::RenderSceneDepth()
+void FRenderer::RenderSceneDepth(const FViewport& TargetViewport)
 {
-	//Context->RS
+	// TODO: SceneDepth ViewMode 구현
+	//  - ActiveSceneTextures->SceneDepthSRV (R24_UNORM_X8_TYPELESS)를 읽어서 깊이를 회색조로 출력하는 PS 작성
+	//  - DrawScreenPass(출력 RTV, (0,0,W,H), { SceneDepthSRV }, 1, FName("#SceneDepth"))
+	// 구현 전까지는 출력 RT가 이전 프레임/초기화 안 된 값으로 남지 않도록 SceneColor를 복사한다
+
+	
+	// Scene Depth ViewMode. 아직 미구현이라 SceneColor를 그대로 복사해 출력 RT가 비지 않게 한다
+	CopySceneColorToViewport(TargetViewport);
 }
 
 bool FRenderer::InitializeGPUTimerQueries()
@@ -1696,6 +1847,8 @@ void FRenderer::EndGPUTimer()
 	GPUTimerFrameIndex = (GPUTimerFrameIndex + 1u) % GPUTimerFrameCount;
 }
 
+// GPU 타임스탬프. 결과를 같은 프레임에 바로 읽으면 CPU가 GPU를 기다리게 되므로
+// 쿼리 세트를 돌려 쓰고 가장 오래된 것만 회수한다.
 void FRenderer::ResolveGPUTimer()
 {
 	for (uint32 Offset = 0u; Offset < GPUTimerFrameCount; ++Offset)

@@ -1,5 +1,6 @@
 #pragma once
 #include "Runtime/Math/FVector2.h"
+#include "Runtime/Core/FRect.h"
 
 // SSplitterH : 자식을 수평 나열 (좌|우). 분할선은 세로. 마우스 X로 드래그.
 // SSplitterV : 자식을 수직 나열 (상/하). 분할선은 가로. 마우스 Y로 드래그.
@@ -12,14 +13,6 @@
 //   │ (Left)		 ┃(Right)		 │            ├━━━━━━━━━━━━━━━┤
 //   │				 ┃				 │            │    SideRB
 //   └───────┃───────┘             └───────────────┘
-struct FRect
-{
-	float Left, Top, Right, Bottom;
-	float GetWidth() const { return Right - Left; }
-	float GetHeight() const { return Bottom - Top; }
-	FVector2 GetLeftTop() const { return FVector2{ Left, Top }; }
-	FVector2 GetRightBottom() const { return FVector2{ Right, Bottom }; }
-};
 class SWindow
 {
 public:

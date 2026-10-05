@@ -236,7 +236,12 @@ void FRenderView::PrepareRender()
 void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const FEditorRenderContext& EditorCtx)
 {
 	// 뷰포트 시작
-	BeginView(View);
+
+	// 이 뷰 크기의 SceneTextures를 확보하지 못했으면 그리지 않는다
+	if (!BeginView(View))
+	{
+		return;
+	}
 
 	// 컬링 측정
 	{
@@ -301,23 +306,38 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	Renderer.ClearLastRenderState();
 }
 
-void FRenderView::BeginView(const FSceneView& View)
+// 뷰포트 렌더 시작시 실행하는 것들
+bool FRenderView::BeginView(const FSceneView& View)
 {
-	// 에디터 뷰포트 렌더타겟 바인딩
-	Renderer.BindSceneRenderTargets();
-	Renderer.SetViewportPixel(View.LeftTopPixel, View.RightBottomPixel);
+	// 이 뷰포트와 같은 크기의 SceneTextures를 요청
+	FSceneTextures* SceneTextures = Renderer.AcquireSceneTextures(static_cast<UINT>(View.ViewportSizePixel.X), static_cast<UINT>(View.ViewportSizePixel.Y));
+
+	// 실패 시 이 뷰포트는 그리지 않음
+	if (!SceneTextures)
+	{
+		return false;
+	}
+
+	// SceneColor + SceneDepth 바인딩
+	Renderer.BindRenderTarget(SceneTextures->SceneColorRTV.Get(), SceneTextures->SceneDepthDSV.Get());
+	Renderer.SetViewportPixel(View.ViewportSizePixel);
 	Renderer.UpdateLightConstants(View.LightConstants);
 
+	// SceneTextures(공용 도화지)를 그리기 전에 Clear
+	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->SceneColorRTV.Get(), ClearColor);
+	Renderer.GetContext()->ClearDepthStencilView(SceneTextures->SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
 	// ViewConstants 갱신
-	UpdateViewConstants(View.Camera, View.LeftTopPixel, View.RightBottomPixel);
+	UpdateViewConstants(View.Camera, View.ViewportSizePixel);
+	return true;
 }
 
-void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 LeftTopPixel, FVector2 RightBottomPixel)
+void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel)
 {
 	FViewConstants ViewConstants{
 		.View = Camera.GetViewMatrix(),
 		.Projection = Camera.GetProjectionMatrix(),
-		.ViewportSize = RightBottomPixel - LeftTopPixel,
+		.ViewportSize = ViewportSizePixel,
 	};
 
 	Renderer.UpdateViewConstants(ViewConstants);
@@ -348,14 +368,20 @@ void FRenderView::FlushLinePass(const FCamera& Camera)
 // Overlay 되는 것 그리는 Pass (지금은 기즈모, 텍스트)
 void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp)
 {
-	// 뷰포트 영역 재설정
-	Renderer.BindBackBufferRenderTargets();
-	Renderer.SetViewportPixel(View.LeftTopPixel, View.RightBottomPixel);
-	UpdateViewConstants(View.Camera, View.LeftTopPixel, View.RightBottomPixel);
+	// 출력 RT(뷰포트 크기) + SceneDepthDSV(같은 크기)를 함께 바인딩. 
+	const FViewportRenderTarget* RenderTarget = View.Viewport.RenderTarget.get();
+	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
 
-	//// 기즈모 렌더링
-	// Renderer.ClearDepth();
-	// Gizmo.Draw(Renderer, SelectedTransform, Camera);
+	// 둘 중 하나라도 없으면 그리지 않는다
+	if (!RenderTarget || !SceneTextures) 
+	{
+		return;
+	}
+	Renderer.BindRenderTarget(RenderTarget->GetRTV(), SceneTextures->SceneDepthDSV.Get());
+
+	// 뷰포트 크기 재설정
+	Renderer.SetViewportPixel(View.ViewportSizePixel);
+	UpdateViewConstants(View.Camera, View.ViewportSizePixel);
 
 	// 텍스트 오버레이 렌더링
 	if (TextComp && (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
@@ -371,13 +397,20 @@ void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& Se
 	}
 }
 
-void FRenderView::RenderGizmo(const FTransform& Transform, const FCamera& Camera, FVector2 LeftTopPixel, FVector2 RightBottomPixel, const FGizmo& Gizmo)
+void FRenderView::RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo)
 {
-	Renderer.BindBackBufferRenderTargets();
-	Renderer.SetViewportPixel(LeftTopPixel, RightBottomPixel);
-	UpdateViewConstants(Camera, LeftTopPixel, RightBottomPixel);
+	const FViewportRenderTarget* RenderTarget = View.Viewport.RenderTarget.get();
+	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
+	if (!RenderTarget || !SceneTextures)
+	{
+		return;
+	}
+	Renderer.BindRenderTarget(RenderTarget->GetRTV(), SceneTextures->SceneDepthDSV.Get());
+
+	Renderer.SetViewportPixel(View.ViewportSizePixel);
+	UpdateViewConstants(View.Camera, View.ViewportSizePixel);
 	Renderer.ClearDepth();
-	Gizmo.Draw(Renderer, Transform, Camera);
+	Gizmo.Draw(Renderer, Transform, View.Camera);
 }
 
 void FRenderView::RenderLine(const FVector& Start, const FVector& End,
@@ -443,18 +476,19 @@ void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedA
 }
 
 // Post Process Pass에서 렌더할 것들
+// 어느 분기든 마지막 패스는 반드시 뷰포트 출력 RT 전체를 써야한다
 void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor)
 {
 	// Scene Depth 모드
-	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth) 
+	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
 	{
-		Renderer.RenderSceneDepth();
+		Renderer.RenderSceneDepth(View.Viewport);
 	}
 	else
 	{
-		// 아웃라인을 Post Process에서 그림
+		// 아웃라인을 Post Process에서 그림 (SceneColor + 외곽선 → 출력 RT)
 		DrawStencilMask(View.Camera, SelectedActor);
-		Renderer.RenderSelectionOutline(View.LeftTopPixel, View.RightBottomPixel);
+		Renderer.RenderSelectionOutline(View.Viewport);
 	}
 }
 

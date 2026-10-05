@@ -1,5 +1,6 @@
 #pragma once
 #include "Runtime/UI/SWindow.h"
+#include "Runtime/Core/FRect.h"
 
 /*
 SSplitterH(좌 | 우)					  ┌──────────┬
