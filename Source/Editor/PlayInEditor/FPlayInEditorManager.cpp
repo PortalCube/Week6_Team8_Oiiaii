@@ -42,7 +42,7 @@ void PIEManager::ProcessRequests()
 		bPendingEnd = false;
 		PendingStart.reset();
 
-		engine.StopPIESession();
+		Globals::Editor->StopPIESession();
 
 		State = EPIESessionState::Stopped;
 		return;
@@ -57,7 +57,7 @@ void PIEManager::ProcessRequests()
 	const FRequestPlaySessionParams Params = *PendingStart;
 	PendingStart.reset();
 
-	 const bool bStarted = engine.StartPIESession(Params);
+	 const bool bStarted = Globals::Editor->StartPIESession(Params);
 
 	 State = bStarted ? EPIESessionState::Running : EPIESessionState::Stopped;
 
@@ -65,6 +65,18 @@ void PIEManager::ProcessRequests()
 
 void PIEManager::PasuePIE()
 {
+	if (State == EPIESessionState::Running)
+	{
+		State = EPIESessionState::Paused;
+	}
+}
+
+void PIEManager::ResumePIE()
+{
+	if (State == EPIESessionState::Paused)
+	{
+		State = EPIESessionState::Running;
+	}
 }
 
 void PIEManager::RequestEndPIE()

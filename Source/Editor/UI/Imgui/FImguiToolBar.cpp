@@ -158,8 +158,9 @@ void FImguiToolbar::ShowViewBar(FEditor& Editor)
 
 void FImguiToolbar::ShowPIEBar(FEditor& Editor)
 {
-	// 임시 변수. 나중에 제거할 예정
-	bool bIsPIERunning = false;
+	const EPIESessionState ButtonState = Editor.GetPIEState();
+	const bool bTransitioning = ButtonState == EPIESessionState::Starting || ButtonState == EPIESessionState::Stopping;
+
 	if (!Editor.GetViewportLayout().Root)
 		return;
 
@@ -177,21 +178,34 @@ void FImguiToolbar::ShowPIEBar(FEditor& Editor)
 	ImGui::SetCursorScreenPos(Cursor);
 
 	// 재생 / 일시정지
+	ImGui::BeginDisabled(bTransitioning);
 	if (ImGui::Button("##PIE", ButtonSize))
 	{
-		if (bIsPIERunning)
+		switch (ButtonState)
 		{
-			// 실제 PIE 일시정지 요청 함수 호출
-			// Editor
-			// Editor.RequestPIE();
-			bIsPIERunning = false;
+		case EPIESessionState::Stopped:
+		{
+			FRequestPlaySessionParams Params{};
+			Editor.RequestStartPIE(Params);
+			break;
 		}
-		else
-		{
-			// Editor.RequestPIE();
-			bIsPIERunning = true;
+
+		case EPIESessionState::Running:
+			Editor.PausePIE();
+			break;
+
+		case EPIESessionState::Paused:
+			Editor.ResumePIE();
+			break;
+
+		default:
+			break;
 		}
 	}
+
+	ImGui::EndDisabled();
+
+	const bool bIsPIERunning = Editor.GetPIEState() == EPIESessionState::Running;
 
 	const ImVec2 Min = ImGui::GetItemRectMin();
 	const ImVec2 Max = ImGui::GetItemRectMax();
@@ -228,10 +242,20 @@ void FImguiToolbar::ShowPIEBar(FEditor& Editor)
 
 	ImGui::SameLine(0.0f, ButtonSpacing);
 
+	const EPIESessionState StopState = Editor.GetPIEState();
+	const bool bCanStop =
+		StopState == EPIESessionState::Starting ||
+	    StopState == EPIESessionState::Running ||
+	    StopState == EPIESessionState::Paused;
+
+	ImGui::BeginDisabled(!bCanStop);
+
 	if (ImGui::Button("##StopPIE", ButtonSize))
 	{
-		// 실제 PIE 중지 요청 함수 호출
+		Editor.RequestEndPIE();
 	}
+
+	ImGui::EndDisabled();
 
 	const ImVec2 StopMin = ImGui::GetItemRectMin();
 	const ImVec2 StopMax = ImGui::GetItemRectMax();
@@ -240,8 +264,8 @@ void FImguiToolbar::ShowPIEBar(FEditor& Editor)
 	const float HalfSize = (StopMax.y - StopMin.y) * 0.3f;
 
 	// 중지 아이콘 ■
-
-	const ImU32 StopColor = bIsPIERunning ? IM_COL32(220, 70, 70, 255) : IM_COL32(180, 180, 180, 255); // 실행 중: 빨간색 / 기본: 회색 
+	const bool bHasSession = Editor.GetPIEState() != EPIESessionState::Stopped;
+	const ImU32 StopColor = bHasSession ? IM_COL32(220, 70, 70, 255) : IM_COL32(180, 180, 180, 255); // 실행 중: 빨간색 / 기본: 회색 
 
 	DrawList->AddRectFilled(
 	    ImVec2{ StopX - HalfSize, StopY - HalfSize },

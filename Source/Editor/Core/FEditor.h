@@ -15,11 +15,13 @@
 #include "Runtime/Engine/UWorld.h"
 #include "Runtime/Engine/ULevel.h"
 
+#include <memory>
+
 #include "Runtime/UI/SSplitter.h"
 #include "Editor/EditorViewport/SEditorViewport.h"
 #include "Editor/EditorViewport/FEditorViewportLayout.h"
+#include "Editor/PlayInEditor/FPlayInEditorManager.h"
 
-#include <memory>
 
 enum class EEditorPrimitiveType : uint8
 {
@@ -108,6 +110,14 @@ public:
 	bool RequestStartPIE(const FRequestPlaySessionParams& Params);
 	void RequestEndPIE();
 	void ProcessPIERequests();
+	EPIESessionState GetPIEState() const
+	{
+		return PlayManager ? PlayManager->GetState() : EPIESessionState::Stopped;
+	}
+
+	void PausePIE() {if(PlayManager) {PlayManager->PasuePIE();}}
+
+	void ResumePIE(){if(PlayManager) {PlayManager->ResumePIE();}}
 
 private:
 	UEditorEngine* EditorEngine = nullptr;

@@ -29,13 +29,16 @@ void FEditor::Initialize(UEditorEngine* EditorEngine)
 
 	UWorld* World = EditorEngine->GetEditorWorld();
 
-	PlayManager = std::make_unique<PIEManager>(*EditorEngine);
+	PlayManager = std::make_unique<PIEManager>();
 
 	this->EditorEngine = EditorEngine;
 }
 
 void FEditor::Shutdown()
 {
+	RequestEndPIE();
+	ProcessPIERequests();
+
 	SaveState();
 	State.FlushToFile();
 }
@@ -95,9 +98,15 @@ void FEditor::OnWorldLoaded(FWorldContext& Context)
 	}
 	else if (Context.WorldType == EWorldType::PIE)
 	{
-		ViewportLayout.ActiveViewport->GetClient().SetWorldContext(EditorEngine->GetPIEWorldContext());
+		SEditorViewport* TargetViewport = ViewportLayout.ActiveViewport;
+
+		if (!TargetViewport)
+		{
+			return;
+		}
+
+		TargetViewport->AttachGameClient(&Context, TargetViewport->GetClient().GetViewportCamera());
 	}
-	
 }
 
 void FEditor::SaveState()

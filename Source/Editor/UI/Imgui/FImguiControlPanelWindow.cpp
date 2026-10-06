@@ -34,10 +34,12 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 
 	ImGui::Separator();
 
-	if (ImGui::Button("테스트"))
-	{
-		Globals::Editor->StartPIESession();
-	}
+	//if (ImGui::Button("테스트"))
+	//{
+	//	FRequestPlaySessionParams Params{};
+
+	//	Globals::Editor->StartPIESession(Params);
+	//}
 
 	// 액터 스폰
 	ActorSpawnSetting(Editor);
@@ -450,7 +452,7 @@ void FImguiControlPanelWindow::CameraSetting(FEditor& Editor)
 {
 	if (SEditorViewport* Viewport = Editor.GetActiveViewport())
 	{
-		FCamera& Camera = Viewport->GetClient().GetViewportCamera();
+		FCamera& Camera = Viewport->GetActiveCamera();
 
 		bool bOrthographic =
 		    (Camera.GetProjection().GetProjectionType() == EProjectionType::Orthographic);

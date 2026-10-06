@@ -16,14 +16,9 @@ class UEditorEngine;
 // 씬 종료는 Scene Manager에서 종료한다.
 
 
-class PIEManager final
+class PIEManager
 {
 public:
-	PIEManager(UEditorEngine& inEngine) : engine(inEngine)
-	{
-
-	}
-
 	bool RequestStartPIE(const FRequestPlaySessionParams& inParams);
 	void ProcessRequests();
 
@@ -67,8 +62,6 @@ private:
 	void SetViewport();
 
 	bool IsPlaySessionInProgress();
-
-	UEditorEngine& engine;
 
 	EWorldType currentWorldType = EWorldType::Editor;
 	EPIESessionState State = EPIESessionState::Stopped;

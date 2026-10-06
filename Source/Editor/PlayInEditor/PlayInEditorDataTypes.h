@@ -1,7 +1,8 @@
 #pragma once
 #include "Runtime/Engine/Types/IntTypes.h"
+#include "Runtime/Engine/Types/EngineTypes.h"
 #include "Runtime/Engine/FCamera.h"
-#include "Editor/Core/FEditor.h"
+#include "Runtime/Math/FQuaternion.h"
 #include <optional>
 
 
