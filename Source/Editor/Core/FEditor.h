@@ -46,7 +46,7 @@ public:
 	bool bHideUI = false;
 	// F11. bHideUI가 숨기는 창에 더해 툴바까지 숨긴다.
 	bool bZenMode = false;
-	bool bShowBenchmark = true;
+	bool bShowBenchmark = false;
 	double LastPickingMs = 0.0;
 	double AccumulatedPickingMs = 0.0;
 	int32 PickingAttempts = 0;
