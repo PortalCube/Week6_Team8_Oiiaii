@@ -243,15 +243,11 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	}
 
 	// 컬링 측정
-	{
-		CullScene(View, Scene);
-	}
+	CullScene(View, Scene);
 
 	// 씬 컴포넌트 수집 (LOD 선택 포함). 독립 카운터라 부모인 Draw 수치에는 영향이 없다.
-	{
-		SCOPE_CYCLE_COUNTER_IMPL(__COUNTER__, "Collect", true);
-		CollectScenePrimitives(Scene, View, EditorCtx.SelectedActor);
-	}
+	SCOPE_CYCLE_COUNTER_IMPL(__COUNTER__, "Collect", true);
+	CollectScenePrimitives(Scene, View, EditorCtx.SelectedActor);
 
 	if (Globals::bEnableRenderSort)
 	{
@@ -272,34 +268,20 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 		RunOcclusionOracle();
 		bOracleRequested = false;
 	}
-
 	Renderer.ClearLastRenderState();
 
-	// 에디터 라인 패스
-	if (EditorCtx.Grid && (View.ShowFlags & static_cast<uint32>(EEngineShowFlags::SF_Grid)) != 0)
-	{
-		DrawGrid(View.Camera, *EditorCtx.Grid);
-	}
+	// 그리드 패스
+	DrawGrid(View, EditorCtx.Grid);
 
-	if (EditorCtx.SelectedPrimitive && EditorCtx.VisualizerRegistry)
-	{
+	// 비주얼라이져 패스
+	DrawVisualizer(View, EditorCtx);
 
-		UClass* ClassType = EditorCtx.SelectedPrimitive->GetClass();
-		FVisualizerRegistry& Registry = *EditorCtx.VisualizerRegistry;
-
-		IVisualizer* Visualizer = Registry.FindVisualizer(ClassType);
-
-		if (Visualizer)
-		{
-			Visualizer->Draw(*EditorCtx.SelectedPrimitive, *this, View.Camera, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f });
-		}
-	}
+	// Line Batch 패스
+	FlushLinePass(View.Camera);
+	Renderer.ClearLastRenderState();
 
 	// Post Process 패스
 	RenderPostProcessPass(View, EditorCtx.SelectedActor);
-	Renderer.ClearLastRenderState();
-
-	FlushLinePass(View.Camera);
 	Renderer.ClearLastRenderState();
 }
 
@@ -351,13 +333,33 @@ void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSi
 	Renderer.UpdateViewConstants(ViewConstants);
 }
 
-void FRenderView::DrawGrid(const FCamera& Camera, FGrid& Grid)
+// 선택된 오브젝트의 AABB 박스를 렌더한다
+void FRenderView::DrawVisualizer(const FSceneView& View, const FEditorRenderContext& EditorCtx)
 {
-	Grid.DrawLine(Renderer, Camera);
+	if (EditorCtx.SelectedPrimitive && EditorCtx.VisualizerRegistry)
+	{
+		UClass* ClassType = EditorCtx.SelectedPrimitive->GetClass();
+		FVisualizerRegistry& Registry = *EditorCtx.VisualizerRegistry;
+		IVisualizer* Visualizer = Registry.FindVisualizer(ClassType);
+		if (Visualizer)
+		{
+			Visualizer->Draw(*EditorCtx.SelectedPrimitive, *this, View.Camera, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f });
+		}
+	}
+}
+
+void FRenderView::DrawGrid(const FSceneView& View, FGrid* Grid)
+{
+	if (!Grid || ((View.ShowFlags & static_cast<uint32>(EEngineShowFlags::SF_Grid)) == 0))
+	{
+		return;
+	}
+
+	Grid->DrawLine(Renderer, View.Camera);
 
 	FGridLineConstants Constants{};
-	Constants.MVP = Camera.GetViewProjectionMatrix();
-	Constants.CameraPosition = Camera.GetPosition();
+	Constants.MVP = View.Camera.GetViewProjectionMatrix();
+	Constants.CameraPosition = View.Camera.GetPosition();
 	Constants.FadeStartDistance = 3.0f;
 	Constants.FadeEndDistance = 75.0f;
 	Renderer.FlushLineBatch(Constants, FName("Grid"));

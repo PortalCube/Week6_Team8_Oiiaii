@@ -48,7 +48,8 @@ public:
 	// 뷰포트 패스 파이프라인
 	bool BeginView(const FSceneView& View);
 	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
-	void DrawGrid(const FCamera& Camera, FGrid& Grid);
+	void DrawVisualizer(const FSceneView& View, const FEditorRenderContext& EditorCtx);
+	void DrawGrid(const FSceneView& View, FGrid* Grid);
 	void FlushBasePass(const FSceneView& View);
 	void FlushLinePass(const FCamera& Camera);
 	void RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor);
