@@ -200,10 +200,6 @@ void UEditorEngine::Tick(float DeltaTime)
 				EditorRenderContext = Editor.GetEditorRenderContext( EditorViewport, &VisualizerRegistry);
 			}
 
-			// 뷰포트 렌더링 일괄 수행
-			//RenderView.RenderView(View, *EditorViewport.GetClient().GetWorldContext()->World->GetCurrentLevel(), EditorRenderContext);
-
-			//
 			FWorldContext* Context = EditorViewport.GetRenderWorldContext();
 
 			if (!Context || !Context->World)
