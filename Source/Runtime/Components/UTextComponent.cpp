@@ -44,7 +44,7 @@ void UTextComponent::Initialize()
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 	SetMesh(Registry.Get<UStaticMesh>("#Rect"));
 	SetMaterial(Registry.Get<UMaterial>("Material/Text.json"));
-	SetFont(Registry.Get<UFont>("Font/BazziOTF.json"));
+	SetFont(Registry.Get<UFont>("Font/NanumGothic.json"));
 
 	RenderData.Type = ERenderType::Text;
 

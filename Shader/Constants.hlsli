@@ -19,7 +19,6 @@ cbuffer ViewConstants : register(b1)
 
 cbuffer ObjectConstants : register(b2)
 {
-    //row_major float4x4 MVP;
     float3 ColorOverride;
     float ColorOverrideAmount;
     float2 UVScale;

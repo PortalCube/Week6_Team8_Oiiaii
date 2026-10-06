@@ -37,10 +37,10 @@ void FEditor::Initialize(UEditorEngine* EditorEngine)
 		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 		SelectedActorTextComp->SetMesh(Registry.Get<UStaticMesh>("#Rect"));
 		SelectedActorTextComp->SetMaterial(Registry.Get<UMaterial>("Material/SelectedActor_Text.json"));
-		SelectedActorTextComp->SetFont(Registry.Get<UFont>("Font/BazziOTF.json"));
+		SelectedActorTextComp->SetFont(Registry.Get<UFont>("Font/NanumGothic.json"));
 	}
 
-	this->EditorEngine = EditorEngine;
+	this->EditorEngine = EditorEngine; 
 }
 
 void FEditor::Shutdown()
@@ -205,7 +205,8 @@ bool FEditor::SelectActor(AActor* Actor)
 		{
 			SelectedActorTextComp->SetActorOwner(SelectedActor.Get());
 			FTransform RelativeTrans;
-			RelativeTrans.SetLocation(FVector{ 0.0f, 0.0f, 1.5f });
+			RelativeTrans.SetLocation(FVector{ 0.0f, 0.0f, 0.7f });
+			RelativeTrans.SetScale3D(FVector{ 1.0f, 0.2f, 0.2f });
 			SelectedActorTextComp->SetRelativeTransform(RelativeTrans);
 			SelectedActorTextComp->SetText(L"UUID : " + std::to_wstring(SelectedActor->GetUUID()));
 		}
