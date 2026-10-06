@@ -164,7 +164,7 @@ void UEditorEngine::Tick(float DeltaTime)
 			FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(EditorViewport, &VisualizerRegistry);
 
 			// 뷰포트 렌더링 일괄 수행
-			RenderView.RenderView(View, *Viewport.GetClient().GetWorldContext()->World->GetCurrentLevel(), EditorRenderContext);
+			RenderView.RenderView(View, *EditorViewport.GetClient().GetWorldContext()->World->GetCurrentLevel(), EditorRenderContext);
 
 			// 기즈모 그리기
 			if (Editor.ObjectSelected())
