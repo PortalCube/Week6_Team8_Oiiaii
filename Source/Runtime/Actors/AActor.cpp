@@ -72,7 +72,10 @@ void AActor::Deserialize(const FArchive& Archive)
 
 	if (RootComponent == nullptr)
 	{
-		CreateRootComponent(SavedClass);
+		USceneComponent* NewComponent = NewObject<USceneComponent>(this, SavedClass);
+		OwnedComponents.push_back(NewComponent);
+		NewComponent->Initialize();
+		SetRootComponent(NewComponent);
 
 		if (RootComponent == nullptr)
 		{
@@ -107,17 +110,6 @@ UWorld* AActor::GetWorld() const
 bool AActor::IsEditorOnly() const
 {
 	return bIsEditorOnlyActor;
-}
-
-void AActor::CreateRootComponent(UClass* ClassType)
-{
-	if (RootComponent)
-	{
-		return;
-	}
-
-	USceneComponent* Component = NewObject<USceneComponent>(this, ClassType);
-	SetRootComponent(Component);
 }
 
 void AActor::SetRootComponent(USceneComponent* Component)
@@ -204,6 +196,9 @@ void AActor::PostSpawnInitialize()
 
 	// 액터 생성 후 이벤트를 실행
 	PostActorCreated();
+
+	// 액터의 컴포넌트 초기화
+	InitializeComponents();
 
 	// FinishSpawning -> PostActorConstruction -> DispatchBeginPlay -> BeginPlay
 	// 액터를 시작

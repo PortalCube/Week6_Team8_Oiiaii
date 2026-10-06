@@ -10,10 +10,12 @@ UCLASS_META(ASelectedTextActor, DisplayName, "Selected Text Actor")
 void ASelectedTextActor::Initialize()
 {
 	Super::Initialize();
+	bIsEditorOnlyActor = true;
 
 	TextComponent = CreateDefaultSubobject<UTextComponent>();
 	if (TextComponent)
 	{
+		TextComponent->bIsEditorOnly = true;
 		SetRootComponent(TextComponent);
 
 		TextComponent->SetInheritRotation(false);

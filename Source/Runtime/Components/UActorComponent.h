@@ -52,6 +52,7 @@ public:
 	virtual void MarkAsEditorOnlySubobject() override;
 
 
+
 	////////////////////////////////////////////////////////////
 	// Get Owner
 	////////////////////////////////////////////////////////////
@@ -62,16 +63,14 @@ public:
 
 	virtual bool IsEditorOnly() const override;
 
+
+
 	////////////////////////////////////////////////////////////
 	// 직렬화, 역직렬화
 	////////////////////////////////////////////////////////////
 
 	virtual void Serialize(FArchive& Archive) const override;
 	virtual void Deserialize(const FArchive& Archive) override;
-
-protected:
-
-	UWorld* World;
 
 	bool bIsEditorOnly = false;
 	bool bIsVisualizationComponent = false;

@@ -232,8 +232,11 @@ bool UWorld::DestroyActor(AActor* Actor)
 		return false;
 	}
 
+	// 배열에서 제거
 	RemoveActor(Actor, false);
 
+	// 액터의 종료
+	Actor->EndPlay();
 	Actor->UnregisterAllComponents();
 	Actor->UninitializeComponents();
 

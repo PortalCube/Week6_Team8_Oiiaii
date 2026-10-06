@@ -37,8 +37,6 @@ void UActorComponent::OnRegister()
 		throw EngineUtil::CreateError("[UActorComponent::OnRegister] 컴포넌트가 이미 등록되었습니다.");
 	}
 
-	World = GetComponentLevel()->GetWorld();
-
 	bRegistered = true;
 }
 
@@ -99,7 +97,7 @@ ULevel* UActorComponent::GetComponentLevel() const
 
 UWorld* UActorComponent::GetWorld() const
 {
-	return World;
+	return GetComponentLevel()->GetWorld();
 }
 
 bool UActorComponent::IsEditorOnly() const

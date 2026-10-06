@@ -81,7 +81,6 @@ public:
 	// Component
 	////////////////////////////////////////////////////////////
 
-	void CreateRootComponent(UClass* ClassType);
 	void SetRootComponent(USceneComponent* Component);
 	USceneComponent* GetRootComponent() const { return RootComponent; }
 
