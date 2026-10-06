@@ -20,14 +20,31 @@ float4 MainPS(PS_IN Input) : SV_Target
 
 	float4 World = mul(float4(NdcX, NdcY, Depth.r, 1), ViewProjectionInverse);
 	float3 WorldPos = World.xyz / World.w;
-	
-	const float Extinc = .005f;
-	const float4 FogColor = float4(1, 1, 1, 1);
-	
-	const float3 RayDirection = CameraPos - WorldPos;
-	
-	float T = clamp(exp(-1.f * (Extinc * length(RayDirection))), 0.f, 1.f);
 
-	return lerp(FogColor, SceneColor, T);
+	float3 V = WorldPos - CameraPos;
+	float L = length(V);
+
+	if (FogCutoffDistance != 0 && L > FogCutoffDistance || L <= StartDistance)
+	{
+		return SceneColor;
+	}
+
+	float DirZ = V.z / L;
+	float NewDistance = L - StartDistance;
+
+	float RayOriginDensity = CameraHeightDensity * exp(-FogHeightFalloff * StartDistance * DirZ);
+
+	float K = FogHeightFalloff * NewDistance * DirZ;
+	
+	float ExtinctionCorrectionFactor = (abs(K) > 1e-4)
+		? (1.f - exp(-K)) / K
+		: 1.f - 0.5f * K + (1.f / 6.f) * K * K; // 테일러 근사
+	
+	float Tau = NewDistance * RayOriginDensity * ExtinctionCorrectionFactor;
+	float T = exp(-1 * Tau);
+
+	float FogFactor = max(T, 1.f - FogMaxOpacity);
+	
+	return float4(lerp(FogInscatteringColor, SceneColor.rgb, FogFactor), SceneColor.a);
 
 }

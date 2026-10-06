@@ -6,6 +6,7 @@
 #include "Runtime/Components/UTextComponent.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Rendering/FRenderQueue.h"
+#include "Runtime/Rendering/FPostProcess.h"
 #include "Runtime/Engine/FSceneView.h"
 #include "Runtime/Geometry/FFrustum.h"
 #include "Runtime/Engine/FCulling.h"

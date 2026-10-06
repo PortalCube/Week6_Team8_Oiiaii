@@ -36,6 +36,12 @@ cbuffer PostProcessConstants : register(b3)
 	float VisMax;
 	float VisMinOrtho;
 	float VisMaxOrtho;
+	float FogHeightFalloff;
+	float CameraHeightDensity;
+	float StartDistance;
+	float FogCutoffDistance;
+	float FogMaxOpacity;
+	float3 FogInscatteringColor;
 	float PostProcessPadding;
 }
 

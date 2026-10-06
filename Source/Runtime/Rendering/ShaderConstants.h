@@ -80,6 +80,14 @@ struct FPostProcessConstants
 	float VisMax;		// 원근에서 SceneDepth의 최댓값
 	float VisMinOrtho;	// 직교에서 SceneDepth의 최솟값
 	float VisMaxOrtho;	// 직교에서 SceneDepth의 최댓값
+
+	// Exponential Height Fog에서 쓰이는 값. 픽셀마다 똑같으므로 CPU에서 한 번 계산해서 올림
+	float FogHeightFalloff;			
+	float CameraHeightDensity;
+	float StartDistance;
+	float FogCutoffDistance;
+	float FogMaxOpacity;
+	FVector FogInscatteringColor;
 	float Padding;
 };
 static_assert(sizeof(FPostProcessConstants) % 16 == 0);
