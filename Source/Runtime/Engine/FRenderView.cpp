@@ -138,7 +138,7 @@ void FRenderView::CollectScenePrimitives(const ULevel& Scene, const FSceneView& 
 		}
 
 		bool bSelected = false;
-		if (PrimitiveComponent->GetActorOwner() && PrimitiveComponent->GetActorOwner() == SelectedActor)
+		if (PrimitiveComponent->GetOwner() == SelectedActor)
 		{
 			bSelected = true;
 		}
@@ -176,7 +176,7 @@ void FRenderView::CollectScenePrimitives(const ULevel& Scene, const FSceneView& 
 		}
 		DrawCommand.Constants.DisableShading = View.ViewMode == EViewModeIndex::VMI_Unlit ? 1.0f : 0.0f;
 
-		AActor* Owner = PrimitiveComponent->GetActorOwner();
+		AActor* Owner = PrimitiveComponent->GetOwner();
 		AFireBallActor* FireBallActor = Owner ? Owner->Cast<AFireBallActor>() : nullptr;
 		UFireBallComponent* FireBall =
 		    FireBallActor && PrimitiveComponent == FireBallActor->GetSphereComponent()

@@ -45,14 +45,15 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 	}
 
 	// 에디터 WorldContext 등록
-	FWorldContext EditorWorldContext{
-		.World = nullptr,
-		.WorldType = EWorldType::Editor,
-		.TravelURL = "",
-		.bTravelEmptyLevel = true, // 첫 Tick에서 월드 생성
-	};
+	WorldList.push_back({
+	    .World = nullptr,
+	    .WorldType = EWorldType::Editor,
+	});
 
-	WorldList.push_back(EditorWorldContext);
+	EditorWorldContext = &WorldList[0];
+
+	// 새로운 Level으로 World 불러오기
+	LoadMap(*EditorWorldContext, "");
 
 	// ImGui 초기화
 	ImguiManager.Initialize_ImplWin32DX11(*Window, Device, Context);
@@ -92,18 +93,6 @@ void UEditorEngine::Tick(float DeltaTime)
 	{
 		// 렌더러 스왑체인 조정
 		Renderer.OnWindowSize(Globals::ResizeWidth, Globals::ResizeHeight);
-
-		//FVector2 ViewportSize{
-		//	static_cast<float>(Globals::ResizeWidth),
-		//	static_cast<float>(Globals::ResizeHeight)
-		//};
-
-		//// 뷰포트 종횡비 갱신
-		//for (auto& Viewport : Editor.GetViewports())
-		//{
-		//	const FVector2 SizePixels = Viewport.LengthUV * ViewportSize;
-		//	Viewport.ViewportCamera.SetAspectRatio(SizePixels.X / SizePixels.Y);
-		//}
 
 		Globals::bIsRequestingResize = false;
 	}
@@ -206,7 +195,6 @@ void UEditorEngine::Tick(float DeltaTime)
 void UEditorEngine::Exit()
 {
 	Editor.Shutdown();
-	Renderer.Shutdown();
 
 	UEngine::Exit();
 }
@@ -230,8 +218,12 @@ void UEditorEngine::SaveLevel(const FString& Path, ULevel* Level)
 
 UWorld* UEditorEngine::GetEditorWorld() const
 {
-	// 대충 임시
-	return WorldList[0].World;
+	return EditorWorldContext->World;
+}
+
+FWorldContext* UEditorEngine::GetEditorWorldContext() const
+{
+	return EditorWorldContext;
 }
 
 void UEditorEngine::ExecuteCommand(const char* Command)

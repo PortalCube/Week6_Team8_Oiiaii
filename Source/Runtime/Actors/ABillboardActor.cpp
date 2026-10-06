@@ -9,15 +9,14 @@ UCLASS_META(ABillboardActor, DisplayName, "Billboard Actor")
 
 void ABillboardActor::Initialize()
 {
-	// 기본 큐브 컴포넌트 장착
-	UBillboardComponent* Object = CreateDefaultSubobject<UBillboardComponent>();
-	SetRootComponent(Object);
+	Super::Initialize();
 
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	Object->SetTexture(Registry.Get<UTexture>("Texture/Space.json"));
-}
+	auto Component = CreateDefaultSubobject<UBillboardComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
 
-UBillboardComponent* ABillboardActor::GetBillboardComponent() const
-{
-	return RootComponent ? RootComponent->Cast<UBillboardComponent>() : nullptr;
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetTexture(Registry.Get<UTexture>("Texture/Space.json"));
+	}
 }

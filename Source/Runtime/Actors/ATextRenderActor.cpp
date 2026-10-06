@@ -2,17 +2,21 @@
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Components/UTextComponent.h"
+#include "Runtime/Asset/FAssetRegistry.h"
 
 IMPLEMENT_UCLASS(ATextRenderActor, AActor)
 UCLASS_META(ATextRenderActor, DisplayName, "TextRender Actor")
 
 void ATextRenderActor::Initialize()
 {
-	// 기본 큐브 컴포넌트 장착
-	CreateRootComponent(UTextComponent::StaticClass());
-}
+	Super::Initialize();
 
-UTextComponent* ATextRenderActor::GetTextComponent() const
-{
-	return RootComponent ? RootComponent->Cast<UTextComponent>() : nullptr;
+	auto Component = CreateDefaultSubobject<UTextComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
+
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetFont(Registry.Get<UFont>("Font/BazziOTF.json"));
+	}
 }

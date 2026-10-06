@@ -10,14 +10,14 @@ UCLASS_META(AAppleNormalActor, DisplayName, "Apple Normal Actor")
 
 void AAppleNormalActor::Initialize()
 {
-	AppleStaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
-	SetRootComponent(AppleStaticMeshComp);
+	Super::Initialize();
 
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	AppleStaticMeshComp->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/JungleApple/Apple_Normal.json"));
-}
+	auto Component = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
 
-void AAppleNormalActor::Update(float DeltaTime)
-{
-	Super::Update(DeltaTime);
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/JungleApple/Apple_Normal.json"));
+	}
 }

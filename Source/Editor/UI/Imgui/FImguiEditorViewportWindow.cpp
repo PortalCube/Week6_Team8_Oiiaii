@@ -403,13 +403,13 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 
 	// 필요 시 'isHit' 결과를 활용해 추가 로직 처리
 	// 피킹은 액터 단위로 선택한다. 소유 액터가 없으면 선택할 수 없다.
-	if (!bHit || !HitComponent || !HitComponent->GetActorOwner())
+	if (!bHit || !HitComponent || !HitComponent->GetOwner())
 	{
 		Editor.UnSelectActor();
 		return;
 	}
 
-	AActor* OwnerActor = HitComponent->GetActorOwner();
+	AActor* OwnerActor = HitComponent->GetOwner();
 	Editor.SelectActor(OwnerActor);
 
 	const char* ActorClass =

@@ -33,11 +33,6 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 
 	ImGui::Separator();
 
-	if (ImGui::Button("대회 씬 바로 불러오기"))
-	{
-		Editor.LoadScene("DefaultScene/Default.scene");
-	}
-
 	// 액터 스폰
 	ActorSpawnSetting(Editor);
 	// 그리드 설정

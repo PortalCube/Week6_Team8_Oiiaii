@@ -12,44 +12,18 @@ IMPLEMENT_UCLASS(AActor, UObject)
 void AActor::Initialize()
 {
 	Super::Initialize();
-	Owner = nullptr;
 	bHasBegunPlay = false;
 	bTickEnabled = false;
 }
 
 void AActor::Release()
 {
-	if (bHasBegunPlay)
+	for (auto Component : OwnedComponents)
 	{
-		EndPlay();
-	}
-
-	if (Owner)
-	{
-		Unregister();
-	}
-
-	GetWorld()->RemoveActor(this);
-
-	while (!AttachedComp.empty())
-	{
-		USceneComponent* Component = AttachedComp.back();
-		std::erase(AttachedComp, Component);
-
-		if (RootComponent == Component)
-		{
-			RootComponent = nullptr;
-		}
-
 		DestroyObject(Component);
 	}
 
-	if (RootComponent)
-	{
-		USceneComponent* RemainingRoot = RootComponent;
-		RootComponent = nullptr;
-		DestroyObject(RemainingRoot);
-	}
+	RootComponent = nullptr;
 
 	Super::Release();
 }
@@ -78,8 +52,7 @@ void AActor::Deserialize(const FArchive& Archive)
 	{
 		if (RootComponent)
 		{
-			UE_LOG_WARN("[%s::Deserialize] RootComponent(%s)에 대한 직렬화 데이터가 "
-			            "누락되었습니다.",
+			UE_LOG_WARN("[%s::Deserialize] RootComponent(%s)에 대한 직렬화 데이터가 누락되었습니다.",
 			    GetClass()->GetName(),
 			    RootComponent->GetClass()->GetName());
 		}
@@ -121,6 +94,21 @@ void AActor::Deserialize(const FArchive& Archive)
 	RootComponent->Deserialize(RootComponentArchive);
 }
 
+ULevel* AActor::GetLevel() const
+{
+	return GetTypedOuter<ULevel>();
+}
+
+UWorld* AActor::GetWorld() const
+{
+	return GetLevel()->OwningWorld;
+}
+
+bool AActor::IsEditorOnly() const
+{
+	return bIsEditorOnlyActor;
+}
+
 void AActor::CreateRootComponent(UClass* ClassType)
 {
 	if (RootComponent)
@@ -136,123 +124,123 @@ void AActor::SetRootComponent(USceneComponent* Component)
 {
 	if (RootComponent)
 	{
-		throw EngineUtil::CreateError("이미 Root 컴포넌트가 있습니다.");
+		// 지금은 SetRootComponent를 두번 실행하면 오류로 처리
+		// 이런 기능이 필요하면 그때 처리 로직 추가
+		throw EngineUtil::CreateError("[AActor::SetRootComponent] 이미 Root 컴포넌트가 있습니다.");
 	}
 
 	RootComponent = Component;
 
-	// TODO ActorOwner를 이렇게 지정하면 안됨
-	RootComponent->ActorOwner = this;
-	RootComponent->SetupAttachment(nullptr);
-	RootComponent->Initialize();
-	AttachedComp.push_back(RootComponent);
+	// TODO: 이것저것
 
-	if (Owner)
-	{
-		RootComponent->Register(*Owner);
-	}
-
-	if (bHasBegunPlay)
-	{
-		RootComponent->BeginPlay();
-	}
 }
 
 void AActor::MarkComponentsTransformDirty()
 {
-	for (USceneComponent* Component : AttachedComp)
+	for (auto Component : OwnedComponents)
 	{
-		if (Component)
+		USceneComponent* SceneComponent = Component->Cast<USceneComponent>();
+		if (SceneComponent)
 		{
-			Component->OnTransformChanged();
+			SceneComponent->OnTransformChanged();
 		}
 	}
 }
 
-void AActor::AddComponent(USceneComponent* Addcomp)
+void AActor::RegisterAllComponents()
 {
-	if (Addcomp == nullptr)
-	{
-		return;
-	}
-
-	if (RootComponent == nullptr)
-	{
-		RootComponent = Addcomp;
-		Addcomp->SetupAttachment(nullptr);
-	}
-
-	else if (Addcomp->GetSceneOwner() == nullptr)
-	{
-		Addcomp->SetupAttachment(RootComponent);
-	}
-
-	Addcomp->ActorOwner = this;
-	AttachedComp.push_back(Addcomp);
-	Addcomp->Initialize();
-
-	if (Owner)
-	{
-		Addcomp->Register(*Owner);
-	}
-
-	if (bHasBegunPlay)
-	{
-		Addcomp->BeginPlay();
-	}
-}
-
-void AActor::Register(ULevel& Scene)
-{
-	if (Owner == &Scene)
-	{
-		return;
-	}
-
-	if (Owner)
-	{
-		Unregister();
-	}
-
-	Owner = &Scene;
-	for (USceneComponent* Component : AttachedComp)
+	for (auto Component : OwnedComponents)
 	{
 		if (Component)
 		{
-			Component->Register(Scene);
+			Component->OnRegister();
 		}
 	}
 }
+
+void AActor::UnregisterAllComponents()
+{
+	for (auto Component : OwnedComponents)
+	{
+		if (Component)
+		{
+			Component->OnUnregister();
+		}
+	}
+}
+
+void AActor::InitializeComponents()
+{
+	PreInitializeComponents();
+
+	// 소유하는 모든 컴포넌트 초기화
+	for (auto Component : OwnedComponents)
+	{
+		if (Component)
+		{
+			Component->InitializeComponent();
+		}
+	}
+
+	PostInitializeComponents();
+}
+
+void AActor::UninitializeComponents()
+{
+	// 소유하는 모든 컴포넌트 초기화 해제
+	for (auto Component : OwnedComponents)
+	{
+		if (Component)
+		{
+			Component->UninitializeComponent();
+		}
+	}
+}
+
+void AActor::PostSpawnInitialize()
+{
+	// 액터를 월드에 등록
+	RegisterAllComponents();
+
+	// 액터 생성 후 이벤트를 실행
+	PostActorCreated();
+
+	// FinishSpawning -> PostActorConstruction -> DispatchBeginPlay -> BeginPlay
+	// 액터를 시작
+	BeginPlay();
+}
+
 
 void AActor::BeginPlay()
 {
-	if (!Owner || bHasBegunPlay)
+	if (bHasBegunPlay)
 	{
 		return;
 	}
 
-	bHasBegunPlay = true;
-	for (USceneComponent* Component : AttachedComp)
+	for (auto Component : OwnedComponents)
 	{
 		if (Component)
 		{
 			Component->BeginPlay();
 		}
 	}
+
+	bHasBegunPlay = true;
 }
 
-void AActor::Update(float DeltaTime)
+void AActor::Tick(float DeltaTime)
 {
 	if (!bTickEnabled || !bHasBegunPlay)
 	{
 		return;
 	}
 
-	for (USceneComponent* Component : AttachedComp)
+	for (auto Component : OwnedComponents)
 	{
 		if (Component && Component->IsTickEnabled())
 		{
-			Component->Update(DeltaTime);
+			Component->TickComponent(DeltaTime);
 		}
 	}
 }
@@ -264,40 +252,18 @@ void AActor::EndPlay()
 		return;
 	}
 
-	for (auto It = AttachedComp.rbegin(); It != AttachedComp.rend(); ++It)
+	for (auto Component : OwnedComponents)
 	{
-		if (*It)
+		if (Component)
 		{
-			(*It)->EndPlay();
+			Component->EndPlay();
 		}
 	}
+
 	bHasBegunPlay = false;
-}
-
-void AActor::Unregister()
-{
-	if (bHasBegunPlay)
-	{
-		EndPlay();
-	}
-
-	if (!Owner)
-	{
-		return;
-	}
-
-	for (auto It = AttachedComp.rbegin(); It != AttachedComp.rend(); ++It)
-	{
-		if (*It)
-		{
-			(*It)->Unregister();
-		}
-	}
-	Owner = nullptr;
 }
 
 void AActor::Destroy()
 {
 	GetWorld()->DestroyActor(this);
-	DestroyObject(this);
 }

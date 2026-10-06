@@ -10,14 +10,14 @@ UCLASS_META(AAppleBittenActor, DisplayName, "Apple Bitten Actor")
 
 void AAppleBittenActor::Initialize()
 {
-	AppleStaticMeshComp = NewObject<UStaticMeshComponent>(this);
-	SetRootComponent(AppleStaticMeshComp);
+	Super::Initialize();
 
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	AppleStaticMeshComp->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/JungleApple/Apple_Bitten.json"));
-}
+	auto Component = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
 
-void AAppleBittenActor::Update(float DeltaTime)
-{
-	Super::Update(DeltaTime);
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/JungleApple/Apple_Bitten.json"));
+	}
 }

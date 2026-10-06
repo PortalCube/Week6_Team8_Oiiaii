@@ -7,15 +7,16 @@ UCLASS_META(ASpotlightActor, DisplayName, "Spotlight Actor")
 
 void ASpotlightActor::Initialize()
 {
-	CreateRootComponent(USpotLightComponent::StaticClass());
+	Super::Initialize();
 
-	FTransform DefaultTransform;
-	DefaultTransform.SetScale3D(FVector(5.0f, 5.0f, 5.0f));
-	DefaultTransform.SetRotation(FQuaternion::FromEulerXYZDeg(FVector(0.0f, 90.0f, 0.0f)));
-	SetTransform(DefaultTransform);
-}
+	auto Component = CreateDefaultSubobject<USpotLightComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
 
-USpotLightComponent* ASpotlightActor::GetSpotlightComponent() const
-{
-	return RootComponent ? RootComponent->Cast<USpotLightComponent>() : nullptr;
+		FTransform DefaultTransform;
+		DefaultTransform.SetScale3D(FVector(5.0f, 5.0f, 5.0f));
+		DefaultTransform.SetRotation(FQuaternion::FromEulerXYZDeg(FVector(0.0f, 90.0f, 0.0f)));
+		SetTransform(DefaultTransform);
+	}
 }

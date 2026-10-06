@@ -5,7 +5,11 @@
 #include "Runtime/Engine/UEngine.h"
 #include "Runtime/Asset/UPackage.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
+#if defined(ENGINE_OBJECTVIEWER)
+#include "Editor/Engine/UObjViewerEngine.h"
+#else
 #include "Editor/Engine/UEditorEngine.h"
+#endif
 
 #include <format>
 #include <Windows.h>
@@ -28,7 +32,11 @@ void FEngineLoop::Init(HINSTANCE Instance)
 	Globals::TransientPackage = NewObject<UPackage>(nullptr);
 	
 	// 엔진 객체 초기화
+#if defined(ENGINE_OBJECTVIEWER)
+	Engine = NewObject<UObjViewerEngine>(GetTransientPackage());
+#else
 	Engine = NewObject<UEditorEngine>(GetTransientPackage());
+#endif
 
 	Engine->Init(this);
 }

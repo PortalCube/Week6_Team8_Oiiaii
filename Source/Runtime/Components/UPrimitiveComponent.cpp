@@ -67,10 +67,7 @@ void UPrimitiveComponent::SetColor(const FVector4& Color, int32 Index)
 
 void UPrimitiveComponent::MarkBoundDirty()
 {
-	if (Level)
-	{
-		Level->MarkBoundsDirty(this);
-	}
+	GetComponentLevel()->MarkBoundsDirty(this);
 }
 
 void UPrimitiveComponent::UpdateWorldBounds()
@@ -99,24 +96,23 @@ FAxisAlignedBoundingBox UPrimitiveComponent::GetViewBounds(const FCamera& Camera
 	return FAxisAlignedBoundingBox(GetWorldBounds(), Camera.GetViewMatrix());
 }
 
-void UPrimitiveComponent::Register(ULevel& InScene)
+void UPrimitiveComponent::OnRegister()
 {
+	Super::OnRegister();
+
 	if (RenderData.Type == ERenderType::None)
 	{
 		RenderData.Type = ERenderType::Primitive;
 	}
 
-	Super::Register(InScene);
-	InScene.AddRenderComponent(this);
+	GetComponentLevel()->AddRenderComponent(this);
 }
 
-void UPrimitiveComponent::Unregister()
+void UPrimitiveComponent::OnUnregister()
 {
-	if (Level)
-	{
-		Level->RemoveRenderComponent(this);
-	}
-	Super::Unregister();
+	Super::OnUnregister();
+
+	GetComponentLevel()->RemoveRenderComponent(this);
 }
 
 void UPrimitiveComponent::UpdateMaterialCache()

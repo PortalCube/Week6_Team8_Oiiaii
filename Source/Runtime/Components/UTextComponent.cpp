@@ -51,7 +51,7 @@ void UTextComponent::Initialize()
 	RebuildTextMesh();
 }
 
-void UTextComponent::Update(float delta) {}
+void UTextComponent::TickComponent(float delta) {}
 
 void UTextComponent::SetText(const FWString& InText)
 {

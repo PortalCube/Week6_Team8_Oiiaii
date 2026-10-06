@@ -8,17 +8,15 @@
 #include "Runtime/Actors/ACylinderActor.h"
 #include "Runtime/Actors/ASphereActor.h"
 #include "Runtime/Actors/ASpotlightActor.h"
+#include "Runtime/Actors/ASelectedTextActor.h"
 #include "Runtime/Asset/FAssetRegistry.h"
-#include "Runtime/Components/UPrimitiveComponent.h"
+#include "Runtime/Components/USceneComponent.h"
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Input/FInputManager.h"
 #include "Runtime/Math/Random.h"
-#include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Core/Globals.h"
-#include <numbers>
-#include <Runtime/Engine/FSceneBVH.h>
 #include "Editor/Engine/UEditorEngine.h"
 
 
@@ -28,17 +26,8 @@ void FEditor::Initialize(UEditorEngine* EditorEngine)
 	Gizmo.Initialize();
 
 	UWorld* World = EditorEngine->GetEditorWorld();
-	SelectedActorTextComp = NewObject<UTextComponent>(World /* ?? */);
-	if (SelectedActorTextComp)
-	{
-		SelectedActorTextComp->Initialize();
-		SelectedActorTextComp->SetInheritRotation(false);
 
-		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-		SelectedActorTextComp->SetMesh(Registry.Get<UStaticMesh>("#Rect"));
-		SelectedActorTextComp->SetMaterial(Registry.Get<UMaterial>("Material/SelectedActor_Text.json"));
-		SelectedActorTextComp->SetFont(Registry.Get<UFont>("Font/BazziOTF.json"));
-	}
+	OnWorldLoaded();
 
 	this->EditorEngine = EditorEngine;
 }
@@ -87,6 +76,13 @@ void FEditor::Process()
 
 	// State를 파일에 주기적으로 자동 저장
 	State.Tick(FTimeManager::GetDeltaTime());
+}
+
+void FEditor::OnWorldLoaded()
+{
+	SelectedActorTextActor = GetCurrentWorld()->SpawnActor<ASelectedTextActor>(ASelectedTextActor::StaticClass());
+
+	SelectedActorTextComp = SelectedActorTextActor->TextComponent;
 }
 
 void FEditor::SaveState()
@@ -203,7 +199,7 @@ bool FEditor::SelectActor(AActor* Actor)
 
 		if (SelectedActorTextComp)
 		{
-			SelectedActorTextComp->SetActorOwner(SelectedActor.Get());
+			SelectedActorTextComp->AttachToComponent(SelectedActor.Get()->GetRootComponent());
 			FTransform RelativeTrans;
 			RelativeTrans.SetLocation(FVector{ 0.0f, 0.0f, 1.5f });
 			SelectedActorTextComp->SetRelativeTransform(RelativeTrans);
@@ -220,10 +216,12 @@ void FEditor::UnSelectActor()
 	{
 		SelectedActor->SetTransform(SelectedTransform);
 	}
+
 	SelectedActor = nullptr;
+
 	if (SelectedActorTextComp)
 	{
-		SelectedActorTextComp->SetActorOwner(nullptr);
+		SelectedActorTextComp->DetachFromComponent();
 	}
 }
 

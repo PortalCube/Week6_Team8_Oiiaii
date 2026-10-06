@@ -27,26 +27,19 @@ void ULevel::Initialize()
 	{
 		return;
 	}
+
 	Super::Initialize();
 	bInitialized = true;
 }
 
 void ULevel::Release()
 {
-	if (bHasBegunPlay)
+	for (auto Actor : Actors)
 	{
-		EndPlay();
-	}
-	if (bActive)
-	{
-		Deactivate();
-	}
-
-	while (!Actors.empty())
-	{
-		AActor* Actor = Actors.back();
-		Actors.pop_back();
-		DestroyObject(Actor);
+		if (Actor)
+		{
+			DestroyObject(Actor);
+		}
 	}
 
 	RenderComponents.clear();
@@ -59,52 +52,15 @@ void ULevel::Release()
 	Super::Release();
 }
 
-void ULevel::Activate()
-{
-	if (bActive)
-	{
-		return;
-	}
-
-	for (AActor* Actor : Actors)
-	{
-		if (Actor)
-		{
-			Actor->Register(*this);
-		}
-	}
-	bActive = true;
-}
-
-void ULevel::Deactivate()
-{
-	if (!bActive)
-	{
-		return;
-	}
-	if (bHasBegunPlay)
-	{
-		EndPlay();
-	}
-
-	for (auto It = Actors.rbegin(); It != Actors.rend(); ++It)
-	{
-		if (*It)
-		{
-			(*It)->Unregister();
-		}
-	}
-	bActive = false;
-}
-
 void ULevel::BeginPlay()
 {
-	if (!bActive || bHasBegunPlay)
+	if (bHasBegunPlay)
 	{
 		return;
 	}
 
 	bHasBegunPlay = true;
+
 	for (AActor* Actor : Actors)
 	{
 		if (Actor)
@@ -114,26 +70,20 @@ void ULevel::BeginPlay()
 	}
 }
 
-void ULevel::Update(float DeltaTime)
+void ULevel::Tick(float DeltaTime)
 {
-	if (bHasBegunPlay)
+	if (!bHasBegunPlay)
 	{
-		for (AActor* Actor : Actors)
-		{
-			if (Actor)
-			{
-				Actor->Update(DeltaTime);
-			}
-		}
-
-		// return;
+		return;
 	}
 
-	/*for (AActor *Actor : Actors) {
-	  if (Actor) {
-	    Actor->Update(DeltaTime);
-	  }
-	}*/
+	for (AActor* Actor : Actors)
+	{
+		if (Actor && Actor->GetTickEnabled())
+		{
+			Actor->Tick(DeltaTime);
+		}
+	}
 }
 
 void ULevel::EndPlay()
@@ -143,14 +93,63 @@ void ULevel::EndPlay()
 		return;
 	}
 
-	for (auto It = Actors.rbegin(); It != Actors.rend(); ++It)
+	bHasBegunPlay = false;
+
+	for (auto Actor : Actors)
 	{
-		if (*It)
+		if (Actor)
 		{
-			(*It)->EndPlay();
+			Actor->EndPlay();
 		}
 	}
-	bHasBegunPlay = false;
+}
+
+void ULevel::UpdateLevelComponents()
+{
+	for (auto Actor : Actors)
+	{
+		if (Actor)
+		{
+			Actor->RegisterAllComponents();
+		}
+	}
+}
+
+void ULevel::ClearLevelComponents()
+{
+	for (auto Actor : Actors)
+	{
+		if (Actor)
+		{
+			Actor->UnregisterAllComponents();
+		}
+	}
+}
+
+void ULevel::RouteActorInitialize()
+{
+	for (auto Actor : Actors)
+	{
+		if (Actor)
+		{
+			Actor->InitializeComponents();
+		}
+	}
+}
+
+void ULevel::CleanupLevel()
+{
+	for (int i = 0; i < Actors.size(); ++i)
+	{
+		if (Actors[i])
+		{
+			Actors[i]->UninitializeComponents();
+
+			DestroyObject(Actors[i]);
+
+			Actors[i] = nullptr;
+		}
+	}
 }
 
 void ULevel::Serialize(FArchive& Archive) const
@@ -200,15 +199,6 @@ void ULevel::Deserialize(const FArchive& Archive)
 			continue;
 		}
 		Actor->Deserialize(Item);
-
-		if (bActive)
-		{
-			Actor->Register(*this);
-		}
-		if (bHasBegunPlay)
-		{
-			Actor->BeginPlay();
-		}
 	}
 }
 

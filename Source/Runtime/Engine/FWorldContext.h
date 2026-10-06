@@ -21,17 +21,17 @@
 */
 struct FWorldContext
 {
-	UWorld* World;
-	EWorldType WorldType;
+	UWorld* World = nullptr;
+	EWorldType WorldType = EWorldType::None;
 
 	/*
 	* 다음으로 불러올 레벨을 가리킵니다.
 	* 빈칸으로 지정하면 현재 레벨을 유지합니다.
 	* 뭔가 적혀있으면 그 경로의 .Scene 파일을 가지고 레벨의 로드를 시도합니다.
 	*/
-	FString TravelURL;
+	FString TravelURL = "";
 
 	// 다음으로 비어있는 레벨을 불러오도록 지정합니다.
 	// 단, TravelURL이 있으면 이 옵션은 무시됩니다.
-	bool bTravelEmptyLevel;
+	bool bTravelEmptyLevel = false;
 };

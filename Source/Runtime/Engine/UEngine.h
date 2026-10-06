@@ -37,4 +37,6 @@ public:
 
 	// 월드 Travel 구현
 	void TickWorldTravel(FWorldContext& Context, float DeltaTime);
+
+	void LoadMap(FWorldContext& Context, const FString& Path);
 };

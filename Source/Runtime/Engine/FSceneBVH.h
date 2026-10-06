@@ -125,15 +125,18 @@ inline static void RefitActorInBVH(FSceneBVH& BVH, AActor* Actor)
 		}
 	}
 
-	for (USceneComponent* S : Actor->GetAttachedComponents())
+	for (auto Component : Actor->GetOwnedComponents())
 	{
-		if (!S)
+		if (!Component)
 		{
 			continue;
 		}
-		if (UPrimitiveComponent* P = S->Cast<UPrimitiveComponent>())
+
+		UPrimitiveComponent* PrimitiveComponent = Component->Cast<UPrimitiveComponent>();
+
+		if (PrimitiveComponent)
 		{
-			BVH.RefitObject(P);
+			BVH.RefitObject(PrimitiveComponent);
 		}
 	}
 }
