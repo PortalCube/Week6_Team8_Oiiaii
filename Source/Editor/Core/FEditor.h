@@ -15,9 +15,13 @@
 #include "Runtime/Engine/UWorld.h"
 #include "Runtime/Engine/ULevel.h"
 
+#include <memory>
+
 #include "Runtime/UI/SSplitter.h"
 #include "Editor/EditorViewport/SEditorViewport.h"
 #include "Editor/EditorViewport/FEditorViewportLayout.h"
+#include "Editor/PlayInEditor/FPlayInEditorManager.h"
+
 
 enum class EEditorPrimitiveType : uint8
 {
@@ -29,6 +33,8 @@ enum class EEditorPrimitiveType : uint8
 };
 
 class UEditorEngine;
+class PIEManager;
+struct FRequestPlaySessionParams;
 
 class FEditor
 {
@@ -100,6 +106,19 @@ public:
 		PickingAttempts = 0;
 	}
 
+	// PIE
+	bool RequestStartPIE(const FRequestPlaySessionParams& Params);
+	void RequestEndPIE();
+	void ProcessPIERequests();
+	EPIESessionState GetPIEState() const
+	{
+		return PlayManager ? PlayManager->GetState() : EPIESessionState::Stopped;
+	}
+
+	void PausePIE() {if(PlayManager) {PlayManager->PasuePIE();}}
+
+	void ResumePIE(){if(PlayManager) {PlayManager->ResumePIE();}}
+
 private:
 	UEditorEngine* EditorEngine = nullptr;
 	FGizmo Gizmo;
@@ -109,4 +128,5 @@ private:
 
 	// Viewport
 	FEditorViewportLayout ViewportLayout;
+	std::unique_ptr<PIEManager> PlayManager;
 };
