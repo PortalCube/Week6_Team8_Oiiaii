@@ -81,7 +81,7 @@ void UAnimatedBillboardComp::Deserialize(const FArchive& Archive)
 	CurrentUVOffset = Archive.GetVector2("CurrentUVOffset");
 }
 
-void UAnimatedBillboardComp::Update(float DeltaTime)
+void UAnimatedBillboardComp::TickComponent(float DeltaTime)
 {
 	if (!bPlaying || TotalFrames <= 1 || FrameRate <= 0.0f)
 	{

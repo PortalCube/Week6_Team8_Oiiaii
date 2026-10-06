@@ -41,8 +41,8 @@ public:
 	// 인스턴싱 배치 배열 맵
 	TMap<FInstanceBatchKey, TArray<FInstanceData>> AllInstancingArrayMap;
 
-	// 파이프라인 조회
-	[[nodiscard]] TSharedPtr<FRenderPipeline> GetPipeline(const FName& Id) const
+	// 파이프라인
+	TSharedPtr<FRenderPipeline> GetPipeline(const FName& Id) const
 	{
 		auto it = AllPipelineMap.find(Id);
 		if (it != AllPipelineMap.end())
@@ -51,24 +51,19 @@ public:
 		}
 		return nullptr;
 	}
+	void RegisterPipeline(const FName& Id, TSharedPtr<FRenderPipeline> Pipeline) { AllPipelineMap[Id] = std::move(Pipeline); }
 
-	void RegisterPipeline(const FName& Id, TSharedPtr<FRenderPipeline> Pipeline)
+
+	// 인스턴싱 배열
+	TArray<FInstanceData>& GetInstancingArray(const FMesh* Mesh, const FMaterial* Material) { return AllInstancingArrayMap[{ Mesh, Material }]; }
+
+	// 메쉬 
+	TSharedPtr<FMesh> RegisterMesh(const FName& ID, TSharedPtr<FMesh> inMesh)
 	{
-		AllPipelineMap[Id] = std::move(Pipeline);
+		inMesh->MeshId = ID;
+		AllMeshMap[ID] = inMesh;
+		return inMesh;
 	}
-
-	// 머티리얼 조회
-	[[nodiscard]] TSharedPtr<FMaterial> GetMaterial(const FName& Id) const
-	{
-		auto it = AllMaterialMap.find(Id);
-		if (it != AllMaterialMap.end())
-		{
-			return it->second;
-		}
-		return nullptr;
-	}
-
-	// 메쉬 조회
 	TSharedPtr<FMesh> GetMesh(const FName& ID) const
 	{
 		auto it = AllMeshMap.find(ID);
@@ -79,30 +74,21 @@ public:
 		return nullptr;
 	}
 
-	// 인스턴싱 배열 조회
-	TArray<FInstanceData>& GetInstancingArray(const FMesh* Mesh, const FMaterial* Material)
-	{
-		return AllInstancingArrayMap[{ Mesh, Material }];
-	}
-
-	// 메쉬 등록
-	TSharedPtr<FMesh> RegisterMesh(const FName& ID, TSharedPtr<FMesh> inMesh)
-	{
-		inMesh->MeshId = ID;
-		AllMeshMap[ID] = inMesh;
-		return inMesh;
-	}
-
-	// 머티리얼 등록
+	// 머티리얼 
 	TSharedPtr<FMaterial> RegisterMaterial(const FName& Id, TSharedPtr<FMaterial> inMaterial);
-
-	void RegisterTexture(const FName& name, TSharedPtr<FTexture> texture)
+	TSharedPtr<FMaterial> GetMaterial(const FName& Id) const
 	{
-		AllTextureMap[name] = texture;
+		auto it = AllMaterialMap.find(Id);
+		if (it != AllMaterialMap.end())
+		{
+			return it->second;
+		}
+		return nullptr;
 	}
 
-	// 텍스처 조회
-	[[nodiscard]] TSharedPtr<FTexture> GetTexture(const FName& name) const
+	// 텍스쳐 
+	void RegisterTexture(const FName& name, TSharedPtr<FTexture> texture) { AllTextureMap[name] = texture; }
+	TSharedPtr<FTexture> GetTexture(const FName& name) const
 	{
 		auto it = AllTextureMap.find(name);
 		if (it != AllTextureMap.end())
@@ -112,44 +98,24 @@ public:
 		return nullptr;
 	}
 
-	// 메쉬 전체 해제
+	// 맵 해제
 	void DestroyAllMeshes() { AllMeshMap.clear(); }
-
-	// 머티리얼 전체 해제
 	void DestroyAllMaterials() { AllMaterialMap.clear(); }
-
-	// 파이프라인 전체 해제
 	void DestroyAllPipelines() { AllPipelineMap.clear(); }
-
-	// 인스턴싱 전체 해제
 	void DestroyAllInstancingArray() { AllInstancingArrayMap.clear(); }
 
-	// 전체 머티리얼 맵 조회
-	const TMap<FName, TSharedPtr<FMaterial>>& GetAllMaterials() const
-	{
-		return AllMaterialMap;
-	}
-
-	const TMap<FName, TSharedPtr<FRenderPipeline>>& GetAllPipelines() const
-	{
-		return AllPipelineMap;
-	}
-
-	const TMap<FName, TSharedPtr<FTexture>>& GetAllTextures() const
-	{
-		return AllTextureMap;
-	}
+	// 맵 조회
+	const TMap<FName, TSharedPtr<FMaterial>>& GetAllMaterials() const { return AllMaterialMap; }
+	const TMap<FName, TSharedPtr<FRenderPipeline>>& GetAllPipelines() const { return AllPipelineMap; }
+	const TMap<FName, TSharedPtr<FTexture>>& GetAllTextures() const { return AllTextureMap; }
 
 	// 렌더러 참조 조회
-	FRenderer* GetRenderer() const
-	{
-		return RendererRef;
-	}
+	FRenderer* GetRenderer() const { return RendererRef; }
 
 	// 정점 배열 메쉬 캐싱 생성
 	TSharedPtr<FMesh> GetOrCreateMesh(const FName& ID, const TArray<FVertexData>& vertices);
 
-	[[nodiscard]] TSharedPtr<FFont> GetFont(const FName& InName) const
+	TSharedPtr<FFont> GetFont(const FName& InName) const
 	{
 		auto it = AllFontMap.find(InName);
 		if (it != AllFontMap.end())
@@ -162,8 +128,23 @@ public:
 private:
 	bool InitializePipelines(FRenderer& Renderer);
 	bool CreateWireframePipeline(FRenderer& Renderer);
-	bool CreateOutlinePipeline(FRenderer& Renderer);
-	bool CreatePostProcessPipeline(FRenderer& Renderer);
+	bool CreateSelectionStencilPipeline(FRenderer& Renderer);
+	bool CreateSelectionOutlinePipeline(FRenderer& Renderer);
+	bool CreateCompositePipeline(FRenderer& Renderer);
+	bool CreateSceneDepthPipeline(FRenderer& Renderer);
+	bool CreateCustomPipline(
+	    FRenderer& Renderer,
+	    FWString VertexShaderPath,
+	    FWString PixelShaderPath,
+	    FString PipelineName,
+	    bool StencilEnable = false,
+	    D3D11_STENCIL_OP StencilPassOp = D3D11_STENCIL_OP_KEEP,
+	    D3D11_COMPARISON_FUNC StencilFunc = D3D11_COMPARISON_ALWAYS,
+	    UINT RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL,
+	    D3D11_FILTER SamplerFilter = D3D11_FILTER_MIN_MAG_MIP_POINT,
+	    D3D11_TEXTURE_ADDRESS_MODE AddressU = D3D11_TEXTURE_ADDRESS_CLAMP,
+	    D3D11_TEXTURE_ADDRESS_MODE AddressV = D3D11_TEXTURE_ADDRESS_CLAMP,
+	    D3D11_TEXTURE_ADDRESS_MODE AddressW = D3D11_TEXTURE_ADDRESS_CLAMP);
 	bool CreateInstancingArrayMap();
 	FRenderer* RendererRef = nullptr;
 };

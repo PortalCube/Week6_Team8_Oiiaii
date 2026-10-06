@@ -14,22 +14,27 @@ void AFireBallActor::Initialize()
 	Super::Initialize();
 	bTickEnabled = true;
 
-	UStaticMeshComponent* SphereComponent = CreateDefaultSubobject<UStaticMeshComponent>();
-	SetRootComponent(SphereComponent);
-	SphereComponent->SetMesh(FAssetRegistry::GetInstance().Get<UStaticMesh>("#Sphere"));
-	SphereComponent->SetColor(FVector4{ 1.0f, 0.0f, 0.0f, 1.0f });
+	// 루트 컴포넌트 생성 및 장착
+	auto Component = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
 
-	FireBallComponent = CreateDefaultSubobject<UFireBallComponent>();
-	AddComponent(FireBallComponent);
-	FireBallComponent->SetFireColor(FVector4{ 1.0f, 0.0f, 0.0f, 1.0f });
-	FireBallComponent->SetEmissiveColor(FVector{ 1.0f, 0.0f, 0.0f });
-	FireBallComponent->SetEmissiveIntensity(1.0f);
-	FireBallComponent->SetIntensity(1.0f);
-	FireBallComponent->SetRadius(10.0f);
-	FireBallComponent->SetRadiusFalloff(2.0f);
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetMesh(Registry.Get<UStaticMesh>("#Sphere"));
+		Component->SetColor(FVector4{ 1.0f, 0.0f, 0.0f, 1.0f });
 
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>();
-	AddComponent(ProjectileMovementComponent);
+		FireBallComponent = CreateDefaultSubobject<UFireBallComponent>();
+
+		FireBallComponent->SetFireColor(FVector4{ 1.0f, 0.0f, 0.0f, 1.0f });
+		FireBallComponent->SetEmissiveColor(FVector{ 1.0f, 0.0f, 0.0f });
+		FireBallComponent->SetEmissiveIntensity(1.0f);
+		FireBallComponent->SetIntensity(1.0f);
+		FireBallComponent->SetRadius(10.0f);
+		FireBallComponent->SetRadiusFalloff(2.0f);
+
+		ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>();
+	}
 }
 
 UStaticMeshComponent* AFireBallActor::GetSphereComponent() const

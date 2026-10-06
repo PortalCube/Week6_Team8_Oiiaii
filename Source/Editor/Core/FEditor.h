@@ -8,6 +8,7 @@
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/CoreUObject/TWeakObjectPtr.h"
 #include "Runtime/Actors/AActor.h"
+#include "Runtime/Actors/ASelectedTextActor.h"
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "Runtime/Components/UTextComponent.h"
 
@@ -46,7 +47,7 @@ public:
 	bool bHideUI = false;
 	// F11. bHideUI가 숨기는 창에 더해 툴바까지 숨긴다.
 	bool bZenMode = false;
-	bool bShowBenchmark = true;
+	bool bShowBenchmark = false;
 	double LastPickingMs = 0.0;
 	double AccumulatedPickingMs = 0.0;
 	int32 PickingAttempts = 0;
@@ -57,6 +58,8 @@ public:
 
 	void Process();
 
+	void OnWorldLoaded(FWorldContext& Context);
+
 	// Scene
 	void NewScene();
 	void SaveScene(const FString& Path);
@@ -66,7 +69,7 @@ public:
 	SEditorViewport* GetActiveViewport();
 	void SetViewLayout(FEditorState::SplitViewMode mode);
 	FEditorViewportLayout& GetViewportLayout() { return ViewportLayout; }
-	FEditorRenderContext GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry);
+	FEditorRenderContext GetEditorRenderContext(SEditorViewport& EditorViewport, FVisualizerRegistry* VisualizerRegistry);
 	SEditorViewport* GetPerspectiveViewport();
 
 	// Actor
@@ -101,6 +104,7 @@ private:
 	UEditorEngine* EditorEngine = nullptr;
 	FGizmo Gizmo;
 	TWeakObjectPtr<AActor> SelectedActor;
+	TWeakObjectPtr<ASelectedTextActor> SelectedActorTextActor;
 	TWeakObjectPtr<UTextComponent> SelectedActorTextComp;
 
 	// Viewport

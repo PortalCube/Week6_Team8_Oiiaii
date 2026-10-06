@@ -14,9 +14,9 @@ class UTextComponent : public UInstancePrimitiveComponent
 
 public:
 	void Initialize() override;
-	void Update(float delta) override;
+	void TickComponent(float delta) override;
 
-	void SetText(const FWString& InText);
+	void SetText(FWStringView InText);
 
 	[[nodiscard]] const FWString& GetText() const { return Text; }
 	// void SetFont(TSharedPtr<FFont> InFont);

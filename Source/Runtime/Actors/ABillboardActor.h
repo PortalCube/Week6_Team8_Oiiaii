@@ -13,5 +13,4 @@ class ABillboardActor : public AActor
 
 public:
 	virtual void Initialize() override;
-	UBillboardComponent* GetBillboardComponent() const;
 };

@@ -14,6 +14,4 @@ class ATextRenderActor : public AActor
 public:
 
 	virtual void Initialize() override;
-
-	UTextComponent* GetTextComponent() const;
 };

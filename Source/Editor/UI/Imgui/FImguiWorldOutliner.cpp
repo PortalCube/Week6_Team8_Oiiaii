@@ -185,7 +185,7 @@ void FImguiWorldOutliner::ShowActorNode(FEditor& Editor, AActor* Actor, const st
 		NodeFlags |= ImGuiTreeNodeFlags_Selected;
 	}
 
-	const auto& Components = Actor->GetAttachedComponents();
+	const auto& Components = Actor->GetOwnedComponents();
 	if (Components.empty())
 	{
 		NodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
@@ -203,12 +203,13 @@ void FImguiWorldOutliner::ShowActorNode(FEditor& Editor, AActor* Actor, const st
 	// 자식 컴포넌트 목록 전개
 	if (bNodeOpen && !Components.empty())
 	{
-		for (USceneComponent* Comp : Components)
+		for (auto Comp : Components)
 		{
 			if (!Comp)
 			{
 				return;
 			}
+
 			ShowComponentNode(*Comp);
 		}
 
@@ -237,7 +238,7 @@ void FImguiWorldOutliner::ShowActorNode_Cached(FEditor& Editor, const FOutlinerI
 			NodeFlags |= ImGuiTreeNodeFlags_Selected;
 		}
 
-		const auto& Components = Actor->GetAttachedComponents();
+		const auto& Components = Actor->GetOwnedComponents();
 		if (Components.empty())
 		{
 			NodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
@@ -279,7 +280,7 @@ void FImguiWorldOutliner::ShowActorNode_Cached(FEditor& Editor, const FOutlinerI
 	}
 }
 
-void FImguiWorldOutliner::ShowComponentNode(USceneComponent& Comp) const
+void FImguiWorldOutliner::ShowComponentNode(UActorComponent& Comp) const
 {
 	const char* CompClassName = Comp.GetClass() ? Comp.GetClass()->GetDisplayName().c_str() : "Component";
 
@@ -322,7 +323,7 @@ void FImguiWorldOutliner::RebuildDisplayList()
 
 		if (ExpandedActorUUIDs.contains(ActorItem.UUID))
 		{
-			for (USceneComponent* Comp : Actor->GetAttachedComponents())
+			for (UActorComponent* Comp : Actor->GetOwnedComponents())
 			{
 				if (!Comp)
 					continue;

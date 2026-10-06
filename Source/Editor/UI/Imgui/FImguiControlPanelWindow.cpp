@@ -11,6 +11,7 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
+#include "Editor/Engine/UEditorEngine.h"
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
@@ -33,9 +34,9 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 
 	ImGui::Separator();
 
-	if (ImGui::Button("대회 씬 바로 불러오기"))
+	if (ImGui::Button("테스트"))
 	{
-		Editor.LoadScene("DefaultScene/Default.scene");
+		Globals::Editor->StartPIESession();
 	}
 
 	// 액터 스폰

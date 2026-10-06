@@ -1,10 +1,22 @@
 #pragma once
 #include "Runtime/UI/SWindow.h"
+#include "Runtime/Core/FRect.h"
+#include "Runtime/Engine/Types/PointerTypes.h"
+
+struct FViewportRenderTarget;
 
 struct FViewport
 {
-	// UV가 아닌 픽셀 좌표 Rect를 가지고 있음
-	FRect Rect = {};
+	FRect Rect = {}; // UV가 아닌 픽셀 좌표 Rect를 가지고 있음
+	TSharedPtr<FViewportRenderTarget> RenderTarget;
+	bool bResizeRenderTarget = false; // 리사이즈 되었을 때에만 RenderTarget의 Texture를 재생성. 매 프레임 Texture 재성성 막음
+
+	FViewport();
+	~FViewport();
+	FViewport(const FViewport& Other);
+	FViewport& operator=(const FViewport& Other);
+	FViewport(FViewport&& Other) noexcept;
+	FViewport& operator=(FViewport&& Other) noexcept;
 
 	//====== Getter & Setter ======
 	FVector2 GetLeftTop() const { return Rect.GetLeftTop(); }
@@ -12,6 +24,9 @@ struct FViewport
 
 	FVector2 GetRightBottom() const { return Rect.GetRightBottom(); }
 	void SetRightBottom(const FVector2& InRightBottom) { Rect.Right = InRightBottom.X; Rect.Bottom = InRightBottom.Y; }
+
+	bool IsResizeRenderTarget() const { return bResizeRenderTarget; }
+	void SetResizeRenderTarget(bool InbResizeRenderTarget) { bResizeRenderTarget = InbResizeRenderTarget; }
 	//====== Getter & Setter ======
 
 

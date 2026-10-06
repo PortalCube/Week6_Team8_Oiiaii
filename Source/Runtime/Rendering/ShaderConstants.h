@@ -14,15 +14,22 @@ struct FFrameConstants
 };
 static_assert(sizeof(FFrameConstants) % 16 == 0);
 
+
+
 // Register = b1
 struct FViewConstants
 {
 	FMatrix View;
 	FMatrix Projection;
 	FVector2 ViewportSize;
-	FVector2 Padding;
+	float NearZ;
+	float FarZ;
+	float IsPerspective;
+	FVector Padding;
 };
 static_assert(sizeof(FViewConstants) % 16 == 0);
+
+
 
 // Register = b2
 struct FObjectConstants
@@ -39,47 +46,18 @@ struct FObjectConstants
 	float EmissiveIntensity = 0.0f;
 };
 static_assert(sizeof(FObjectConstants) % 16 == 0);
-
-
-struct FPointLightCountConstants
-{
-	uint32 PointLightCount = 0;
-	float Padding[3]{};
-};
-static_assert(sizeof(FPointLightCountConstants) == 16);
-
 static constexpr uint32 ConstantRangeAlignment = 256u;
-
 static constexpr uint32 AlignConstantRange(uint32 Size)
 {
 	return (Size + ConstantRangeAlignment - 1u) & ~(ConstantRangeAlignment - 1u);
 }
-
 static constexpr uint32 ObjectConstantStride = AlignConstantRange(sizeof(FObjectConstants));
-
 static_assert(ObjectConstantStride % 256u == 0);
 static_assert(sizeof(FObjectConstants) <= ObjectConstantStride);
-
 static constexpr uint32 MaxObjectDrawCount = 16384u;
-
 static constexpr uint32 ObjectConstantUploadBufferSize = ObjectConstantStride * MaxObjectDrawCount;
 
-// Register = b3
-// struct FShaderConstants {
-//
-//};
-// static_assert(sizeof(FShaderConstants) % 16 == 0);
 
-// Register = b2 / ObjectConstants Override
-struct FGridConstants
-{
-	FMatrix MVP;
-	FMatrix World;
-	float CellSize;
-	FVector Padding;
-};
-
-static_assert(sizeof(FGridConstants) % 16 == 0);
 
 // Register = b2 / ObjectConstants Override
 // LINE_LIST 기반 에디터 그리드용 상수 버퍼
@@ -91,8 +69,29 @@ struct FGridLineConstants
 	float FadeEndDistance;
 	FVector Padding;
 };
-
 static_assert(sizeof(FGridLineConstants) % 16 == 0);
+
+
+
+// Register = b3
+struct FPostProcessConstants
+{
+	float VisMax = 10.f;
+	FVector Padding;
+};
+static_assert(sizeof(FPostProcessConstants) % 16 == 0);
+
+
+
+// Register = b4
+struct FPointLightCountConstants
+{
+	uint32 PointLightCount = 0;
+	float Padding[3]{};
+};
+static_assert(sizeof(FPointLightCountConstants) == 16);
+
+
 
 // 나중에 수정 필요
 // Register = b4
@@ -105,5 +104,4 @@ struct FLightConstants
 	FVector LightColor{ 1.0f, 1.0f, 1.0f };
 	float AmbientIntensity = 0.05f;
 };
-
 static_assert(sizeof(FLightConstants) % 16 == 0);

@@ -14,16 +14,20 @@ void ACatActor::Initialize()
 	Super::Initialize();
 	bTickEnabled = true;
 
-	CatStaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
-	SetRootComponent(CatStaticMeshComp);
+	auto Component = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
+		CatComponent = Component;
 
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	CatStaticMeshComp->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/oiia/oiia.json"));
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/oiia/oiia.json"));
+	}
 }
 
-void ACatActor::Update(float DeltaTime)
+void ACatActor::Tick(float DeltaTime)
 {
-	Super::Update(DeltaTime);
+	Super::Tick(DeltaTime);
 	ElapsedTime += DeltaTime;
 
 	if (ElapsedTime >= SpinRate)
@@ -33,12 +37,12 @@ void ACatActor::Update(float DeltaTime)
 		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 		if (bIsSpin)
 		{
-			CatStaticMeshComp->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/oiia/oiia.json"));
+			CatComponent->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/oiia/oiia.json"));
 			bIsSpin = false;
 		}
 		else
 		{
-			CatStaticMeshComp->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/oiia/Spin.json"));
+			CatComponent->SetMesh(Registry.Get<UStaticMesh>("StaticMesh/oiia/Spin.json"));
 			bIsSpin = true;
 		}
 	}

@@ -11,8 +11,4 @@ class AAppleNormalActor : public AActor
 
 public:
 	virtual void Initialize() override;
-	virtual void Update(float DeltaTime) override;
-
-private:
-	UStaticMeshComponent* AppleStaticMeshComp;
 };

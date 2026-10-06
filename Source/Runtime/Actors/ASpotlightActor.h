@@ -8,5 +8,4 @@ class ASpotlightActor : public AActor
 
 public:
 	virtual void Initialize() override;
-	USpotLightComponent* GetSpotlightComponent() const;
 };

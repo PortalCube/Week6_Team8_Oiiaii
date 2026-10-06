@@ -45,8 +45,8 @@ public:
 	void CollectScenePrimitives(const ULevel& Scene, const FSceneView& View, const AActor* SelectedActor);
 
 	// 뷰포트 패스 파이프라인
-	void BeginView(const FSceneView& View);
-	void UpdateViewConstants(const FCamera& Camera, FVector2 LeftTopPixel, FVector2 RightBottomPixel);
+	bool BeginView(const FSceneView& View);
+	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
 	void DrawGrid(const FCamera& Camera, FGrid& Grid);
 	void FlushBasePass(const FSceneView& View);
 	void FlushLinePass(const FCamera& Camera);
@@ -54,7 +54,7 @@ public:
 	void RenderOverlayPass(const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp);
 
 	// 개별 렌더 및 디버그 라인
-	void RenderGizmo(const FTransform& Transform, const FCamera& Camera, FVector2 LeftTopPixel, FVector2 RightBottomPixel, const FGizmo& Gizmo);
+	void RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo);
 
 	void RenderLine(const FVector& Start, const FVector& End, const FVector4& Color);
 	void RenderBoxCenterExtent(const FVector& Center, const FVector& Extent, const FVector4& Color);
@@ -64,10 +64,8 @@ public:
 
 	void DrawStencilMask(const FCamera& Camera, const AActor* SelectedActor);
 
-	void UpdateLightConstants(const FLightConstants& Constants);
 	void DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline);
-	void ClearTextInstances();
-	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("Simple_Line"));
+	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("#Simple_Line"));
 	void FlushQueue(const FSceneView& View);
 
 	void CollectPointLights(const ULevel& Scene, TArray<FPointLightConstants>& OutLights);

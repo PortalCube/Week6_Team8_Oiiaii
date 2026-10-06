@@ -22,7 +22,6 @@ protected:
 	TArray<FWorldContext> WorldList;
 
 public:
-
 	virtual void Init(FEngineLoop* InEngineLoop);
 
 	virtual void Tick(float DeltaTime);
@@ -37,4 +36,8 @@ public:
 
 	// 월드 Travel 구현
 	void TickWorldTravel(FWorldContext& Context, float DeltaTime);
+
+	void LoadMap(FWorldContext& Context, const FString& Path);
+
+	virtual void OnWorldLoaded(FWorldContext& Context) {};
 };

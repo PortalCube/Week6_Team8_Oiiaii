@@ -2,7 +2,7 @@
     "Version": 1,
     "Name": "Billboard",
     "AssetType": "Pipeline",
-    "VertexShaderFilePath": "Shader/ExampleVS.cso",
+    "VertexShaderFilePath": "Shader/BasePassVS.cso",
     "PixelShaderFilePath": "Shader/TexturedPS.cso",
     "Rasterizer": {
         "FillMode": "Solid",

@@ -37,6 +37,9 @@ public:
 	const FCamera& GetViewportCamera() const { return ViewportCamera; }
 	void SetViewportCamera(FCamera InViewportCamera) { ViewportCamera = InViewportCamera; }
 
+	class FWorldContext* GetWorldContext() { return WorldContext; }
+	void SetWorldContext(FWorldContext* Context);
+
 	FGrid& GetGrid() { return Grid; }
 	const FGrid& GetGrid() const { return Grid; }
 
@@ -65,6 +68,9 @@ private:
 	
 	// 뷰포트 카메라
 	FCamera ViewportCamera;
+
+	// 월드 컨텍스트
+	FWorldContext* WorldContext;
 
 	// 뷰포트 카메라 모드
 	ECameraMode CameraMode = ECameraMode::PERSPECTIVE;

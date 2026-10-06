@@ -3,6 +3,7 @@
 #include "Runtime/Actors/AActor.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Core/Log.h"
+#include "Runtime/Core/FRect.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Engine/FRayCastingManager.h"
@@ -10,6 +11,7 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Input/FInputManager.h"
 #include "Runtime/Math/FVector.h"
+
 
 #include "ThirdParty/Imgui/imgui.h"
 #include "ThirdParty/Imgui/imgui_internal.h"
@@ -76,13 +78,13 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 	FViewportInput ActiveInput{};
 	bool bHasActiveInput = false;
 
-	for (SEditorViewport& Viewport : Layout.Viewports)
+	for (SEditorViewport& EditorViewport : Layout.Viewports)
 	{
-		if (!Viewport.bVisible)
+		if (!EditorViewport.bVisible)
 			continue;
 
 		// 내부 경계에만 스플리터 공간을 확보해 3D 입력 영역과 겹치지 않게 한다.
-		FRect ChildRect = Viewport.Rect;
+		FRect ChildRect = EditorViewport.Rect;
 		if (ChildRect.Left > Rect.Left)
 			ChildRect.Left += 3.0f;
 		if (ChildRect.Right < Rect.Right)
@@ -102,7 +104,7 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 		ImGui::SetCursorScreenPos(ImVec2(Origin.x + ChildRect.Left, Origin.y + ChildRect.Top));
 
 		// 자식 창과 내부 UI의 ID를 뷰포트별로 분리
-		ImGui::PushID(&Viewport);
+		ImGui::PushID(&EditorViewport);
 
 		const bool bVisible = ImGui::BeginChild(
 		    "ViewportChild",
@@ -115,22 +117,22 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 		if (bVisible)
 		{
 			// 상단바 생성
-			DrawViewportHeader(Viewport, Editor);
+			DrawViewportHeader(EditorViewport, Editor);
 
 			// 상단바 아래의 실제 3D 영역을 별도 함수로 계산
 			FRect SceneRect{};
 			if (GetViewportSceneRect(Origin, SceneRect))
 			{
 				// 상단바를 제외한 영역으로 렌더링·종횡비 설정
-				Viewport.SetSceneRect(SceneRect);
-				const FVector2 ViewportSizePixels = Viewport.GetViewport().GetViewportSize();
-				const FVector2 LeftTopPixel = Viewport.GetViewport().GetLeftTop();
+				EditorViewport.SetSceneRect(SceneRect);
+				const FVector2 ViewportSizePixels = EditorViewport.GetViewport().GetViewportSize();
+				const FVector2 LeftTopPixel = EditorViewport.GetViewport().GetLeftTop();
 				FViewportInput Input = GatherInput(ViewportSizePixels, LeftTopPixel);
 
 				// 3D 입력 아이템을 누른 경우에만 활성 뷰포트를 변경한다.
 				if (Input.bPickRequested || ImGui::IsItemClicked(ImGuiMouseButton_Right))
 				{
-					Layout.SetActiveViewport(&Viewport);
+					Layout.SetActiveViewport(&EditorViewport);
 					ActiveViewport = Editor.GetActiveViewport();
 					ImGui::SetWindowFocus();
 					Input.bFocused = true;
@@ -139,11 +141,11 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 				// 클릭 전에도 마우스가 올라간 뷰포트에서 매 프레임 검사한다.
 				if (Editor.ObjectSelected() && Input.bHovered && !Gizmo.IsInteracting())
 				{
-					UpdateGizmoHover(Editor, Viewport, Input.LocalMouse, Input.SizePixels);
+					UpdateGizmoHover(Editor, EditorViewport, Input.LocalMouse, Input.SizePixels);
 				}
 
 				// 조작은 활성 뷰포트에서 한 번만 처리한다.
-				if (&Viewport == ActiveViewport)
+				if (&EditorViewport == ActiveViewport)
 				{
 					ActiveInput = Input;
 					bHasActiveInput = true;
@@ -206,14 +208,14 @@ void FImguiEditorViewportWindow::EndWindow() const
 	ImGui::End();
 }
 
-FImguiEditorViewportWindow::FViewportInput FImguiEditorViewportWindow::GatherInput(const FVector2& ViewportSizePixels, const FVector2& ViewportTopLeftPixels) const
+FImguiEditorViewportWindow::FViewportInput FImguiEditorViewportWindow::GatherInput(const FVector2& ViewportSizePixels, const FVector2& ViewportLeftTopPixels) const
 {
 	// 상단바 아래 3D 영역만 등록한다. 드래그 중에는 영역 밖에서도 활성 상태를 유지한다.
 	ImGui::InvisibleButton("ViewportInput", ImVec2(ViewportSizePixels.X, ViewportSizePixels.Y), ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
 
 	FViewportInput Input;
 	Input.SizePixels = ViewportSizePixels;
-	Input.LocalMouse = FInputManager::Get().GetMousePosition() - ViewportTopLeftPixels;
+	Input.LocalMouse = FInputManager::Get().GetMousePosition() - ViewportLeftTopPixels;
 	Input.bHovered = ImGui::IsItemHovered();
 	Input.bFocused = ImGui::IsWindowFocused();
 	Input.bPickRequested = ImGui::IsItemClicked(ImGuiMouseButton_Left);
@@ -234,11 +236,11 @@ void FImguiEditorViewportWindow::ClampWindowToWorkArea() const
 	}
 }
 
-void FImguiEditorViewportWindow::UpdateSelection(FEditor& Editor, SEditorViewport& Viewport, const FViewportInput& Input)
+void FImguiEditorViewportWindow::UpdateSelection(FEditor& Editor, SEditorViewport& EditorViewport, const FViewportInput& Input)
 {
 	if (Input.bPickRequested)
 	{
-		HandlePicking(Editor, Viewport, Input.LocalMouse, Input.SizePixels);
+		HandlePicking(Editor, EditorViewport, Input.LocalMouse, Input.SizePixels);
 	}
 }
 
@@ -253,7 +255,7 @@ void FImguiEditorViewportWindow::UpdateGizmo(FEditor& Editor, const FViewportInp
 	}
 }
 
-void FImguiEditorViewportWindow::UpdateCamera(FEditor& Editor, SEditorViewport& Viewport,
+void FImguiEditorViewportWindow::UpdateCamera(FEditor& Editor, SEditorViewport& EditorViewport,
     const FViewportInput& Input, float DeltaTime)
 {
 	if (!Input.bFocused)
@@ -265,7 +267,7 @@ void FImguiEditorViewportWindow::UpdateCamera(FEditor& Editor, SEditorViewport& 
 	CameraController.CameraRotateSpeed = Editor.State.GetCameraSensitivity();
 	CameraController.CameraMoveSpeed = Editor.State.GetCameraSpeed();
 
-	FCamera& Camera = Viewport.GetClient().GetViewportCamera();
+	FCamera& Camera = EditorViewport.GetClient().GetViewportCamera();
 
 	// ORTHOGRAPHIC 화면모드와의 분기
 	const bool bOrthographic = Camera.GetProjection().GetProjectionType() == EProjectionType::Orthographic;
@@ -339,7 +341,7 @@ void FImguiEditorViewportWindow::UpdateShortcuts(FEditor& Editor) const
 }
 
 void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
-    SEditorViewport& Viewport,
+    SEditorViewport& EditorViewport,
     const FVector2& LocalMousePixels,
     const FVector2& ViewportSizePixels)
 {
@@ -355,7 +357,7 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 			    Editor.SelectedTransform,
 			    Gizmo.HoveredHandle,
 			    LocalMousePixels,
-			    Viewport.GetClient().GetViewportCamera(),
+			    EditorViewport.GetClient().GetViewportCamera(),
 			    ViewportSizePixels);
 
 			return;
@@ -371,7 +373,7 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 	// 1) 마우스 화면 좌표 획득
 	// 2) 화면 좌표 -> 월드 좌표로의 픽 레이(Pick Ray) 계산
 	const FRay PickRay = FRayCastingManager::CreateRayFromScreenPosition(
-	    Viewport.GetClient().GetViewportCamera(), LocalMousePixels, ViewportSizePixels);
+	    EditorViewport.GetClient().GetViewportCamera(), LocalMousePixels, ViewportSizePixels);
 
 	// 벤치마크용 광선 저장 (측정 구간 밖)
 	FRayCastingManager::LastPickRay = PickRay;
@@ -392,7 +394,7 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 	{
 		const TArray<UPrimitiveComponent*>& Components = Editor.GetPrimitiveComponents();
 		bHit = FRayCastingManager::RayIntersectsMeshes(
-		    PickRay, Viewport.GetClient().GetViewportCamera(), Components, HitComponent, ImpactPoint);
+		    PickRay, EditorViewport.GetClient().GetViewportCamera(), Components, HitComponent, ImpactPoint);
 	}
 
 	// 6) 퍼포먼스 측정 종료 및 시간 누적
@@ -401,13 +403,13 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 
 	// 필요 시 'isHit' 결과를 활용해 추가 로직 처리
 	// 피킹은 액터 단위로 선택한다. 소유 액터가 없으면 선택할 수 없다.
-	if (!bHit || !HitComponent || !HitComponent->GetActorOwner())
+	if (!bHit || !HitComponent || !HitComponent->GetOwner())
 	{
 		Editor.UnSelectActor();
 		return;
 	}
 
-	AActor* OwnerActor = HitComponent->GetActorOwner();
+	AActor* OwnerActor = HitComponent->GetOwner();
 	Editor.SelectActor(OwnerActor);
 
 	const char* ActorClass =
@@ -420,15 +422,15 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 }
 
 void FImguiEditorViewportWindow::UpdateGizmoHover(FEditor& Editor,
-    SEditorViewport& Viewport,
+    SEditorViewport& EditorViewport,
     const FVector2& LocalMousePixels,
     const FVector2& ViewportSizePixels)
 {
 	FRay Ray = FRayCastingManager::CreateRayFromScreenPosition(
-	    Viewport.GetClient().GetViewportCamera(), LocalMousePixels, ViewportSizePixels);
+	    EditorViewport.GetClient().GetViewportCamera(), LocalMousePixels, ViewportSizePixels);
 
 	FGizmo& Gizmo = Editor.GetGizmo();
-	Gizmo.HoveredHandle = Gizmo.HitTest(Editor.SelectedTransform, Ray, Viewport.GetClient().GetViewportCamera());
+	Gizmo.HoveredHandle = Gizmo.HitTest(Editor.SelectedTransform, Ray, EditorViewport.GetClient().GetViewportCamera());
 }
 
 void FImguiEditorViewportWindow::ShowViewportVerticalSplitter(SSplitter& Splitter)

@@ -6,4 +6,5 @@ class UMovementComponent : public USceneComponent
 {
 	GENERATED_BODY()
 	DECLARE_UCLASS(UMovementComponent, USceneComponent)
+
 };

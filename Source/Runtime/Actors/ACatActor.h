@@ -12,10 +12,10 @@ class ACatActor : public AActor
 
 public:
 	virtual void Initialize() override;
-	virtual void Update(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
 
 private:
-	UStaticMeshComponent* CatStaticMeshComp;
+	UStaticMeshComponent* CatComponent;
 	bool bIsSpin = false;
 
 	float SpinSpeed = 2000.0f;

@@ -8,11 +8,11 @@ UCLASS_META(ATestTextActor, DisplayName, "Test Text Actor")
 
 void ATestTextActor::Initialize()
 {
-	// 텍스트 인스턴스 컴포넌트 장착
-	CreateRootComponent(UTextComponent::StaticClass());
-}
+	Super::Initialize();
 
-UTextComponent* ATestTextActor::GetTextInstanceComponent() const
-{
-	return RootComponent ? RootComponent->Cast<UTextComponent>() : nullptr;
+	auto Component = CreateDefaultSubobject<UTextComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
+	}
 }
