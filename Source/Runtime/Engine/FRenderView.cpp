@@ -20,12 +20,9 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Core/Globals.h"
-
-
+#include "Runtime/CoreUObject/FStatsManager.h"
 
 #include <fstream>
-
-#include "Runtime/CoreUObject/FStatsManager.h"
 
 FRenderView::FRenderView(FRenderer& Renderer) : Renderer(Renderer) {}
 
@@ -513,11 +510,9 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
 	{
 		Renderer.RenderSceneDepth(View.Viewport);
-		return; // Scene Depth만 그린다
 	}
-	
-	// Fog를 그린다 (Fog ShowFlag가 켜져 있을 때만)
-	if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_Fog))
+	// Fog를 그린다
+	else if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_Fog))
 	{
 		Renderer.RenderFog(View.Viewport);
 	}

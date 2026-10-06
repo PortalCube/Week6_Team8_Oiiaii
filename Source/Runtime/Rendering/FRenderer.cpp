@@ -1671,7 +1671,9 @@ void FRenderer::RenderSceneDepth(const FViewport& TargetViewport)
 	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.f, 0.f, TargetViewport.Rect.GetWidth(), TargetViewport.Rect.GetHeight());
 
 	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get() };
-	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
+	//DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
+	DrawScreenPass(ActiveSceneTextures->GetTargetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
+	ActiveSceneTextures->SwapPingPong();
 }
 
 // Fog를 SceneColor에 그린다
