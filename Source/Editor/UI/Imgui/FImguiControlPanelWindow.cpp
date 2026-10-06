@@ -16,6 +16,8 @@
 #include <iomanip>
 #include "Runtime/Math/Random.h"
 #include "Editor/Core/EditorConstant.h"
+#include "Runtime/Math/FVector.h"
+#include "Runtime/Rendering/FPostProcess.h"
 #include <Windows.h>
 #include <ShlObj.h>
 #include <filesystem>
@@ -50,6 +52,9 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 	ImGui::Separator();
 	// 전역조명
 	DirectionLightSetting(Editor);
+	ImGui::Separator();
+	// 안개
+	FogSetting(Editor);
 
 	ImGui::Separator();
 	BVHDebugSetting(Editor);
@@ -602,4 +607,32 @@ void FImguiControlPanelWindow::DirectionLightSetting(FEditor& Editor)
 	ImGui::SliderFloat("##LightAmbient", &Editor.GlobalLight.AmbientIntensity, 0.0f, 1.0f, "%.2f");
 	ImGui::SameLine();
 	ImGui::Text("Ambient");
+}
+
+void FImguiControlPanelWindow::FogSetting(FEditor& Editor)
+{
+	ImGui::SeparatorText("Height Fog");
+
+	FFogSettings& Fog = GFogSettings;
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Fog Density", &Fog.FogDensity, 0.0f, 1.0f, "%.3f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Height Falloff", &Fog.FogHeightFalloff, 0.0f, 2.0f, "%.3f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Fog Height", &Fog.FogHeight, -50.0f, 50.0f, "%.2f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Start Distance", &Fog.StartDistance, 0.0f, 100.0f, "%.2f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Cutoff Distance", &Fog.FogCutoffDistance, 0.0f, 1000.0f, "%.1f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Max Opacity", &Fog.FogMaxOpacity, 0.0f, 1.0f, "%.2f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::ColorEdit3("Inscattering Color", &Fog.FogInscatteringColor.X);
 }

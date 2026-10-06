@@ -493,15 +493,7 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 	// 스텐실 마스크는 이전에 바인딩 된 DSV에 스텐실을 써야하기 때문에 첫번째로 실행
 	DrawStencilMask(View.Camera, SelectedActor);
 
-	FFogSettings FogSettings = {
-		.FogDensity = 0.02f,
-		.FogHeightFalloff = 0.06f,
-		.StartDistance = 0.5f,
-		.FogCutoffDistance = 0.f,
-		.FogMaxOpacity = 0.5f,
-		//.FogInscatteringColor = FVector(0.447, 0.638, 1.0),
-		.FogInscatteringColor = FVector(1.f, 1.f, 1.f),
-	};
+	FFogSettings FogSettings = GFogSettings; // ImGui에서 조절한 값
 
 	// PostProcess 상수버퍼
 	FPostProcessConstants Constants = {
@@ -509,7 +501,7 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 		.VisMinOrtho = 0.1f,
 		.VisMaxOrtho = 10.f,
 		.FogHeightFalloff = FogSettings.FogHeightFalloff,
-		.CameraHeightDensity = FogSettings.GetCameraHeightDensity(View.Camera.GetPosition().Z, -5.f),
+		.CameraHeightDensity = FogSettings.GetCameraHeightDensity(View.Camera.GetPosition().Z, FogSettings.FogHeight),
 		.StartDistance = FogSettings.StartDistance,
 		.FogCutoffDistance = FogSettings.FogCutoffDistance,
 		.FogMaxOpacity = FogSettings.FogMaxOpacity,

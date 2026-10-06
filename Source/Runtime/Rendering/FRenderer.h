@@ -42,7 +42,7 @@ struct FFrameResource
 	Microsoft::WRL::ComPtr<ID3D11Buffer> PostProcessConstantBuffer;
 };
 
-constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+constexpr float ClearColor[] = { 0.447f, 0.638f, 1.0f, 1.0f };
 
 class FRenderer final
 {
