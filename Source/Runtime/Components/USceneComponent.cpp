@@ -6,73 +6,7 @@
 #include "Runtime/Engine/FArchive.h"
 #include "Runtime/Engine/ULevel.h"
 
-IMPLEMENT_UCLASS(USceneComponent, UObject)
-
-void USceneComponent::Initialize()
-{
-	Super::Initialize();
-	Level = nullptr;
-	bHasBegunPlay = false;
-	bTickEnabled = false;
-}
-void USceneComponent::Release()
-{
-	if (bHasBegunPlay)
-	{
-		EndPlay();
-	}
-	if (Level)
-	{
-		Unregister();
-	}
-
-	ActorOwner = nullptr;
-	SceneOwner = nullptr;
-	Level = nullptr;
-
-	Super::Release();
-}
-
-void USceneComponent::Register(ULevel& InScene)
-{
-	if (Level == &InScene)
-	{
-		return;
-	}
-	if (Level)
-	{
-		Unregister();
-	}
-
-	Level = &InScene;
-}
-
-void USceneComponent::BeginPlay()
-{
-	if (!Level || bHasBegunPlay)
-	{
-		return;
-	}
-	bHasBegunPlay = true;
-}
-
-void USceneComponent::EndPlay()
-{
-	if (!bHasBegunPlay)
-	{
-		return;
-	}
-	bHasBegunPlay = false;
-}
-
-void USceneComponent::Unregister()
-{
-	if (bHasBegunPlay)
-	{
-		EndPlay();
-	}
-	Level = nullptr;
-}
+IMPLEMENT_UCLASS(USceneComponent, UActorComponent)
 
 void USceneComponent::SetupAttachment(USceneComponent* InParent)
 {
@@ -81,12 +15,30 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent)
 		return;
 	}
 
-	SceneOwner = InParent;
+	AttachParent = InParent;
 	bGlobalDirty = true;
-	if (InParent)
+}
+
+bool USceneComponent::AttachToComponent(USceneComponent* InParent)
+{
+	SetupAttachment(InParent);
+	return true;
+}
+
+void USceneComponent::DetachFromComponent()
+{
+	if (!AttachParent)
 	{
-		ActorOwner = InParent->GetActorOwner();
+		return;
 	}
+
+	AttachParent = nullptr;
+	bGlobalDirty = true;
+}
+
+void USceneComponent::SetAttachParent(USceneComponent* NewAttachParent)
+{
+	AttachParent = NewAttachParent;
 }
 
 void USceneComponent::Serialize(FArchive& Archive) const
@@ -131,17 +83,12 @@ void USceneComponent::SetRelativeTransform(const FTransform& RelativeTransform)
 
 USceneComponent* USceneComponent::GetTransformParent() const
 {
-	if (SceneOwner)
+	if (AttachParent)
 	{
-		return SceneOwner;
+		return AttachParent;
 	}
 
-	if (!ActorOwner)
-	{
-		return nullptr;
-	}
-
-	USceneComponent* Root = ActorOwner->GetRootComponent();
+	USceneComponent* Root = GetOwner()->GetRootComponent();
 	return Root == this ? nullptr : Root;
 }
 
@@ -164,7 +111,7 @@ const FTransform& USceneComponent::GetGlobalTransform() const // 나중에 부�
 	{
 		CachedGlobal = RelativeTransform;
 	}
-	else if (SceneOwner || bInheritRotation)
+	else if (AttachParent || bInheritRotation)
 	{
 		CachedGlobal = Parent->CachedGlobal * RelativeTransform;
 	}
@@ -203,10 +150,7 @@ void USceneComponent::MarkActorTransformDirty()
 	bGlobalDirty = true;
 	OnTransformChanged();
 
-	if (ActorOwner)
-	{
-		ActorOwner->MarkComponentsTransformDirty();
-	}
+	GetOwner()->MarkComponentsTransformDirty();
 }
 
 void USceneComponent::SetRelativeLocation(const FVector& RelativeLocation)

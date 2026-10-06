@@ -9,11 +9,15 @@ UCLASS_META(ACubeActor, DisplayName, "Cube Actor")
 
 void ACubeActor::Initialize()
 {
-	// 기본 큐브 컴포넌트 장착
-	UStaticMeshComponent* Object = CreateDefaultSubobject<UStaticMeshComponent>();
-	SetRootComponent(Object);
+	Super::Initialize();
 
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	Object->SetMesh(Registry.Get<UStaticMesh>("#Cube"));
-	Object->SetMaterial(Registry.Get<UMaterial>("Material/Cube_TwoSided.json"));
+	auto Component = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
+
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetMesh(Registry.Get<UStaticMesh>("#Cube"));
+	    Component->SetMaterial(Registry.Get<UMaterial>("Material/Cube_TwoSided.json"));
+	}
 }

@@ -14,6 +14,9 @@
 #include "Runtime/Utility/EngineUtil.h"
 #include "Runtime/Utility/FileUtil.h"
 
+#include "Runtime/Actors/ACubeActor.h"
+#include "Runtime/Components/Mesh/UStaticMeshComponent.h"
+
 #include "Editor/UI/Imgui/FImguiPropertyWindow.h"
 #include "Editor/UI/Imgui/FImguiControlPanelWindow.h"
 #include "Editor/UI/Imgui/FImguiContentsDrawer.h"
@@ -45,14 +48,12 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 	}
 
 	// 에디터 WorldContext 등록
-	FWorldContext EditorWorldContext{
-		.World = nullptr,
-		.WorldType = EWorldType::Editor,
-		.TravelURL = "",
-		.bTravelEmptyLevel = true, // 첫 Tick에서 월드 생성
-	};
+	WorldList.push_back({
+	    .World = nullptr,
+	    .WorldType = EWorldType::Editor,
+	});
 
-	WorldList.push_back(EditorWorldContext);
+	EditorWorldContext = &WorldList[0];
 
 	// ImGui 초기화
 	ImguiManager.Initialize_ImplWin32DX11(*Window, Device, Context);
@@ -78,6 +79,9 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 	Editor.Initialize(this);
 	Editor.SetViewLayout(Editor.State.GetSplitMode());
 	Editor.LoadState();
+
+	// 새로운 Level으로 World 불러오기
+	LoadMap(*EditorWorldContext, "");
 }
 
 void UEditorEngine::Tick(float DeltaTime)
@@ -92,18 +96,6 @@ void UEditorEngine::Tick(float DeltaTime)
 	{
 		// 렌더러 스왑체인 조정
 		Renderer.OnWindowSize(Globals::ResizeWidth, Globals::ResizeHeight);
-
-		//FVector2 ViewportSize{
-		//	static_cast<float>(Globals::ResizeWidth),
-		//	static_cast<float>(Globals::ResizeHeight)
-		//};
-
-		//// 뷰포트 종횡비 갱신
-		//for (auto& Viewport : Editor.GetViewports())
-		//{
-		//	const FVector2 SizePixels = Viewport.LengthUV * ViewportSize;
-		//	Viewport.ViewportCamera.SetAspectRatio(SizePixels.X / SizePixels.Y);
-		//}
 
 		Globals::bIsRequestingResize = false;
 	}
@@ -153,27 +145,27 @@ void UEditorEngine::Tick(float DeltaTime)
 		GetEditorWorld()->GetCurrentLevel()->UpdateDirtyBounds();
 
 		// Active인 Viewport 마다 렌더링
-		for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
+		for (SEditorViewport& EditorViewport : Editor.GetViewportLayout().Viewports)
 		{
-			if (!Viewport.IsRenderable())
+			if (!EditorViewport.IsRenderable())
 			{
 				continue;
 			}
 
 			// 뷰포트 렌더링 명세 구성
-			FSceneView View = Viewport.GetClient().GetSceneView(Editor.GlobalLight);
+			FSceneView View = EditorViewport.GetClient().GetSceneView(Editor.GlobalLight);
 
 			// 뷰포트의 RT를 준비
-			if (!RenderView.GetRenderer().PrepareViewportRenderTarget(Viewport.GetViewport()))
+			if (!RenderView.GetRenderer().PrepareViewportRenderTarget(EditorViewport.GetViewport()))
 			{
 				continue; // 생성에 실패하면 이번 프레임은 이 뷰포트를 건너뛴다
 			}
 
 			// 에디터 렌더링 컨텍스트 구성
-			FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(Viewport, &VisualizerRegistry);
+			FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(EditorViewport, &VisualizerRegistry);
 
 			// 뷰포트 렌더링 일괄 수행
-			RenderView.RenderView(View, *GetEditorWorld()->GetCurrentLevel(), EditorRenderContext);
+			RenderView.RenderView(View, *Viewport.GetClient().GetWorldContext()->World->GetCurrentLevel(), EditorRenderContext);
 
 			// 기즈모 그리기
 			if (Editor.ObjectSelected())
@@ -183,7 +175,7 @@ void UEditorEngine::Tick(float DeltaTime)
 			}
 
 			// 백버퍼 바인딩 후 셰이더로 합성
-			RenderView.GetRenderer().CompositeViewport(Viewport.GetViewport());
+			RenderView.GetRenderer().CompositeViewport(EditorViewport.GetViewport());
 
 		}
 
@@ -207,7 +199,6 @@ void UEditorEngine::Tick(float DeltaTime)
 void UEditorEngine::Exit()
 {
 	Editor.Shutdown();
-	Renderer.Shutdown();
 
 	UEngine::Exit();
 }
@@ -226,13 +217,37 @@ void UEditorEngine::SaveLevel(const FString& Path, ULevel* Level)
 	Level->Serialize(LevelArchive);
 	Archive.SetArchive("Level", LevelArchive);
 
-	FileUtil::WriteArchive(Path, LevelArchive);
+	FileUtil::WriteArchive(Path, Archive);
 }
 
 UWorld* UEditorEngine::GetEditorWorld() const
 {
-	// 대충 임시
-	return WorldList[0].World;
+	if (!EditorWorldContext)
+	{
+		return nullptr;
+	}
+
+	return EditorWorldContext->World;
+}
+
+FWorldContext* UEditorEngine::GetEditorWorldContext() const
+{
+	return EditorWorldContext;
+}
+
+UWorld* UEditorEngine::GetPIEWorld() const
+{
+	if (!PIEWorldContext)
+	{
+		return nullptr;
+	}
+
+	return PIEWorldContext->World;
+}
+
+FWorldContext* UEditorEngine::GetPIEWorldContext() const
+{
+	return PIEWorldContext;
 }
 
 void UEditorEngine::ExecuteCommand(const char* Command)
@@ -286,5 +301,59 @@ void UEditorEngine::ExecuteCommand(const char* Command)
 	{
 		UE_LOG("Unknown command: '%s'\n", Command);
 		return;
+	}
+}
+
+void UEditorEngine::OnWorldLoaded(FWorldContext& Context)
+{
+	Editor.OnWorldLoaded(Context);
+}
+
+void UEditorEngine::StartPIESession()
+{
+	// 일단 대충 구현
+	// 지연된 시작은 조금 나중에 구현
+
+	if (PIEWorldContext)
+	{
+		EndPIESession();
+	}
+
+	// 에디터 WorldContext 등록
+	WorldList.push_back({
+	    .World = nullptr,
+	    .WorldType = EWorldType::PIE,
+	});
+
+	PIEWorldContext = &WorldList[1];
+
+	// TODO: Editor World를 복제하기
+	// 지금은 비어있는 월드를 생성
+	LoadMap(*PIEWorldContext, "");
+
+	// 테스트. 나중에 없애야함
+	FVector Location;
+	ACubeActor* TestActor1 = PIEWorldContext->World->SpawnActor<ACubeActor>(ACubeActor::StaticClass());
+	UStaticMeshComponent* TestMesh1 = TestActor1->GetRootComponent()->Cast<UStaticMeshComponent>();
+
+	Location = {0.0, 5.0f, 0.0f};
+	TestMesh1->SetRelativeLocation(Location);
+
+	ACubeActor* TestActor2 = PIEWorldContext->World->SpawnActor<ACubeActor>(ACubeActor::StaticClass());
+	UStaticMeshComponent* TestMesh2 = TestActor1->GetRootComponent()->Cast<UStaticMeshComponent>();
+
+	Location = { 0.0, 0.0f, 5.0f };
+	TestMesh2->SetRelativeLocation(Location);
+}
+
+void UEditorEngine::EndPIESession()
+{
+	if (PIEWorldContext)
+	{
+		// TODO: AGameMode의 StartToLeaveMap 실행
+
+		PIEWorldContext->World->EndPlay();
+		PIEWorldContext->World->CleanupWorld();
+		DestroyObject(PIEWorldContext->World);
 	}
 }

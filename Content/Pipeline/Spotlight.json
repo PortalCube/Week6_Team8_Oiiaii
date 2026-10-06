@@ -2,7 +2,7 @@
     "Version": 1,
     "Name": "Spotlight",
     "AssetType": "Pipeline",
-    "VertexShaderFilePath": "Shader/ExampleVS.cso",
+    "VertexShaderFilePath": "Shader/BasePassVS.cso",
     "PixelShaderFilePath": "Shader/SpotlightPS.cso",
     "Rasterizer": {
         "FillMode": "Solid",

@@ -8,17 +8,16 @@
 #include "Runtime/Actors/ACylinderActor.h"
 #include "Runtime/Actors/ASphereActor.h"
 #include "Runtime/Actors/ASpotlightActor.h"
+#include "Runtime/Actors/ASelectedTextActor.h"
 #include "Runtime/Asset/FAssetRegistry.h"
-#include "Runtime/Components/UPrimitiveComponent.h"
+#include "Runtime/Components/USceneComponent.h"
+#include "Runtime/Engine/FWorldContext.h"
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Input/FInputManager.h"
 #include "Runtime/Math/Random.h"
-#include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Core/Globals.h"
-#include <numbers>
-#include <Runtime/Engine/FSceneBVH.h>
 #include "Editor/Engine/UEditorEngine.h"
 #include "Editor/PlayInEditor/FPlayInEditorManager.h"
 
@@ -29,17 +28,6 @@ void FEditor::Initialize(UEditorEngine* EditorEngine)
 	Gizmo.Initialize();
 
 	UWorld* World = EditorEngine->GetEditorWorld();
-	SelectedActorTextComp = NewObject<UTextComponent>(World /* ?? */);
-	if (SelectedActorTextComp)
-	{
-		SelectedActorTextComp->Initialize();
-		SelectedActorTextComp->SetInheritRotation(false);
-
-		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-		SelectedActorTextComp->SetMesh(Registry.Get<UStaticMesh>("#Rect"));
-		SelectedActorTextComp->SetMaterial(Registry.Get<UMaterial>("Material/SelectedActor_Text.json"));
-		SelectedActorTextComp->SetFont(Registry.Get<UFont>("Font/BazziOTF.json"));
-	}
 
 	PlayManager = std::make_unique<PIEManager>(*EditorEngine);
 
@@ -90,6 +78,26 @@ void FEditor::Process()
 
 	// State를 파일에 주기적으로 자동 저장
 	State.Tick(FTimeManager::GetDeltaTime());
+}
+
+void FEditor::OnWorldLoaded(FWorldContext& Context)
+{
+	if (Context.WorldType == EWorldType::Editor)
+	{
+		SelectedActorTextActor = GetCurrentWorld()->SpawnActor<ASelectedTextActor>(ASelectedTextActor::StaticClass());
+
+		SelectedActorTextComp = SelectedActorTextActor->TextComponent;
+
+		for (auto& Viewport : ViewportLayout.Viewports)
+		{
+			Viewport.GetClient().SetWorldContext(EditorEngine->GetEditorWorldContext());
+		}
+	}
+	else if (Context.WorldType == EWorldType::PIE)
+	{
+		ViewportLayout.ActiveViewport->GetClient().SetWorldContext(EditorEngine->GetPIEWorldContext());
+	}
+	
 }
 
 void FEditor::SaveState()
@@ -223,19 +231,19 @@ SEditorViewport* FEditor::GetActiveViewport()
 SEditorViewport* FEditor::GetPerspectiveViewport()
 {
 	SEditorViewport* HiddenPerspective = nullptr;
-	for (SEditorViewport& Viewport : ViewportLayout.Viewports)
+	for (SEditorViewport& EditorViewport : ViewportLayout.Viewports)
 	{
-		if (Viewport.GetClient().GetCameraMode() != ECameraMode::PERSPECTIVE)
+		if (EditorViewport.GetClient().GetCameraMode() != ECameraMode::PERSPECTIVE)
 		{
 			continue;
 		}
-		if (Viewport.bVisible)
+		if (EditorViewport.bVisible)
 		{
-			return &Viewport;
+			return &EditorViewport;
 		}
 		if (!HiddenPerspective) //원근 뷰포트를 찾음
 		{
-			HiddenPerspective = &Viewport;
+			HiddenPerspective = &EditorViewport;
 		}
 	}
 	return HiddenPerspective ? HiddenPerspective : GetActiveViewport();
@@ -260,7 +268,7 @@ bool FEditor::SelectActor(AActor* Actor)
 
 		if (SelectedActorTextComp)
 		{
-			SelectedActorTextComp->SetActorOwner(SelectedActor.Get());
+			SelectedActorTextComp->AttachToComponent(SelectedActor.Get()->GetRootComponent());
 			FTransform RelativeTrans;
 			RelativeTrans.SetLocation(FVector{ 0.0f, 0.0f, 1.5f });
 			SelectedActorTextComp->SetRelativeTransform(RelativeTrans);
@@ -277,10 +285,12 @@ void FEditor::UnSelectActor()
 	{
 		SelectedActor->SetTransform(SelectedTransform);
 	}
+
 	SelectedActor = nullptr;
+
 	if (SelectedActorTextComp)
 	{
-		SelectedActorTextComp->SetActorOwner(nullptr);
+		SelectedActorTextComp->DetachFromComponent();
 	}
 }
 
@@ -393,12 +403,12 @@ void FEditor::SetViewLayout(FEditorState::SplitViewMode Mode)
 }
 
 // FEditorApplication::Render에서 필요한 EditorRenderContext을 만든다
-FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& Viewport, FVisualizerRegistry* VisualizerRegistry)
+FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& EditorViewport, FVisualizerRegistry* VisualizerRegistry)
 {
 	FEditorRenderContext EditorRenderContext{
 		.SelectedActor = SelectedActor,
 		.SelectedPrimitive = nullptr,
-		.Grid = &Viewport.GetClient().GetGrid(),
+		.Grid = &EditorViewport.GetClient().GetGrid(),
 		.VisualizerRegistry = VisualizerRegistry,
 		.SelectedTransform = SelectedTransform,
 		.Gizmo = ObjectSelected() ? &Gizmo : nullptr,

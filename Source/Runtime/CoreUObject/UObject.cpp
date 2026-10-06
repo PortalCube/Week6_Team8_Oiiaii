@@ -26,9 +26,31 @@ void UObject::Deserialize(const FArchive& Archive)
 	UUID = Archive.GetInt32("UUID");
 }
 
+bool UObject::IsEditorOnly() const
+{
+	return false;
+}
+
 UObject* UObject::GetOuter() const
 {
 	return Outer;
+}
+
+UObject* UObject::GetTypedOuter(UClass* Class) const
+{
+	UObject* Current = GetOuter();
+
+	while (Current != nullptr)
+	{
+		if (Current->IsA(Class))
+		{
+			return Current;
+		}
+
+		Current = Current->GetOuter();
+	}
+
+	return nullptr;
 }
 
 class UWorld* UObject::GetWorld() const

@@ -56,8 +56,14 @@ public:													\
 	static UClass* StaticClass();						\
 														\
 private:												\
-	static UClass* ClassInfo;							\
 	static ClassName* CreateObject(UObject* Outer);		\
+														\
+	static inline UClass* ClassInfo =					\
+	    UClass::RegisterToFactory(						\
+	        #ClassName,									\
+	        "",											\
+	        nullptr,									\
+	        &ClassName::CreateObject);					\
 														\
 	template <UObjectType TObject>						\
 	friend TObject* NewObject(UObject* Outer);			\
@@ -76,9 +82,6 @@ private:												\
 	{                                                                       \
 		return NewObject<ClassName>(Outer);                                 \
 	}                                                                       \
-																			\
-	UClass* ClassName::ClassInfo =											\
-		UClass::RegisterToFactory(#ClassName, "", nullptr, &ClassName::CreateObject);\
 																			\
 	UClass* ClassName::StaticClass()                                        \
 	{                                                                       \
@@ -114,8 +117,13 @@ public:																				   \
 																					   \
 private:																			   \
 	static UObject* CreateObject(UObject* Outer);									   \
+																					   \
 	static inline UClass* ClassInfo =												   \
-		UClass::RegisterToFactory(#ClassName, #ParentClass, ParentClass::StaticClass(), & ClassName::CreateObject); \
+		UClass::RegisterToFactory(													   \
+			#ClassName,																   \
+			#ParentClass,															   \
+			ParentClass::StaticClass(),												   \
+			&ClassName::CreateObject);												   \
 																					   \
 	template <UObjectType TObject>													   \
     friend TObject* NewObject(UObject* Outer);										   \
@@ -155,6 +163,8 @@ private:																			   \
 			ClassName::StaticClass()->SetMeta(#Key, Value); \
 		}                                                   \
 	} _MetaRegisterInstance_##ClassName##_##Key;            \
+
+
 
 class UObject
 {
@@ -221,6 +231,8 @@ public:
 	virtual void Serialize(FArchive& Archive) const;
 	virtual void Deserialize(const FArchive& Archive);
 
+	//virtual UObject* Duplicate();
+
 
 
 	////////////////////////////////////////////////////////////
@@ -232,20 +244,42 @@ protected:
 	template<UObjectType T>
 	T* CreateDefaultSubobject();
 
+	template<UObjectType T>
+	T* CreateEditorOnlyDefaultSubobject();
+
+	////////////////////////////////////////////////////////////
+	// Editor Flag
+	////////////////////////////////////////////////////////////
+
+	virtual void MarkAsEditorOnlySubobject() {}
+	virtual bool IsEditorOnly() const;
+
 
 
 	////////////////////////////////////////////////////////////
 	// 상속 관계
 	////////////////////////////////////////////////////////////
 
+public:
+
 	// 이 UObject를 가지고 있는 객체를 가리킵니다.
 	UObject* Outer = nullptr;
 
-public:
-
 	// UObject를 가지고 있는 객체를 반환합니다.
 	UObject* GetOuter() const;
+
+	template <UObjectType T>
+	T* GetTypedOuter() const;
+
+	UObject* GetTypedOuter(UClass* Class) const;
+
 	virtual class UWorld* GetWorld() const;
+
+
+
+	////////////////////////////////////////////////////////////
+	// Type Check
+	////////////////////////////////////////////////////////////
 
 	template <UObjectType T>
 	bool IsA() const;
@@ -269,12 +303,33 @@ public:
 template <UObjectType T>
 inline T* UObject::CreateDefaultSubobject()
 {
-	return NewObject<T>(this);
+	T* Object = NewObject<T>(this);
+	Object->Initialize();
+
+	return Object;
+}
+
+template <UObjectType T>
+inline T* UObject::CreateEditorOnlyDefaultSubobject()
+{
+	T* EditorSubobject = CreateDefaultSubobject<T>();
+
+	if (EditorSubobject)
+	{
+		EditorSubobject->MarkAsEditorOnlySubobject();
+	}
+
+	return EditorSubobject;
+}
+
+template <UObjectType T>
+inline T* UObject::GetTypedOuter() const
+{
+	return static_cast<T*>(GetTypedOuter(T::StaticClass()));
 }
 
 template <UObjectType T>
 inline bool UObject::IsA() const
-
 {
 	return IsA(T::StaticClass());
 }

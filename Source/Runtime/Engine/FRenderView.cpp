@@ -138,7 +138,7 @@ void FRenderView::CollectScenePrimitives(const ULevel& Scene, const FSceneView& 
 		}
 
 		bool bSelected = false;
-		if (PrimitiveComponent->GetActorOwner() && PrimitiveComponent->GetActorOwner() == SelectedActor)
+		if (PrimitiveComponent->GetOwner() == SelectedActor)
 		{
 			bSelected = true;
 		}
@@ -176,7 +176,7 @@ void FRenderView::CollectScenePrimitives(const ULevel& Scene, const FSceneView& 
 		}
 		DrawCommand.Constants.DisableShading = View.ViewMode == EViewModeIndex::VMI_Unlit ? 1.0f : 0.0f;
 
-		AActor* Owner = PrimitiveComponent->GetActorOwner();
+		AActor* Owner = PrimitiveComponent->GetOwner();
 		AFireBallActor* FireBallActor = Owner ? Owner->Cast<AFireBallActor>() : nullptr;
 		UFireBallComponent* FireBall =
 		    FireBallActor && PrimitiveComponent == FireBallActor->GetSphereComponent()
@@ -338,6 +338,9 @@ void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSi
 		.View = Camera.GetViewMatrix(),
 		.Projection = Camera.GetProjectionMatrix(),
 		.ViewportSize = ViewportSizePixel,
+		.NearZ = Camera.GetProjection().GetNearPlane(),
+		.FarZ = Camera.GetProjection().GetFarPlane(),
+		.IsPerspective = Camera.GetProjection().GetProjectionType() == EProjectionType::Perspective ? 1.f : 0.f,
 	};
 
 	Renderer.UpdateViewConstants(ViewConstants);
@@ -466,11 +469,11 @@ void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedA
 	DrawCommand.Constants.World = ModelMatrix;
 	DrawCommand.Constants.DisableShading = true;
 
-	auto OutlineMaterial = FRenderResourceLibrary::Get().GetMaterial("#Outline");
-	if (OutlineMaterial)
+	auto SelectionStencilMaterial = FRenderResourceLibrary::Get().GetMaterial("#SelectionStencil");
+	if (SelectionStencilMaterial)
 	{
-		OutlineMaterial->GetPipeline()->SetStencilRef(1);
-		DrawCommand.Materials = std::span<const FMaterial>(OutlineMaterial.get(), 1);
+		SelectionStencilMaterial->GetPipeline()->SetStencilRef(1);
+		DrawCommand.Materials = std::span<const FMaterial>(SelectionStencilMaterial.get(), 1);
 		Renderer.Draw(DrawCommand, nullptr, 2);
 	}
 }
@@ -479,6 +482,12 @@ void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedA
 // 어느 분기든 마지막 패스는 반드시 뷰포트 출력 RT 전체를 써야한다
 void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor)
 {
+	// PostProcess 설정값
+	FPostProcessConstants Constants = {
+		.VisMax = 10.f,
+	};
+	Renderer.UpdatePostProcessConstants(Constants);
+
 	// Scene Depth 모드
 	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
 	{
@@ -492,19 +501,9 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 	}
 }
 
-void FRenderView::UpdateLightConstants(const FLightConstants& Constants)
-{
-	Renderer.UpdateLightConstants(Constants);
-}
-
 void FRenderView::DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline)
 {
 	Renderer.DrawInstances(View.Camera, Pipeline, View.ViewMode == EViewModeIndex::VMI_Unlit);
-}
-
-void FRenderView::ClearTextInstances()
-{
-	Renderer.ClearTextInstances();
 }
 
 void FRenderView::FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId)

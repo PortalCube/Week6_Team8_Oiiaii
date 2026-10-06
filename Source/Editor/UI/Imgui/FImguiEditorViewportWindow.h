@@ -58,18 +58,18 @@ private:
 	// 창이 작업 영역 위로 올라가 타이틀바에 가리는 것을 막는다.
 	void ClampWindowToWorkArea() const;
 
-	void UpdateSelection(FEditor& Editor, SEditorViewport& Viewport, const FViewportInput& Input);
+	void UpdateSelection(FEditor& Editor, SEditorViewport& EditorViewport, const FViewportInput& Input);
 	void UpdateGizmo(FEditor& Editor, const FViewportInput& Input);
-	void UpdateCamera(FEditor& Editor, SEditorViewport& Viewport, const FViewportInput& Input, float DeltaTime);
+	void UpdateCamera(FEditor& Editor, SEditorViewport& EditorViewport, const FViewportInput& Input, float DeltaTime);
 	void UpdateShortcuts(FEditor& Editor) const;
 
-	void HandlePicking(FEditor& Editor, SEditorViewport& Viewport, const FVector2& LocalMousePixels, const FVector2& ViewportSizePixels);
-	void UpdateGizmoHover(FEditor& Editor, SEditorViewport& Viewport, const FVector2& LocalMousePixels, const FVector2& ViewportSizePixels);
+	void HandlePicking(FEditor& Editor, SEditorViewport& EditorViewport, const FVector2& LocalMousePixels, const FVector2& ViewportSizePixels);
+	void UpdateGizmoHover(FEditor& Editor, SEditorViewport& EditorViewport, const FVector2& LocalMousePixels, const FVector2& ViewportSizePixels);
 	void ShowViewportVerticalSplitter(SSplitter& Splitter);
 	void ShowViewportHorizontalSplitter(SSplitter& Splitter);
 	void ApplyPendingViewportMaximize(FEditor& Editor);
 	bool GetViewportSceneRect(const ImVec2& Origin, FRect& OutRect) const;
-	void DrawViewportHeader(SEditorViewport& Viewport, FEditor& Editor);
+	void DrawViewportHeader(SEditorViewport& EditorViewport, FEditor& Editor);
 	SEditorViewport* PendingMaximizeViewport = nullptr;
 	FCameraInputController CameraController;
 };

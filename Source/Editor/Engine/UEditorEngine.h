@@ -34,6 +34,9 @@ private:
 
 	SWindow EditorViewports;
 
+	FWorldContext* EditorWorldContext = nullptr;
+	FWorldContext* PIEWorldContext = nullptr;
+
 public:
 	virtual void Init(FEngineLoop* InEngineLoop) override;
 
@@ -43,12 +46,18 @@ public:
 
 	void SaveLevel(const FString& Path, ULevel* Level);
 
-	// 임시. 나중에 Subsystem 구현하면 아마 자연스럽게 사라질듯
+	// 에디터 월드 가져오기.
 	UWorld* GetEditorWorld() const;
+	FWorldContext* GetEditorWorldContext() const;
+
+	// PIE 월드 가져오기.
+	UWorld* GetPIEWorld() const;
+	FWorldContext* GetPIEWorldContext() const;
 
 	// 임시
 	void ExecuteCommand(const char* Command);
 
+	virtual void OnWorldLoaded(FWorldContext& Context) override;	
 	// World 복제와 대상 뷰포트 연결이 모두 완료되면 true.
 	bool StartPIESession(const FRequestPlaySessionParams& Params);
 	void StopPIESession();
