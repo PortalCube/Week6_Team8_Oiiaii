@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "FPlayInEditorManager.h"
-#include "Runtime/Engine/FArchive.h"
 #include "Runtime/Engine/Types/EngineTypes.h"
 #include "Editor/Engine/UEditorEngine.h"
 

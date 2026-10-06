@@ -1,6 +1,6 @@
 #include "UStaticMeshComponent.h"
 #include "Runtime/Asset/FAssetRegistry.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 #include "Runtime/Core/Globals.h"
 #include <numbers>
 
@@ -205,115 +205,94 @@ EEngineShowFlags UStaticMeshComponent::GetShowFlag() const
 	return EEngineShowFlags::SF_Primitives;
 }
 
-void UStaticMeshComponent::Serialize(FArchive& Archive) const
+void UStaticMeshComponent::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
 
-	if (!RenderData.Mesh)
-	{
-		return;
-	}
-
-	FString MeshAssetID = RenderData.Mesh->GetID().ToString();
-	TArray<FArchive> MaterialAsset = {};
-
-	for (const auto& Item : *GetAllMaterialInstance())
-	{
-		FArchive ItemArchive{};
-		ItemArchive.SetFloat("Albedo", Item.Albedo);
-		ItemArchive.SetFloat("Diffuse", Item.Diffuse);
-		ItemArchive.SetFloat("Specular", Item.Specular);
-
-		FString MaterialID = "";
-		if (Item.Material)
-		{
-			MaterialID = Item.Material->GetID().ToString();
-		}
-		ItemArchive.SetString("MaterialAsset", MaterialID);
-
-		FString PipelineID = "";
-		if (Item.Pipeline)
-		{
-			PipelineID = Item.Pipeline->GetID().ToString();
-		}
-		ItemArchive.SetString("OverridePipelineAsset", PipelineID);
-
-		FString TextureID = "";
-		if (Item.Texture)
-		{
-			TextureID = Item.Texture->GetID().ToString();
-		}
-		ItemArchive.SetString("OverrideTextureAsset", TextureID);
-
-		ItemArchive.SetBool("DisableShading", Item.bDisableShading);
-
-		ItemArchive.SetVector4("Color", Item.Color);
-		ItemArchive.SetVector2("UVOffset", Item.UVOffset);
-		ItemArchive.SetVector2("UVScale", Item.UVScale);
-
-		MaterialAsset.push_back(ItemArchive);
-	}
-
-	Archive.SetString("MeshAsset", MeshAssetID);
-	Archive.SetArchiveArray("Materials", MaterialAsset);
-}
-
-void UStaticMeshComponent::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
-
-	if (Archive.IsNull("MeshAsset"))
-	{
-		return;
-	}
-
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 
-	FString MeshAssetID = Archive.GetString("MeshAsset");
-	UStaticMesh* Mesh = Registry.Get<UStaticMesh>(MeshAssetID);
-
-	if (!Mesh)
+	// 메시 가져오기
+	FString MeshAssetID = "";
+	if (RenderData.Mesh)
 	{
-		return;
+		MeshAssetID = RenderData.Mesh->GetIDString();
 	}
+	Archive.Field("MeshAsset", MeshAssetID);
 
-	SetMesh(Mesh);
-
-	if (Archive.IsNull("Materials"))
+	if (Archive.IsReading() && !MeshAssetID.empty())
 	{
-		return;
-	}
-
-	TArray<FArchive> MaterialArchives = Archive.GetArchiveArray("Materials");
-
-	for (int i = 0; i < MaterialArchives.size(); ++i)
-	{
-		FArchive& Item = MaterialArchives[i];
-
-		FName MaterialID = Item.GetString("MaterialAsset");
-		UMaterial* Material = Registry.Get<UMaterial>(MaterialID);
-		FMaterialInstance Instance{ Material };
-
-		FString PipelineAssetID = Item.GetString("OverridePipelineAsset");
-		UPipeline* Pipeline = Registry.Get<UPipeline>(PipelineAssetID);
-		if (Pipeline)
+		UStaticMesh* Mesh = Registry.Get<UStaticMesh>(MeshAssetID);
+		if (Mesh)
 		{
-			Instance.Pipeline = Pipeline;
+			SetMesh(Mesh);
+		}
+	}
+
+	// Material 가져오기
+	int32 Count = Archive.BeginArray("Materials");
+	{
+		if (Archive.IsWriting())
+		{
+			Count = static_cast<int32>(RenderData.Materials.size());
 		}
 
-		FString TextureAssetID = Item.GetString("OverrideTextureAsset");
-		UTexture* Texture = Registry.Get<UTexture>(TextureAssetID);
-		if (Texture)
+		for (int32 Index = 0; Index < Count; ++Index)
 		{
-			Instance.Texture = Texture;
+			UMaterial* InitialMaterial = RenderData.Materials[Index].Material;
+
+			FString MaterialID = InitialMaterial->GetIDString();
+
+			Archive.BeginSection("");
+			{
+				Archive.Field("MaterialAsset", MaterialID);
+
+				UMaterial* Material = nullptr;
+
+				if (Archive.IsReading())
+				{
+					Material = Registry.Get<UMaterial>(MaterialID);
+				}
+				else
+				{
+					Material = InitialMaterial;
+				}
+
+				FMaterialInstance Instance = Archive.IsWriting() ? RenderData.Materials[Index] : FMaterialInstance{ Material };
+
+				FString PipelineID = Instance.Pipeline ? Instance.Pipeline->GetIDString() : "";
+				FString TextureID = Instance.Texture ? Instance.Texture->GetIDString() : "";
+
+				Archive.Field("OverridePipelineAsset", PipelineID);
+				Archive.Field("OverrideTextureAsset", TextureID);
+
+				if (Archive.IsReading())
+				{
+					if (UPipeline* Pipeline = Registry.Get<UPipeline>(PipelineID))
+					{
+						Instance.Pipeline = Pipeline;
+					}
+
+					if (UTexture* Texture = Registry.Get<UTexture>(TextureID))
+					{
+						Instance.Texture = Texture;
+					}
+				}
+
+				Archive.Field("Albedo", Instance.Albedo);
+				Archive.Field("Diffuse", Instance.Diffuse);
+				Archive.Field("Specular", Instance.Specular);
+				Archive.Field("DisableShading", Instance.bDisableShading);
+				Archive.Field("Color", Instance.Color);
+				Archive.Field("UVOffset", Instance.UVOffset);
+				Archive.Field("UVScale", Instance.UVScale);
+
+				if (Archive.IsReading())
+				{
+					SetMaterialInstance(Instance, Index);
+				}
+			}
+			Archive.EndSection();
 		}
-
-		Instance.bDisableShading = Item.GetBool("DisableShading");
-
-		Instance.Color = Item.GetVector4("Color");
-		Instance.UVOffset = Item.GetVector2("UVOffset");
-		Instance.UVScale = Item.GetVector2("UVScale");
-
-		SetMaterialInstance(Instance, i);
 	}
+	Archive.EndArray();
 }

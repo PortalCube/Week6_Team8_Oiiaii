@@ -1,6 +1,6 @@
 #include "UAnimatedBillboardComp.h"
 #include "Runtime/Engine/ULevel.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include <algorithm>
 
@@ -14,8 +14,8 @@ void UAnimatedBillboardComp::Initialize()
 }
 
 void UAnimatedBillboardComp::SetSpriteSheet(int InGridX, int InGridY,
-    float InFrameRate,
-    int InTotalFrames)
+	float InFrameRate,
+	int InTotalFrames)
 {
 	GridX = (InGridX > 0) ? InGridX : 1;
 	GridY = (InGridY > 0) ? InGridY : 1;
@@ -52,33 +52,20 @@ void UAnimatedBillboardComp::SetCurrentFrame(int InFrame)
 	}
 }
 
-void UAnimatedBillboardComp::Serialize(FArchive& Archive) const
+void UAnimatedBillboardComp::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
 
-	Archive.SetInt32("GridX", GridX);
-	Archive.SetInt32("GridY", GridY);
-	Archive.SetInt32("TotalFrames", TotalFrames);
-	// Archive.SetInt32("CurrentFrame", CurrentFrame);
-	Archive.SetFloat("FrameRate", FrameRate);
-	// Archive.SetFloat("ElapsedTime", ElapsedTime);
-	// Archive.SetBool("Playing", bPlaying);
-	Archive.SetBool("Loop", bLoop);
-	Archive.SetVector2("CurrentUVScale", CurrentUVScale);
-	Archive.SetVector2("CurrentUVOffset", CurrentUVOffset);
-}
-
-void UAnimatedBillboardComp::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
-
-	GridX = Archive.GetInt32("GridX");
-	GridY = Archive.GetInt32("GridY");
-	TotalFrames = Archive.GetInt32("TotalFrames");
-	FrameRate = Archive.GetFloat("FrameRate");
-	bLoop = Archive.GetBool("Loop");
-	CurrentUVScale = Archive.GetVector2("CurrentUVScale");
-	CurrentUVOffset = Archive.GetVector2("CurrentUVOffset");
+	Archive.Field("GridX", GridX);
+	Archive.Field("GridY", GridY);
+	Archive.Field("TotalFrames", TotalFrames);
+	// Archive.Field("CurrentFrame", CurrentFrame);
+	Archive.Field("FrameRate", FrameRate);
+	// Archive.Field("ElapsedTime", ElapsedTime);
+	// Archive.Field("Playing", bPlaying);
+	Archive.Field("Loop", bLoop);
+	Archive.Field("CurrentUVScale", CurrentUVScale);
+	Archive.Field("CurrentUVOffset", CurrentUVOffset);
 }
 
 void UAnimatedBillboardComp::TickComponent(float DeltaTime)

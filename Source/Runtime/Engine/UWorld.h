@@ -7,6 +7,7 @@
 // UWorld
 // UnrealEngine/Engine/Source/Runtime/Engine/Classes/Engine/World.h:931
 
+class FJson;
 class AActor;
 class FTransform;
 
@@ -68,7 +69,7 @@ public:
 
 	static UWorld* CreateWorld(EWorldType InWorldType);
 	static UWorld* CreateWorldWithEmptyLevel(EWorldType InWorldType);
-	static UWorld* CreateWorldWithLevel(const FArchive& Archive, EWorldType InWorldType);
+	static UWorld* CreateWorldWithLevel(const FJson& Snapshot, EWorldType InWorldType);
 
 
 
@@ -102,6 +103,13 @@ public:
 	// 주어진 Ray에 대해 충돌하는 모든 물체를 찾습니다.
 	// bool LineTraceMulti(TArray<struct FHitResult>& OutHits, const FVector& Start, const FVector& End) const;
 
+
+
+	////////////////////////////////////////////////////////////
+	// 직렬화
+	////////////////////////////////////////////////////////////
+
+	UWorld* DuplicateWorld(EWorldType InWorldType);
 
 
 	////////////////////////////////////////////////////////////

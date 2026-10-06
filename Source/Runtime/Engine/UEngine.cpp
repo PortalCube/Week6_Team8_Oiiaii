@@ -7,7 +7,7 @@
 #include "Runtime/Engine/FEngineLoop.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Engine/ULevel.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FJson.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Resource/FResourceLoader.h"
 #include "Runtime/CoreUObject/UClass.h"
@@ -107,7 +107,7 @@ void UEngine::TickWorldTravel(FWorldContext& Context, float DeltaTime)
 	}
 
 	// Note: TravelURL과 bTravelEmptyLevel이 동시에 지정되었으면
-	// TravelURL대로 불러옴
+	// TravelURL으로 불러옴
 	LoadMap(Context, Context.TravelURL);
 
 	Context.TravelURL = "";
@@ -117,15 +117,14 @@ void UEngine::TickWorldTravel(FWorldContext& Context, float DeltaTime)
 void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 {
 	// 파일 경로에서 Archive 생성
-	FArchive Archive;
+	FJson Archive;
 
 	if (!Path.empty())
 	{
 
 		try
 		{
-			// TODO: 대입이라 RVO가 발생하질 못해서 FArchive가 2번 만들어지는데 다른 구조로 바꿔야 됨..
-			Archive = FileUtil::ReadArchive(Path);
+			Archive = FileUtil::ReadJson(Path);
 		}
 		catch (...)
 		{
@@ -135,14 +134,14 @@ void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 
 		// Version 체크
 		int32 Version = Archive.GetInt32("Version");
-		if (Version != 1)
+		if (Version != 2)
 		{
-			UE_LOG("[OpenLevel] 로드하려는 파일의 Level Schema 버전이 다릅니다. 파일의 버전: %d, 지원하는 버전: %d", Version, 1);
+			UE_LOG("[OpenLevel] 로드하려는 파일의 Level Schema 버전이 다릅니다. 파일의 버전: %d, 지원하는 버전: %d", Version, 2);
 			return;
 		}
 
 		// UUID 세팅
-		int32 NextUUID = Archive.GetInt32("NextUUID");
+		uint32 NextUUID = Archive.GetUInt32("NextUUID");
 		FUObjectArray& ObjectArray = FUObjectArray::Get();
 		ObjectArray.SetNextUUID(NextUUID);
 

@@ -3,7 +3,7 @@
 #include "ThirdParty/Json/json.hpp"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "UPrimitiveComponent.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 #include "Runtime/Engine/ULevel.h"
 
 IMPLEMENT_UCLASS(USceneComponent, UActorComponent)
@@ -41,34 +41,30 @@ void USceneComponent::SetAttachParent(USceneComponent* NewAttachParent)
 	AttachParent = NewAttachParent;
 }
 
-void USceneComponent::Serialize(FArchive& Archive) const
+void USceneComponent::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
 
-	Archive.SetVector("Location", RelativeTransform.GetLocation());
-	Archive.SetVector("Rotation", RelativeTransform.GetRotation().GetEulerXYZ());
-	Archive.SetVector("Scale", RelativeTransform.GetScale3D());
-}
+	FVector Location = RelativeTransform.GetLocation();
+	FVector Rotation = RelativeTransform.GetRotation().GetEulerXYZ();
+	FVector Scale = RelativeTransform.GetScale3D();
 
-void USceneComponent::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
+	Archive.Field("Location", Location);
+	Archive.Field("Rotation", Rotation);
+	Archive.Field("Scale", Scale);
 
-	// Location
-	RelativeTransform.SetLocation(Archive.GetVector("Location"));
+	Archive.Reference("AttachParent", AttachParent);
 
-	// Rotation
-	constexpr float RadToDeg = 180.0f / std::numbers::pi_v<float>;
-	FVector Rotation = Archive.GetVector("Rotation");
-	for (int i = 0; i < 3; ++i)
+	Archive.Field("InheritRotation", bInheritRotation);
+
+	if (Archive.IsReading())
 	{
-		Rotation[i] *= RadToDeg;
+		constexpr float RadToDeg = 180.0f / std::numbers::pi_v<float>;
+		RelativeTransform.SetLocation(Location);
+		RelativeTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Rotation * RadToDeg));
+		RelativeTransform.SetScale3D(Scale);
+		MarkActorTransformDirty();
 	}
-	RelativeTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Rotation));
-
-	// Scale
-	RelativeTransform.SetScale3D(Archive.GetVector("Scale"));
-	MarkActorTransformDirty();
 }
 
 void USceneComponent::SetRelativeTransform(const FTransform& RelativeTransform)

@@ -123,7 +123,7 @@ FFolderView FAssetRegistry::GetAssetDirectory(const fs::path& ParentPath) const
 			return LeftName < RightName;
 		}
 
-		return Left->GetID().ToString() < Right->GetID().ToString(); });
+		return Left->GetIDString() < Right->GetIDString(); });
 
 	DirectoryCache[ParentPath] = Result;
 
