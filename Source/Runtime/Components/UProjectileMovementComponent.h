@@ -11,7 +11,5 @@ public:
 	void Initialize() override;
 
 protected:
-	UProjectileMovementComponent() = default;
-
 	FVector Velocity{ 100.0f, 0.0f, 0.0f };
 };

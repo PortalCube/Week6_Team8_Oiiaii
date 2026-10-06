@@ -70,7 +70,7 @@ public:
 	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("Simple_Line"));
 	void FlushQueue(const FSceneView& View);
 
-	void CollectPointLights(const UScene& Scene, TArray<FPointLightConstants>& OutLights);
+	void CollectPointLights(const ULevel& Scene, TArray<FPointLightConstants>& OutLights);
 
 	FRenderQueue& GetRenderQueue() { return RenderQueue; }
 	const FRenderQueue& GetRenderQueue() const { return RenderQueue; }

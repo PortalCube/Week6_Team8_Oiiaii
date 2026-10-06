@@ -28,8 +28,8 @@
 bool FRenderer::Initialize(HWND Window)
 {
 	if (!InitializeDeviceAndSwapChain(Window) ||
-	    !InitializeBackBufferAndDepthStencil() ||
-	    !InitializeEditorViewportRenderTarget() || !InitializeConstantBuffers() ||
+	    !InitializeBackBuffer() ||
+	    !InitializeSceneTextures() || !InitializeConstantBuffers() ||
 	    !InitializePointLightBuffers())
 	{
 		Shutdown();
@@ -844,6 +844,37 @@ bool FRenderer::InitializeSceneTextures()
 	//}
 
 	D3D11_TEXTURE2D_DESC SceneColorTextureDesc{
+		.Width = Width,
+		.Height = Height,
+		.MipLevels = 1u,
+		.ArraySize = 1u,
+		.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
+		.SampleDesc = { .Count = 1u },
+		.Usage = D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
+	};
+
+	Result = Device->CreateTexture2D(&SceneColorTextureDesc, nullptr, &SceneColorTexture);
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	Result = Device->CreateRenderTargetView(SceneColorTexture.Get(), nullptr, &SceneColorRTV);
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	Result = Device->CreateShaderResourceView(SceneColorTexture.Get(), nullptr, &SceneColorSRV);
+	if (FAILED(Result))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool FRenderer::InitializePointLightBuffers()
 {
 	D3D11_BUFFER_DESC LightDesc{};
@@ -894,52 +925,6 @@ bool FRenderer::InitializePointLightBuffers()
 	    PointLightCountBuffer.GetAddressOf());
 
 	return SUCCEEDED(Result);
-}
-
-bool FRenderer::InitializeEditorViewportRenderTarget()
-{
-	if (!Device)
-	{
-		return false;
-	}
-
-	const UINT Width = static_cast<UINT>(Viewport.Width);
-	const UINT Height = static_cast<UINT>(Viewport.Height);
-	if (Width == 0 || Height == 0)
-	{
-		return false;
-	}
-
-	D3D11_TEXTURE2D_DESC ColorTexDesc{
-		.Width = Width,
-		.Height = Height,
-		.MipLevels = 1u,
-		.ArraySize = 1u,
-		.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
-		.SampleDesc = { .Count = 1u },
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
-	};
-
-	Result = Device->CreateTexture2D(&SceneColorTextureDesc, nullptr, &SceneColorTexture);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	Result = Device->CreateRenderTargetView(SceneColorTexture.Get(), nullptr, &SceneColorRTV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	Result = Device->CreateShaderResourceView(SceneColorTexture.Get(), nullptr, &SceneColorSRV);
-	if (FAILED(Result))
-	{
-		return false;
-	}
-
-	return true;
 }
 
 void FRenderer::QueryVisibility(const TArray<const FDrawCommand*>& Commands, TArray<uint64>& OutSamples)
@@ -1168,7 +1153,6 @@ void FRenderer::ResetSceneTexture()
 	SceneDepthSRV.Reset();
 }
 
-void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
 void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLights)
 {
 	const uint32 Count = PointLights.size() > MaxPointLightCount
@@ -1199,7 +1183,7 @@ void FRenderer::BindPointLights()
 	Context->PSSetConstantBuffers(5, 1, &Buffer);
 }
 
-void FRenderer::UpdateLightConstants(const FLightConstants& Constants, const EViewModeIndex InMode)
+void FRenderer::UpdateLightConstants(const FLightConstants& Constants)
 {
 	Context->UpdateSubresource(LightConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->PSSetConstantBuffers(4, 1, LightConstantBuffer.GetAddressOf());

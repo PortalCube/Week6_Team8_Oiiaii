@@ -13,7 +13,6 @@ class AFireBallActor : public AActor
 	GENERATED_BODY()
 
 public:
-	explicit AFireBallActor();
 	void Initialize() override;
 
 	UStaticMeshComponent* GetSphereComponent() const;

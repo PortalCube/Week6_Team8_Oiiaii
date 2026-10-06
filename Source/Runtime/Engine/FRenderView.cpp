@@ -534,7 +534,7 @@ void FRenderView::FlushQueue(const FSceneView& View)
 	RenderQueue.Clear();
 }
 
-void FRenderView::CollectPointLights(const UScene& Scene, TArray<FPointLightConstants>& OutLights)
+void FRenderView::CollectPointLights(const ULevel& Scene, TArray<FPointLightConstants>& OutLights)
 {
 	OutLights.clear();
 

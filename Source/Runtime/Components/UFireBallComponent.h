@@ -23,9 +23,6 @@ class UFireBallComponent : public UPrimitiveComponent
 	DECLARE_UCLASS(UFireBallComponent, UPrimitiveComponent)
 	GENERATED_BODY()
 
-protected:
-	explicit UFireBallComponent() = default;
-
 public:
 	FPointLightConstants GetPointLightData() const;
 

@@ -6,7 +6,4 @@ class URotationMovementComponent : public UMovementComponent
 {
 	GENERATED_BODY()
 	DECLARE_UCLASS(URotationMovementComponent, UMovementComponent)
-
-protected:
-	URotationMovementComponent() = default;
 };
