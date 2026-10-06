@@ -268,7 +268,7 @@ void FImguiEditorViewportWindow::UpdateCamera(FEditor& Editor, SEditorViewport& 
 	CameraController.CameraRotateSpeed = Editor.State.GetCameraSensitivity();
 	CameraController.CameraMoveSpeed = Editor.State.GetCameraSpeed();
 
-	FCamera& Camera = EditorViewport.GetClient().GetViewportCamera();
+	FCamera& Camera = EditorViewport.IsPIE() ? EditorViewport.GetGameClient().GetViewportCamera() : EditorViewport.GetClient().GetViewportCamera();
 
 	// ORTHOGRAPHIC 화면모드와의 분기
 	const bool bOrthographic = Camera.GetProjection().GetProjectionType() == EProjectionType::Orthographic;
