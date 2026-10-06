@@ -516,8 +516,11 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 		return; // Scene Depth만 그린다
 	}
 	
-	// Fog를 그린다
-	Renderer.RenderFog(View.Viewport);
+	// Fog를 그린다 (Fog ShowFlag가 켜져 있을 때만)
+	if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_Fog))
+	{
+		Renderer.RenderFog(View.Viewport);
+	}
 
 	// DrawStencilMask에서 쓴 스텐실 대로 아웃라인을 그린다 
 	Renderer.RenderSelectionOutline(View.Viewport);

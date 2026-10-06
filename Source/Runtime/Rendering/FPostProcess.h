@@ -8,7 +8,7 @@ struct FFogSettings
 	float FogCutoffDistance;
 	float FogMaxOpacity;
 	FVector FogInscatteringColor;
-	float FogHeight;	// 안개 기준 높이 (Fog Component Z)
+	float FogHeight;
 
 	float GetCameraHeightDensity(float CameraZ, float FogComponentZ)
 	{
