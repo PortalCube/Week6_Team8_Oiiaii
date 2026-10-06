@@ -303,7 +303,10 @@ public:
 template <UObjectType T>
 inline T* UObject::CreateDefaultSubobject()
 {
-	return NewObject<T>(this);
+	T* Object = NewObject<T>(this);
+	Object->Initialize();
+
+	return Object;
 }
 
 template <UObjectType T>
