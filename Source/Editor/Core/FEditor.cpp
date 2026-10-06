@@ -20,6 +20,7 @@
 #include <numbers>
 #include <Runtime/Engine/FSceneBVH.h>
 #include "Editor/Engine/UEditorEngine.h"
+#include "Editor/PlayInEditor/FPlayInEditorManager.h"
 
 
 void FEditor::Initialize(UEditorEngine* EditorEngine)
@@ -39,6 +40,8 @@ void FEditor::Initialize(UEditorEngine* EditorEngine)
 		SelectedActorTextComp->SetMaterial(Registry.Get<UMaterial>("Material/SelectedActor_Text.json"));
 		SelectedActorTextComp->SetFont(Registry.Get<UFont>("Font/BazziOTF.json"));
 	}
+
+	PlayManager = std::make_unique<PIEManager>(*EditorEngine);
 
 	this->EditorEngine = EditorEngine;
 }
@@ -126,6 +129,60 @@ void FEditor::LoadState()
 	Gizmo.SetGizmoSpace(static_cast<EGizmoSpace>(State.GetGizmoSpace()));
 
 	ViewportLayout.SetSplitterRatio(State.GetSplitter());
+}
+
+bool FEditor::RequestStartPIE(const FRequestPlaySessionParams& Params)
+{
+	if (!PlayManager)
+	{
+		return false;
+	}
+
+	FRequestPlaySessionParams ResolvedParams = Params;
+
+	if (ResolvedParams.DestinationViewportIndex == -1)
+	{
+		SEditorViewport* ActiveViewport = GetActiveViewport();
+
+		for (int32 Index = 0; Index < static_cast<int32>(MAX_VIEWPORT_COUNT); ++Index)
+		{
+			if (&ViewportLayout.Viewports[Index] == ActiveViewport)
+			{
+				ResolvedParams.DestinationViewportIndex = Index;
+				break;
+			}
+		}
+	}
+
+	const int32 Index = ResolvedParams.DestinationViewportIndex;
+
+	if (Index < 0 || Index >= static_cast<int32>(MAX_VIEWPORT_COUNT))
+	{
+		return false;
+	}
+
+	if (!ViewportLayout.Viewports[Index].bVisible)
+	{
+		return false;
+	}
+
+	return PlayManager->RequestStartPIE(ResolvedParams);
+}
+
+void FEditor::RequestEndPIE()
+{
+	if (PlayManager)
+	{
+		PlayManager->RequestEndPIE();
+	}
+}
+
+void FEditor::ProcessPIERequests()
+{
+	if (PlayManager)
+	{
+		PlayManager->ProcessRequests();
+	}
 }
 
 void FEditor::NewScene()

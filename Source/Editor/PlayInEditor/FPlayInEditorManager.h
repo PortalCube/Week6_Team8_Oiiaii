@@ -1,19 +1,11 @@
 #pragma once
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "PlayInEditorDataTypes.h"
 #include <optional>
 
 // 씬 복제 요청, 플레이 시작·종료, 실행 대상 전환
 class FEditor;
 class UEditorEngine;
-
-enum class EWorldType : uint8
-{
-	Editor,
-	PIE
-};
-
-
 
 //
 // Play 요청
@@ -35,13 +27,10 @@ public:
 	bool RequestStartPIE(const FRequestPlaySessionParams& inParams);
 	void ProcessRequests();
 
-	
 	void RequestEndPIE();
 
 	void PasuePIE();
 	void ResumePIE();
-
-	void ProcessRequests();
 
 	void Tick(float DeltaTime);
 
@@ -59,10 +48,10 @@ public:
 		return State;
 	}
 
-	 std::optional<uint64> GetCreationRequestId() const
+	/*std::optional<uint64> GetCreationRequestId() const
 	{
 		return CreationRequestId;
-	}
+	}*/
 
 	bool IsPIEViewport(int32 ViewportIndex) const;
 

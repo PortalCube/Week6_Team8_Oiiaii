@@ -160,11 +160,11 @@ void FImguiToolbar::ShowPIEBar(FEditor& Editor)
 {
 	// 임시 변수. 나중에 제거할 예정
 	bool bIsPIERunning = false;
-	if (!Editor.Root)
+	if (!Editor.GetViewportLayout().Root)
 		return;
 
 	// 전체 뷰포트 영역의 가로 중앙
-	const FRect& Rect = Editor.Root->Rect;
+	const FRect& Rect = Editor.GetViewportLayout().Root->Rect;
 	const float CenterX = ImGui::GetMainViewport()->Pos.x + (Rect.Left + Rect.Right) * 0.5f;
 
 	const ImVec2 ButtonSize{ 40.0f, ImGui::GetFrameHeight() };

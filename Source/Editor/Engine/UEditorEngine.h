@@ -7,6 +7,7 @@
 #include "Editor/Visualizer/FVisualizerRegistry.h"
 
 class FEngineLoop;
+struct FRequestPlaySessionParams;
 
 class UEditorEngine : public UEngine
 {
@@ -47,4 +48,8 @@ public:
 
 	// 임시
 	void ExecuteCommand(const char* Command);
+
+	// World 복제와 대상 뷰포트 연결이 모두 완료되면 true.
+	bool StartPIESession(const FRequestPlaySessionParams& Params);
+	void StopPIESession();
 };

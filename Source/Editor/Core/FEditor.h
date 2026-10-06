@@ -18,6 +18,8 @@
 #include "Editor/EditorViewport/SEditorViewport.h"
 #include "Editor/EditorViewport/FEditorViewportLayout.h"
 
+#include <memory>
+
 enum class EEditorPrimitiveType : uint8
 {
 	Cube,
@@ -28,6 +30,8 @@ enum class EEditorPrimitiveType : uint8
 };
 
 class UEditorEngine;
+class PIEManager;
+struct FRequestPlaySessionParams;
 
 class FEditor
 {
@@ -97,6 +101,11 @@ public:
 		PickingAttempts = 0;
 	}
 
+	// PIE
+	bool RequestStartPIE(const FRequestPlaySessionParams& Params);
+	void RequestEndPIE();
+	void ProcessPIERequests();
+
 private:
 	UEditorEngine* EditorEngine = nullptr;
 	FGizmo Gizmo;
@@ -105,4 +114,5 @@ private:
 
 	// Viewport
 	FEditorViewportLayout ViewportLayout;
+	std::unique_ptr<PIEManager> PlayManager;
 };

@@ -1,5 +1,5 @@
 #pragma once
-#include "Runtime/Core/IntTypes.h"
+#include "Runtime/Engine/Types/IntTypes.h"
 #include "Runtime/Engine/FCamera.h"
 #include "Editor/Core/FEditor.h"
 #include <optional>

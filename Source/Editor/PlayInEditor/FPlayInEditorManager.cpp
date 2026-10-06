@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "FPlayInEditorManager.h"
 #include "Runtime/Engine/FArchive.h"
-// #include "Editor/Engine/UEditorEngine.h"
+#include "Runtime/Engine/Types/EngineTypes.h"
+#include "Editor/Engine/UEditorEngine.h"
 
 
 
@@ -28,20 +29,26 @@ bool PIEManager::RequestStartPIE(const FRequestPlaySessionParams& inParams)
 
 	PendingStart = inParams;
 
-	CreationRequestId.reset();
 	State = EPIESessionState::Starting;
 
 	return true;
-
-	//StartPIE(inParams);
-
-	//// bRunningPIE = true;
 }
 
 void PIEManager::ProcessRequests()
 {
-	if (State != EPIESessionState::Starting ||
-	    !PendingStart.has_value())
+	// 시작 대기 중 종료 요청이 들어오면 시작을 취소합니다.
+	if (bPendingEnd)
+	{
+		bPendingEnd = false;
+		PendingStart.reset();
+
+		engine.StopPIESession();
+
+		State = EPIESessionState::Stopped;
+		return;
+	}
+
+	if (State != EPIESessionState::Starting || !PendingStart.has_value())
 	{
 		return;
 	}
@@ -50,16 +57,10 @@ void PIEManager::ProcessRequests()
 	const FRequestPlaySessionParams Params = *PendingStart;
 	PendingStart.reset();
 
-	// CreationRequestId = engine.RequestCreatePIESession(Params);
+	 const bool bStarted = engine.StartPIESession(Params);
 
-	if (!CreationRequestId.has_value())
-	{
-		State = EPIESessionState::Stopped;
-		return;
-	}
+	 State = bStarted ? EPIESessionState::Running : EPIESessionState::Stopped;
 
-	// 접수 완료일 뿐이므로 Starting을 유지한다.
-	// 다음 단계에서 이 식별자로 생성 결과를 조회한다.
 }
 
 void PIEManager::PasuePIE()
@@ -68,28 +69,19 @@ void PIEManager::PasuePIE()
 
 void PIEManager::RequestEndPIE()
 {
-	/*if (!bRunningPIE)
+	if (State == EPIESessionState::Stopped)
 	{
 		return;
-	}*/
+	}
 
-	EndPIE();
-	//bRunningPIE = false;
+	bPendingEnd = true;
+	State = EPIESessionState::Stopping;
 }
 
 // 객체 복사 요청
 void PIEManager::StartPIE(const FRequestPlaySessionParams& inParams)
 {
-	/*if (sceneManager.CurrentScene == nullptr)
-	{
-		return;
-	}*/
-
 	currentWorldType = EWorldType::PIE;
-	FArchive Editor;
-	/*sceneManager.CurrentScene->Serialize(Editor);
-	sceneManager.PIEScene->Deserialize(Editor);*/
-
 
 }
 
