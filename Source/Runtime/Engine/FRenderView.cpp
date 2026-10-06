@@ -318,13 +318,21 @@ bool FRenderView::BeginView(const FSceneView& View)
 		return false;
 	}
 
+	// 뷰포트 시작시 SceneTextures의 Target을 Ping(0)으로 초기화
+	SceneTextures->SetTarget(0u);
+
 	// SceneColor + SceneDepth 바인딩
-	Renderer.BindRenderTarget(SceneTextures->SceneColorRTV.Get(), SceneTextures->SceneDepthDSV.Get());
+	Renderer.BindRenderTarget(SceneTextures->GetSceneColorRTV(), SceneTextures->SceneDepthDSV.Get());
 	Renderer.SetViewportPixel(View.ViewportSizePixel);
 	Renderer.UpdateLightConstants(View.LightConstants);
 
 	// SceneTextures(공용 도화지)를 그리기 전에 Clear
-	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->SceneColorRTV.Get(), ClearColor);
+	// Ping(0), Pong(1) 둘다 Clear
+	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->GetSceneColorRTV(), ClearColor);
+	SceneTextures->SwapTarget();
+	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->GetSceneColorRTV(), ClearColor);
+	SceneTextures->SwapTarget();
+
 	Renderer.GetContext()->ClearDepthStencilView(SceneTextures->SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// ViewConstants 갱신
@@ -485,20 +493,24 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 	// PostProcess 설정값
 	FPostProcessConstants Constants = {
 		.VisMax = 10.f,
+		.VisMinOrtho = 0.1f,
+		.VisMaxOrtho = 10.f
 	};
-	Renderer.UpdatePostProcessConstants(Constants);
+	Renderer.UpdatePostProcessConstants(Constants); // 설정값 (상수버퍼) 업데이트
 
 	// Scene Depth 모드
 	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
 	{
 		Renderer.RenderSceneDepth(View.Viewport);
+		return; // Scene Depth만 그린다
 	}
-	else
-	{
-		// 아웃라인을 Post Process에서 그림 (SceneColor + 외곽선 → 출력 RT)
-		DrawStencilMask(View.Camera, SelectedActor);
-		Renderer.RenderSelectionOutline(View.Viewport);
-	}
+
+	// Fog를 그린다
+	Renderer.RenderFog(View.Viewport);
+
+	// 아웃라인을 Post Process에서 그림 (SceneColor + 외곽선 → 출력 RT)
+	DrawStencilMask(View.Camera, SelectedActor);
+	Renderer.RenderSelectionOutline(View.Viewport);
 }
 
 void FRenderView::DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline)

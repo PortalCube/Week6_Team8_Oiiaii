@@ -15,10 +15,24 @@ float4 MainPS(PS_IN Input) : SV_Target
 	int2 PixelCoord = int2(Input.Pos.xy);
 	// Load()로 .r에 저장되어 있는 깊이 값만 빼오기
 	float4 Loaded = DepthTexture.Load(int3(PixelCoord, 0));
-	// NDC Z (Depth) 값 구하기
-	float Depth = (NearZ * FarZ) / (FarZ - Loaded.r * (FarZ - NearZ));
-	// log로 정규화 및 색상 반전
-	float LinearDepth = 1 - saturate(log(Depth / NearZ) / log(VisMax / NearZ));
-	// GrayScale로 출력
-	return float4(LinearDepth, LinearDepth, LinearDepth, 1);
+
+	// 원근 투영
+	if (IsPerspective > 0.5f)
+	{
+		// NDC Z (Depth) 값 구하기
+		float Z = (NearZ * FarZ) / (FarZ - Loaded.r * (FarZ - NearZ));
+		// log로 정규화 및 색상 반전 (Z가 비선형 이므로 정규화를 해야함)
+		float LinearZ = 1 - saturate(log(Z / NearZ) / log(VisMax / NearZ));
+		// GrayScale로 출력
+		return float4(LinearZ, LinearZ, LinearZ, 1);
+	}
+	// 직교 투영
+	else
+	{
+		// 직교 투영에서는 Z가 선형. 그대로 쓴다.
+		float Z = 1 - Loaded.r;
+		// 선형이어도 구분이 잘 되도록 정규화를 해준다
+		float ContrastedZ = saturate((Z - VisMinOrtho) / (VisMaxOrtho - VisMinOrtho));
+		return float4(ContrastedZ, ContrastedZ, ContrastedZ, 1);
+	}
 }

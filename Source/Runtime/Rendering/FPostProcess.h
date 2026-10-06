@@ -3,11 +3,8 @@
 class FPostProcess
 {
 public:
-	void DrawQuad()
-	{
-
-	}
 
 private:
+
 };
 

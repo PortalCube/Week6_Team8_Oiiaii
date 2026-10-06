@@ -76,8 +76,10 @@ static_assert(sizeof(FGridLineConstants) % 16 == 0);
 // Register = b3
 struct FPostProcessConstants
 {
-	float VisMax = 10.f;
-	FVector Padding;
+	float VisMax;		// 원근에서 SceneDepth의 최댓값
+	float VisMinOrtho;	// 직교에서 SceneDepth의 최솟값
+	float VisMaxOrtho;	// 직교에서 SceneDepth의 최댓값
+	float Padding;
 };
 static_assert(sizeof(FPostProcessConstants) % 16 == 0);
 

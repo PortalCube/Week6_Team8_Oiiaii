@@ -188,10 +188,11 @@ public:
 	}
 
 	// 스크린 패스 / 후처리
-	void RenderSceneDepth(const FViewport& TargetViewport);
-	void RenderSelectionOutline(const FViewport& TargetViewport);
-	void CopySceneColorToViewport(const FViewport& TargetViewport);
 	void DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VIEWPORT& TargetD3DViewport, ID3D11ShaderResourceView* const* SRVs, UINT NumSRVs, const FName& PipelineId);
+	void CopySceneColorToViewport(const FViewport& TargetViewport);
+	void RenderSelectionOutline(const FViewport& TargetViewport);
+	void RenderSceneDepth(const FViewport& TargetViewport);
+	void RenderFog(const FViewport& TargetViewport);
 
 	// 디버그
 	void QueryVisibility(const TArray<const FDrawCommand*>& Commands, TArray<uint64>& OutSamples);

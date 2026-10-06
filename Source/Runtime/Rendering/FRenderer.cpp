@@ -1628,24 +1628,6 @@ void FRenderer::DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VI
 // =====================================================================
 // ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Post Process ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
 
-// SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 그린다
-void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
-{
-	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
-	if (!RenderTarget || !ActiveSceneTextures)
-	{
-		return;
-	}
-
-	// 출력 RT와 SceneTextures는 같은 크기이고 둘 다 (0,0)부터 시작한다.
-	// 그래서 SelectionOutlinePS가 SV_Position으로 Load해도 좌표가 그대로 맞는다.
-	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
-
-	// t0: SceneColor, t1: Stencil
-	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneColorSRV.Get(), ActiveSceneTextures->SceneStencilSRV.Get() };
-	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#SelectionOutline"));
-}
-
 // SceneColor를 그대로 출력 RT에 복사
 void FRenderer::CopySceneColorToViewport(const FViewport& TargetViewport)
 {
@@ -1658,8 +1640,30 @@ void FRenderer::CopySceneColorToViewport(const FViewport& TargetViewport)
 	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
 
 	// 합성용 파이프라인(CompositePS: t0을 UV로 샘플링)을 그대로 복사에 재사용한다
-	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneColorSRV.Get() };
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetSceneColorSRV() };
+	ActiveSceneTextures->SwapTarget();
 	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#Composite"));
+}
+
+// SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 그린다
+void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
+{
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures)
+	{
+		return;
+	}
+
+	// 출력 RT와 SceneTextures는 같은 크기이고 둘 다 (0,0)부터 시작한다.
+	// 그래서 SelectionOutlinePS가 SV_Position으로 Load해도 좌표가 그대로 맞는다. 셈플러 필요 x
+	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
+
+	// t0: SceneColor, t1: Stencil
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetSceneColorSRV(), ActiveSceneTextures->SceneStencilSRV.Get() };
+	// Target을 바꿔야함 안 바꾸면 같은 텍스쳐를 SRT, RTV로 읽고 쓰게 된다
+	ActiveSceneTextures->SwapTarget();
+	// 마
+	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#SelectionOutline"));
 }
 
 // Scene Depth를 출력 RT에 그린다
@@ -1676,6 +1680,36 @@ void FRenderer::RenderSceneDepth(const FViewport& TargetViewport)
 	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get() };
 	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
 }
+
+// Fog를 SceneColor에 그린다
+void FRenderer::RenderFog(const FViewport& TargetViewport)
+{
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures)
+	{
+		return;
+	}
+
+	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.f, 0.f, TargetViewport.Rect.GetWidth(), TargetViewport.Rect.GetHeight());
+
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get(), ActiveSceneTextures->GetSceneColorSRV() };
+	// Target을 바꿔야함 안 바꾸면 같은 텍스쳐를 SRT, RTV로 읽고 쓰게 된다
+	ActiveSceneTextures->SwapTarget();
+	// Fog는 마지막 패스가 아니니 SceneColor에 쓴다
+	DrawScreenPass(ActiveSceneTextures->GetSceneColorRTV(), TargetD3DViewport, SRVs, 2, FName("#Fog"));
+}
+
+// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Post Process ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+// =====================================================================
+
+
+
+
+
+
+
+// =====================================================================
+// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Perfomance ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
 
 bool FRenderer::InitializeGPUTimerQueries()
 {
@@ -1695,18 +1729,6 @@ bool FRenderer::InitializeGPUTimerQueries()
 
 	return true;
 }
-
-// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Post Process ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
-// =====================================================================
-
-
-
-
-
-
-
-// =====================================================================
-// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Perfomance ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
 
 void FRenderer::BeginGPUTimer()
 {

@@ -13,7 +13,7 @@ cbuffer ViewConstants : register(b1)
 	float NearZ;
 	float FarZ;
 	float IsPerspective;
-	float3 ViewPadding;
+	float2 ViewPadding;
 }
 
 cbuffer ObjectConstants : register(b2)
@@ -34,7 +34,9 @@ cbuffer ObjectConstants : register(b2)
 cbuffer PostProcessConstants : register(b3)
 {
 	float VisMax;
-	float4 PostProcessPadding;
+	float VisMinOrtho;
+	float VisMaxOrtho;
+	float PostProcessPadding;
 }
 
 cbuffer LightConstants : register(b4)
