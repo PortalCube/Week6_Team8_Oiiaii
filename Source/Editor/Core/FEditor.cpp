@@ -27,8 +27,6 @@ void FEditor::Initialize(UEditorEngine* EditorEngine)
 
 	UWorld* World = EditorEngine->GetEditorWorld();
 
-	OnWorldLoaded();
-
 	this->EditorEngine = EditorEngine;
 }
 
@@ -81,7 +79,6 @@ void FEditor::Process()
 void FEditor::OnWorldLoaded()
 {
 	SelectedActorTextActor = GetCurrentWorld()->SpawnActor<ASelectedTextActor>(ASelectedTextActor::StaticClass());
-
 	SelectedActorTextComp = SelectedActorTextActor->TextComponent;
 }
 

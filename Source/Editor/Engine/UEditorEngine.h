@@ -50,4 +50,6 @@ public:
 
 	// 임시
 	void ExecuteCommand(const char* Command);
+
+	virtual void OnWorldLoaded(FWorldContext& Context) override;
 };

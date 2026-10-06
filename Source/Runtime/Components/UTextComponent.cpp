@@ -53,7 +53,7 @@ void UTextComponent::Initialize()
 
 void UTextComponent::TickComponent(float delta) {}
 
-void UTextComponent::SetText(const FWString& InText)
+void UTextComponent::SetText(FWStringView InText)
 {
 	Text = InText;
 	RebuildTextMesh();

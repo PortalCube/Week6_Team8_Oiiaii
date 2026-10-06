@@ -182,4 +182,6 @@ void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 
 	// BeginPlay
 	Context.World->BeginPlay();
+	
+	OnWorldLoaded(Context);
 }

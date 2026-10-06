@@ -279,3 +279,11 @@ void UEditorEngine::ExecuteCommand(const char* Command)
 		return;
 	}
 }
+
+void UEditorEngine::OnWorldLoaded(FWorldContext& Context)
+{
+	if (Context.WorldType == EWorldType::Editor)
+	{
+		Editor.OnWorldLoaded();
+	}
+}

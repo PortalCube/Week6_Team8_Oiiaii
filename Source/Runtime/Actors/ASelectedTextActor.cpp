@@ -20,5 +20,6 @@ void ASelectedTextActor::Initialize()
 
 		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 		TextComponent->SetFont(Registry.Get<UFont>("Font/BazziOTF.json"));
+		TextComponent->SetText(L"");
 	}
 }
