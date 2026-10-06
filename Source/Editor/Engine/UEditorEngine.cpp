@@ -213,7 +213,7 @@ void UEditorEngine::SaveLevel(const FString& Path, ULevel* Level)
 	Level->Serialize(LevelArchive);
 	Archive.SetArchive("Level", LevelArchive);
 
-	FileUtil::WriteArchive(Path, LevelArchive);
+	FileUtil::WriteArchive(Path, Archive);
 }
 
 UWorld* UEditorEngine::GetEditorWorld() const

@@ -193,11 +193,15 @@ void ULevel::Deserialize(const FArchive& Archive)
 			continue;
 		}
 
-		AActor* Actor = GetWorld()->SpawnActor(ClassType);
+		AActor* Actor = NewObject<AActor>(this, ClassType);
+
 		if (!Actor)
 		{
 			continue;
 		}
+
+		Actors.push_back(Actor);
+		Actor->Initialize();
 		Actor->Deserialize(Item);
 	}
 }
