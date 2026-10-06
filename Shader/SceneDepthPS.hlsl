@@ -30,9 +30,9 @@ float4 MainPS(PS_IN Input) : SV_Target
 	else
 	{
 		// 직교 투영에서는 Z가 선형. 그대로 쓴다.
-		float Z = 1 - Loaded.r;
+		float Z = NearZ + Loaded.r * (FarZ - NearZ);
 		// 선형이어도 구분이 잘 되도록 정규화를 해준다
-		float ContrastedZ = saturate((Z - VisMinOrtho) / (VisMaxOrtho - VisMinOrtho));
+		float ContrastedZ = 1 - saturate((Z - VisMinOrtho) / (VisMaxOrtho - VisMinOrtho));
 		return float4(ContrastedZ, ContrastedZ, ContrastedZ, 1);
 	}
 }

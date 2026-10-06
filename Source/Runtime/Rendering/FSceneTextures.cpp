@@ -134,4 +134,6 @@ void FSceneTextures::Reset()
 
 	Width = 0;
 	Height = 0;
+
+	Ping = true;
 }

@@ -9,11 +9,12 @@ cbuffer ViewConstants : register(b1)
 {
     row_major float4x4 View;
     row_major float4x4 Projection;
+	row_major float4x4 ViewProjectionInverse;
     float2 ViewportSize;
 	float NearZ;
 	float FarZ;
 	float IsPerspective;
-	float2 ViewPadding;
+	float3 CameraPos;
 }
 
 cbuffer ObjectConstants : register(b2)

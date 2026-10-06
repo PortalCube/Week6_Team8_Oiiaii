@@ -1163,10 +1163,7 @@ void FRenderer::UpdateFrameConstants(const FFrameConstants& Constants)
 
 void FRenderer::UpdateViewConstants(const FViewConstants& Constants)
 {
-	FViewConstants ShaderConstants = Constants;
-	ShaderConstants.Projection = ShaderConstants.Projection.ToD3DMatrix();
-
-	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &ShaderConstants, 0, 0);
+	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->VSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
 	Context->PSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
 }
@@ -1640,8 +1637,7 @@ void FRenderer::CopySceneColorToViewport(const FViewport& TargetViewport)
 	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
 
 	// 합성용 파이프라인(CompositePS: t0을 UV로 샘플링)을 그대로 복사에 재사용한다
-	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetSceneColorSRV() };
-	ActiveSceneTextures->SwapTarget();
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetCurrentSRV() };
 	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#Composite"));
 }
 
@@ -1659,10 +1655,7 @@ void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
 	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
 
 	// t0: SceneColor, t1: Stencil
-	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetSceneColorSRV(), ActiveSceneTextures->SceneStencilSRV.Get() };
-	// Target을 바꿔야함 안 바꾸면 같은 텍스쳐를 SRT, RTV로 읽고 쓰게 된다
-	ActiveSceneTextures->SwapTarget();
-	// 마
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetCurrentSRV(), ActiveSceneTextures->SceneStencilSRV.Get() };
 	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#SelectionOutline"));
 }
 
@@ -1692,11 +1685,10 @@ void FRenderer::RenderFog(const FViewport& TargetViewport)
 
 	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.f, 0.f, TargetViewport.Rect.GetWidth(), TargetViewport.Rect.GetHeight());
 
-	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get(), ActiveSceneTextures->GetSceneColorSRV() };
-	// Target을 바꿔야함 안 바꾸면 같은 텍스쳐를 SRT, RTV로 읽고 쓰게 된다
-	ActiveSceneTextures->SwapTarget();
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get(), ActiveSceneTextures->GetCurrentSRV() };
 	// Fog는 마지막 패스가 아니니 SceneColor에 쓴다
-	DrawScreenPass(ActiveSceneTextures->GetSceneColorRTV(), TargetD3DViewport, SRVs, 2, FName("#Fog"));
+	DrawScreenPass(ActiveSceneTextures->GetTargetRTV(), TargetD3DViewport, SRVs, 2, FName("#Fog"));
+	ActiveSceneTextures->SwapPingPong();
 }
 
 // ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Post Process ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃

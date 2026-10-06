@@ -21,11 +21,12 @@ struct FViewConstants
 {
 	FMatrix View;
 	FMatrix Projection;
+	FMatrix ViewProjectionInverse;
 	FVector2 ViewportSize;
 	float NearZ;
 	float FarZ;
 	float IsPerspective;
-	FVector Padding;
+	FVector CameraPos;
 };
 static_assert(sizeof(FViewConstants) % 16 == 0);
 

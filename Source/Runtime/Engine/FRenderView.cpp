@@ -300,7 +300,7 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 
 	Renderer.ClearLastRenderState();
 
-	// 후처리 외곽선 패스
+	// Post Process 패스
 	RenderPostProcessPass(View, EditorCtx.SelectedActor);
 
 	Renderer.ClearLastRenderState();
@@ -318,21 +318,13 @@ bool FRenderView::BeginView(const FSceneView& View)
 		return false;
 	}
 
-	// 뷰포트 시작시 SceneTextures의 Target을 Ping(0)으로 초기화
-	SceneTextures->SetTarget(0u);
-
 	// SceneColor + SceneDepth 바인딩
-	Renderer.BindRenderTarget(SceneTextures->GetSceneColorRTV(), SceneTextures->SceneDepthDSV.Get());
+	Renderer.BindRenderTarget(SceneTextures->GetCurrentRTV(), SceneTextures->SceneDepthDSV.Get());
 	Renderer.SetViewportPixel(View.ViewportSizePixel);
 	Renderer.UpdateLightConstants(View.LightConstants);
 
 	// SceneTextures(공용 도화지)를 그리기 전에 Clear
-	// Ping(0), Pong(1) 둘다 Clear
-	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->GetSceneColorRTV(), ClearColor);
-	SceneTextures->SwapTarget();
-	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->GetSceneColorRTV(), ClearColor);
-	SceneTextures->SwapTarget();
-
+	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->GetCurrentRTV(), ClearColor);
 	Renderer.GetContext()->ClearDepthStencilView(SceneTextures->SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// ViewConstants 갱신
@@ -342,13 +334,21 @@ bool FRenderView::BeginView(const FSceneView& View)
 
 void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel)
 {
+	FMatrix Projection = Camera.GetProjectionMatrix();
+	FMatrix ProjectionD3D = Projection.ToD3DMatrix();
+	FMatrix ViewProjectionD3D = Camera.GetViewMatrix() * ProjectionD3D;
+	FMatrix InverseVPD3D;
+	ViewProjectionD3D.Inverse(InverseVPD3D);
+
 	FViewConstants ViewConstants{
 		.View = Camera.GetViewMatrix(),
-		.Projection = Camera.GetProjectionMatrix(),
+		.Projection = ProjectionD3D,
+		.ViewProjectionInverse = InverseVPD3D,
 		.ViewportSize = ViewportSizePixel,
 		.NearZ = Camera.GetProjection().GetNearPlane(),
 		.FarZ = Camera.GetProjection().GetFarPlane(),
 		.IsPerspective = Camera.GetProjection().GetProjectionType() == EProjectionType::Perspective ? 1.f : 0.f,
+		.CameraPos = Camera.GetPosition(),
 	};
 
 	Renderer.UpdateViewConstants(ViewConstants);
@@ -490,6 +490,9 @@ void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedA
 // 어느 분기든 마지막 패스는 반드시 뷰포트 출력 RT 전체를 써야한다
 void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor)
 {
+	// 스텐실 마스크는 이전에 바인딩 된 DSV에 스텐실을 써야하기 때문에 첫번째로 실행
+	DrawStencilMask(View.Camera, SelectedActor);
+
 	// PostProcess 설정값
 	FPostProcessConstants Constants = {
 		.VisMax = 10.f,
@@ -504,12 +507,11 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 		Renderer.RenderSceneDepth(View.Viewport);
 		return; // Scene Depth만 그린다
 	}
-
+	
 	// Fog를 그린다
 	Renderer.RenderFog(View.Viewport);
 
-	// 아웃라인을 Post Process에서 그림 (SceneColor + 외곽선 → 출력 RT)
-	DrawStencilMask(View.Camera, SelectedActor);
+	// DrawStencilMask에서 쓴 스텐실 대로 아웃라인을 그린다 
 	Renderer.RenderSelectionOutline(View.Viewport);
 }
 

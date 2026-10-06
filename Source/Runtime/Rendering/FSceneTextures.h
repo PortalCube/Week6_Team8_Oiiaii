@@ -22,9 +22,9 @@ private:
 	// Post Process로 SceneColor를 읽어야 하는데 같은 텍스쳐에 RTV(쓰기)와 SRV(읽기)를 동시에 바인딩 할 수 없다.
 	// 따라서 SceneColor 텍스쳐를 2개 두고 번갈아 가며 읽는다 (하나는 출력 RTV, 하나는 입력 SRV) (ping-pong)
 
-	// Target : RTV가 그리는(쓰는) 쪽.  /  반대는 Current : SRV가 읽는 쪽.
-	// Target 이 0이면 Ping에 RTV가 쓰고, 1이면 Pong에 RTV가 쓴다
-	uint32 Target = 0u;
+	// Taerget : RTV가 그리는(쓰는) 쪽.  /  반대는 Current : SRV가 읽는 쪽.
+	// Ping 이 True 이면 Ping이 Current이 되고, False 이면 Ping이 Target이 된다
+	bool Ping = true;
 
 	// Ping
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> SceneColorTexture;		    // Draw시 이 Texture에 그려진다
@@ -47,11 +47,10 @@ public:
 	bool InitializeSceneTextures(ID3D11Device* Device, UINT InWidth, UINT InHeight);
 	void Reset();
 
-	void SetTarget(uint32 InTarget) { Target = InTarget; }
-	void SwapTarget() { Target == 0u ? Target = 1u : Target = 0u; }
-	ID3D11Texture2D* GetSceneColorTexture() { return !Target ? SceneColorTexture.Get() : SceneColorTexture2.Get(); }
-	ID3D11RenderTargetView* GetSceneColorRTV() { return !Target ? SceneColorRTV.Get() : SceneColorRTV2.Get(); }
-	ID3D11ShaderResourceView* GetSceneColorSRV() { return !Target ? SceneColorSRV.Get() : SceneColorSRV2.Get(); }
+	void SwapPingPong() { Ping ? Ping = false : Ping = true; }
+	ID3D11ShaderResourceView* GetCurrentSRV() const { return Ping ? SceneColorSRV.Get() : SceneColorSRV2.Get(); }
+	ID3D11RenderTargetView* GetCurrentRTV() const { return Ping ? SceneColorRTV.Get() : SceneColorRTV2.Get(); }
+	ID3D11RenderTargetView* GetTargetRTV() const { return !Ping ? SceneColorRTV.Get() : SceneColorRTV2.Get(); }
 };
 
 // FRenderer의 SceneTexturesPool(TMap) 용 hash
