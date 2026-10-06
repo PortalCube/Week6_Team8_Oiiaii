@@ -11,6 +11,7 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
+#include "Editor/Engine/UEditorEngine.h"
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
@@ -32,6 +33,11 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 	ImGui::Begin("Jungle Control Panel");
 
 	ImGui::Separator();
+
+	if (ImGui::Button("테스트"))
+	{
+		Globals::Editor->StartPIESession();
+	}
 
 	// 액터 스폰
 	ActorSpawnSetting(Editor);

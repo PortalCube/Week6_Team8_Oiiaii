@@ -1,4 +1,5 @@
 #include "FEditorViewportClient.h"
+#include "Runtime/Engine/FWorldContext.h"
 
 void FEditorViewportClient::UpdateFocusedAndHovered(bool bFocused, bool bHovered)
 {
@@ -55,6 +56,11 @@ void FEditorViewportClient::SetCameraMode(ECameraMode Mode)
 		break;
 	}
 
+}
+
+void FEditorViewportClient::SetWorldContext(class FWorldContext* InWorldContext)
+{
+	WorldContext = InWorldContext;
 }
 
 // FEditorApplication::Render() 에서 필요한 FSceneView를 만들어 반환

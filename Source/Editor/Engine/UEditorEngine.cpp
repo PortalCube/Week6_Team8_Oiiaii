@@ -14,6 +14,9 @@
 #include "Runtime/Utility/EngineUtil.h"
 #include "Runtime/Utility/FileUtil.h"
 
+#include "Runtime/Actors/ACubeActor.h"
+#include "Runtime/Components/Mesh/UStaticMeshComponent.h"
+
 #include "Editor/UI/Imgui/FImguiPropertyWindow.h"
 #include "Editor/UI/Imgui/FImguiControlPanelWindow.h"
 #include "Editor/UI/Imgui/FImguiContentsDrawer.h"
@@ -52,9 +55,6 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 
 	EditorWorldContext = &WorldList[0];
 
-	// 새로운 Level으로 World 불러오기
-	LoadMap(*EditorWorldContext, "");
-
 	// ImGui 초기화
 	ImguiManager.Initialize_ImplWin32DX11(*Window, Device, Context);
 
@@ -79,6 +79,9 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 	Editor.Initialize(this);
 	Editor.SetViewLayout(Editor.State.GetSplitMode());
 	Editor.LoadState();
+
+	// 새로운 Level으로 World 불러오기
+	LoadMap(*EditorWorldContext, "");
 }
 
 void UEditorEngine::Tick(float DeltaTime)
@@ -161,7 +164,7 @@ void UEditorEngine::Tick(float DeltaTime)
 			FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(EditorViewport, &VisualizerRegistry);
 
 			// 뷰포트 렌더링 일괄 수행
-			RenderView.RenderView(View, *GetEditorWorld()->GetCurrentLevel(), EditorRenderContext);
+			RenderView.RenderView(View, *Viewport.GetClient().GetWorldContext()->World->GetCurrentLevel(), EditorRenderContext);
 
 			// 기즈모 그리기
 			if (Editor.ObjectSelected())
@@ -218,12 +221,32 @@ void UEditorEngine::SaveLevel(const FString& Path, ULevel* Level)
 
 UWorld* UEditorEngine::GetEditorWorld() const
 {
+	if (!EditorWorldContext)
+	{
+		return nullptr;
+	}
+
 	return EditorWorldContext->World;
 }
 
 FWorldContext* UEditorEngine::GetEditorWorldContext() const
 {
 	return EditorWorldContext;
+}
+
+UWorld* UEditorEngine::GetPIEWorld() const
+{
+	if (!PIEWorldContext)
+	{
+		return nullptr;
+	}
+
+	return PIEWorldContext->World;
+}
+
+FWorldContext* UEditorEngine::GetPIEWorldContext() const
+{
+	return PIEWorldContext;
 }
 
 void UEditorEngine::ExecuteCommand(const char* Command)
@@ -282,8 +305,54 @@ void UEditorEngine::ExecuteCommand(const char* Command)
 
 void UEditorEngine::OnWorldLoaded(FWorldContext& Context)
 {
-	if (Context.WorldType == EWorldType::Editor)
+	Editor.OnWorldLoaded(Context);
+}
+
+void UEditorEngine::StartPIESession()
+{
+	// 일단 대충 구현
+	// 지연된 시작은 조금 나중에 구현
+
+	if (PIEWorldContext)
 	{
-		Editor.OnWorldLoaded();
+		EndPIESession();
+	}
+
+	// 에디터 WorldContext 등록
+	WorldList.push_back({
+	    .World = nullptr,
+	    .WorldType = EWorldType::PIE,
+	});
+
+	PIEWorldContext = &WorldList[1];
+
+	// TODO: Editor World를 복제하기
+	// 지금은 비어있는 월드를 생성
+	LoadMap(*PIEWorldContext, "");
+
+	// 테스트. 나중에 없애야함
+	FVector Location;
+	ACubeActor* TestActor1 = PIEWorldContext->World->SpawnActor<ACubeActor>(ACubeActor::StaticClass());
+	UStaticMeshComponent* TestMesh1 = TestActor1->GetRootComponent()->Cast<UStaticMeshComponent>();
+
+	Location = {0.0, 5.0f, 0.0f};
+	TestMesh1->SetRelativeLocation(Location);
+
+	ACubeActor* TestActor2 = PIEWorldContext->World->SpawnActor<ACubeActor>(ACubeActor::StaticClass());
+	UStaticMeshComponent* TestMesh2 = TestActor1->GetRootComponent()->Cast<UStaticMeshComponent>();
+
+	Location = { 0.0, 0.0f, 5.0f };
+	TestMesh2->SetRelativeLocation(Location);
+}
+
+void UEditorEngine::EndPIESession()
+{
+	if (PIEWorldContext)
+	{
+		// TODO: AGameMode의 StartToLeaveMap 실행
+
+		PIEWorldContext->World->EndPlay();
+		PIEWorldContext->World->CleanupWorld();
+		DestroyObject(PIEWorldContext->World);
 	}
 }

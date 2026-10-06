@@ -38,6 +38,8 @@ void UEngine::Init(FEngineLoop* InEngineLoop)
 	}
 
 	FResourceLoader::LoadAssets(); // TODO: 로딩 스크린 적용
+
+	WorldList.reserve(10);
 }
 
 // Tick은 각 엔진별 내부 구현
@@ -171,6 +173,7 @@ void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 	{
 		Context.World = UWorld::CreateWorldWithEmptyLevel(Context.WorldType);
 	}
+
 	// 월드 초기화 (Subsystem 및 물리 등록)
 	Context.World->InitWorld();
 

@@ -11,6 +11,7 @@
 #include "Runtime/Actors/ASelectedTextActor.h"
 #include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Components/USceneComponent.h"
+#include "Runtime/Engine/FWorldContext.h"
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/FTimeManager.h"
@@ -76,10 +77,24 @@ void FEditor::Process()
 	State.Tick(FTimeManager::GetDeltaTime());
 }
 
-void FEditor::OnWorldLoaded()
+void FEditor::OnWorldLoaded(FWorldContext& Context)
 {
-	SelectedActorTextActor = GetCurrentWorld()->SpawnActor<ASelectedTextActor>(ASelectedTextActor::StaticClass());
-	SelectedActorTextComp = SelectedActorTextActor->TextComponent;
+	if (Context.WorldType == EWorldType::Editor)
+	{
+		SelectedActorTextActor = GetCurrentWorld()->SpawnActor<ASelectedTextActor>(ASelectedTextActor::StaticClass());
+
+		SelectedActorTextComp = SelectedActorTextActor->TextComponent;
+
+		for (auto& Viewport : ViewportLayout.Viewports)
+		{
+			Viewport.GetClient().SetWorldContext(EditorEngine->GetEditorWorldContext());
+		}
+	}
+	else if (Context.WorldType == EWorldType::PIE)
+	{
+		ViewportLayout.ActiveViewport->GetClient().SetWorldContext(EditorEngine->GetPIEWorldContext());
+	}
+	
 }
 
 void FEditor::SaveState()

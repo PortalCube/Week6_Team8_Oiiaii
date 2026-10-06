@@ -58,7 +58,7 @@ public:
 
 	void Process();
 
-	void OnWorldLoaded();
+	void OnWorldLoaded(FWorldContext& Context);
 
 	// Scene
 	void NewScene();

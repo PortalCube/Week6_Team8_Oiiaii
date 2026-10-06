@@ -34,6 +34,7 @@ private:
 	SWindow EditorViewports;
 
 	FWorldContext* EditorWorldContext = nullptr;
+	FWorldContext* PIEWorldContext = nullptr;
 
 public:
 	virtual void Init(FEngineLoop* InEngineLoop) override;
@@ -48,8 +49,16 @@ public:
 	UWorld* GetEditorWorld() const;
 	FWorldContext* GetEditorWorldContext() const;
 
+	// PIE 월드 가져오기.
+	UWorld* GetPIEWorld() const;
+	FWorldContext* GetPIEWorldContext() const;
+
 	// 임시
 	void ExecuteCommand(const char* Command);
 
 	virtual void OnWorldLoaded(FWorldContext& Context) override;
+
+	void StartPIESession();
+	void EndPIESession();
+
 };
