@@ -26,9 +26,11 @@ protected:
 	FString AssetPath = "";
 	uint64 AssetSize = 0;
 
+	virtual void Initialize() override;
 	void LoadInternal(UAssetDesc& Desc);
 
 public:
 	const FName& GetID() const { return ID; }
+	FString GetIDString() const { return ID.ToString(); }
 	const FName& GetName() const { return Name; }
 };

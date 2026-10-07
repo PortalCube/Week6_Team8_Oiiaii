@@ -3,7 +3,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Components/USceneComponent.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Engine/UWorld.h"
 
@@ -28,73 +28,33 @@ void AActor::Release()
 	Super::Release();
 }
 
-void AActor::Serialize(FArchive& Archive) const
+void AActor::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
+	Archive.Reference("RootComponent", RootComponent);
 
-	if (RootComponent)
+	TArray<UActorComponent*> Components;
+	for (auto* Component : OwnedComponents)
 	{
-		FArchive RootArchive{};
-		RootComponent->Serialize(RootArchive);
-		Archive.SetArchive("RootComponent", RootArchive);
+		if (Component && !Component->IsEditorOnly())
+			Components.push_back(Component);
 	}
-	else
+	if (Archive.IsReading())
 	{
-		Archive.SetNull("RootComponent");
-	}
-}
-
-void AActor::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
-
-	if (Archive.IsNull("RootComponent"))
-	{
-		if (RootComponent)
-		{
-			UE_LOG_WARN("[%s::Deserialize] RootComponent(%s)에 대한 직렬화 데이터가 누락되었습니다.",
-			    GetClass()->GetName(),
-			    RootComponent->GetClass()->GetName());
-		}
-		return;
+		if (RootComponent && std::find(OwnedComponents.begin(), OwnedComponents.end(), RootComponent) == OwnedComponents.end())
+			OwnedComponents.push_back(RootComponent);
 	}
 
-	FArchive RootComponentArchive = Archive.GetArchive("RootComponent");
-	const FString& SavedTypeName = RootComponentArchive.GetString("Type");
-	UClass* SavedClass = UClass::FindByName(SavedTypeName);
-
-	if (SavedClass == nullptr)
+	int32 Count = Archive.BeginArray("OwnedComponents");
+	if (Archive.IsWriting()) Count = static_cast<int32>(Components.size());
+	for (int32 Index = 0; Index < Count; ++Index)
 	{
-		UE_LOG_WARN("[%s::Deserialize] 알 수 없는 타입 %s",
-		    GetClass()->GetName(), SavedTypeName);
-		return;
+		UActorComponent* Component = Index < Components.size() ? Components[Index] : nullptr;
+		Archive.Reference("", Component);
+		if (Archive.IsReading() && Component && std::find(OwnedComponents.begin(), OwnedComponents.end(), Component) == OwnedComponents.end())
+			OwnedComponents.push_back(Component);
 	}
-
-	if (RootComponent == nullptr)
-	{
-		USceneComponent* NewComponent = NewObject<USceneComponent>(this, SavedClass);
-		OwnedComponents.push_back(NewComponent);
-		NewComponent->Initialize();
-		SetRootComponent(NewComponent);
-
-		if (RootComponent == nullptr)
-		{
-			UE_LOG_WARN("[%s::Deserialize] RootComponent %s를 생성할 수 없습니다.",
-			    GetClass()->GetName(), SavedTypeName);
-			return;
-		}
-	}
-
-	if (RootComponent->GetClass() != SavedClass)
-	{
-		UE_LOG_WARN("[%s::Deserialize] 기본 RootComponent (%s)와 저장된 타입 "
-		            "(%s)가 일치하지 않습니다.",
-		    GetClass()->GetName(),
-		    RootComponent->GetClass()->GetName(), SavedTypeName);
-		return;
-	}
-
-	RootComponent->Deserialize(RootComponentArchive);
+	Archive.EndArray();
 }
 
 ULevel* AActor::GetLevel() const

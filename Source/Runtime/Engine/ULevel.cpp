@@ -5,7 +5,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Components/USceneComponent.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 #include "Runtime/Engine/UWorld.h"
 
 #include <algorithm>
@@ -152,58 +152,41 @@ void ULevel::CleanupLevel()
 	}
 }
 
-void ULevel::Serialize(FArchive& Archive) const
+void ULevel::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
 
-	TArray<FArchive> ActorArchives;
+	TArray<AActor*> SavedActors;
 
-	for (const auto& Item : Actors)
+	if (Archive.IsWriting())
 	{
-		if (!Item)
+		for (AActor* Actor : Actors)
 		{
-			continue;
+			if (Actor && !Actor->IsEditorOnly())
+			{
+				SavedActors.push_back(Actor);
+			}
 		}
-
-		FArchive ItemArchive;
-		Item->Serialize(ItemArchive);
-		ActorArchives.push_back(ItemArchive);
 	}
 
-	Archive.SetArchiveArray("Actors", ActorArchives);
-}
-
-void ULevel::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
-
-	if (Archive.IsNull("Actors"))
+	int32 Count = Archive.BeginArray("Actors");
 	{
-		// Actor 목록이 비어있음
-		return;
-	}
-
-	TArray<FArchive> ActorArchives = Archive.GetArchiveArray("Actors");
-
-	for (const auto& Item : ActorArchives)
-	{
-		UClass* ClassType = UClass::FindByName(Item.GetString("Type"));
-		if (ClassType == nullptr)
+		if (Archive.IsReading())
 		{
-			continue;
+			Actors.resize(Count, nullptr);
+		}
+		else
+		{
+			Count = static_cast<int32>(SavedActors.size());
 		}
 
-		AActor* Actor = NewObject<AActor>(this, ClassType);
-
-		if (!Actor)
+		for (int32 Index = 0; Index < Count; ++Index)
 		{
-			continue;
+			AActor*& Actor = Archive.IsReading() ? Actors[Index] : SavedActors[Index];
+			Archive.Reference("", Actor);
 		}
-
-		Actors.push_back(Actor);
-		Actor->Initialize();
-		Actor->Deserialize(Item);
 	}
+	Archive.EndArray();
 }
 
 void ULevel::AddRenderComponent(UPrimitiveComponent* prim)

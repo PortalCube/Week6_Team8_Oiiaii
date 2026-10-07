@@ -27,6 +27,7 @@ void SEditorViewport::SetSceneRect(const FRect& SceneRect)
 	Viewport.SetLeftTop(RoundedRect.GetLeftTop());
 	Viewport.SetRightBottom(RoundedRect.GetRightBottom());
 	Client.GetViewportCamera().SetAspectRatio(RoundedRect.GetWidth() / RoundedRect.GetHeight());
+	GameClient.GetViewportCamera().SetAspectRatio(RoundedRect.GetWidth() / RoundedRect.GetHeight());
 }
 
 bool SEditorViewport::IsRenderable()

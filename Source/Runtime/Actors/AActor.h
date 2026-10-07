@@ -26,8 +26,8 @@ protected:
 
 	bool bIsEditorOnlyActor = false;
 
-	virtual void Serialize(FArchive& Archive) const override;
-	virtual void Deserialize(const FArchive& Archive) override;
+	virtual void Serialize(FArchive& Archive) override;
+
 
 public:
 

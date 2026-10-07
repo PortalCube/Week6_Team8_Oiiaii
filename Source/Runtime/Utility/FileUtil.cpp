@@ -75,26 +75,12 @@ void FileUtil::WriteJSONFile(FStringView Path, const nlohmann::json& JSON)
 	}
 }
 
-FArchive FileUtil::ReadArchive(FStringView Path)
+FJson FileUtil::ReadJson(FStringView Path)
 {
-	try
-	{
-		return FArchive{ ReadJSONFile(Path) };
-	}
-	catch (...)
-	{
-		throw EngineUtil::CreateError("[FileUtil::ReadArchive] FArchive를 불러오는데 실패했습니다.");
-	}
+	return FJson{ReadJSONFile(Path)};
 }
 
-void FileUtil::WriteArchive(FStringView Path, const FArchive& Archive)
+void FileUtil::WriteJson(FStringView Path, const FJson& Json)
 {
-	try
-	{
-		WriteJSONFile(Path, Archive.GetJSON());
-	}
-	catch (...)
-	{
-		throw EngineUtil::CreateError("[FileUtil::WriteArchive] FArchive를 쓰는데 실패했습니다.");
-	}
+	WriteJSONFile(Path, Json.GetJSON());
 }

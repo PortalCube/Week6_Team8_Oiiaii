@@ -1,7 +1,7 @@
 #include "UTextComponent.h"
 #include "Runtime/Rendering/FTextRendering.h"
 #include "Runtime/Asset/UFont.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Rendering/FRenderResourceLibrary.h"
 #include "Runtime/Rendering/FRenderer.h"
@@ -59,7 +59,7 @@ void UTextComponent::SetFont(UFont* InFont)
 
 	FontAsset = InFont;
 	Font = FRenderResourceLibrary::Get().GetFont(
-	    std::filesystem::path(InFont->GetID().ToString()).stem().string());
+	    std::filesystem::path(InFont->GetIDString()).stem().string());
 	SetTexture(InFont->GetTexture());
 	RebuildTextMesh();
 }
@@ -118,38 +118,30 @@ const FRenderData& UTextComponent::GetRenderData(const FCamera& Camera) const
 	return RenderData;
 }
 
-void UTextComponent::Serialize(FArchive& Archive) const
+void UTextComponent::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
 
-	Archive.SetWString("Text", Text);
-	Archive.SetVector4("TextColor", TextColor);
-	Archive.SetFloat("TextSize", TextSize);
+	Archive.Field("Text", Text);
+	Archive.Field("TextColor", TextColor);
+	Archive.Field("TextSize", TextSize);
 
-	if (FontAsset)
+	FString FontAssetID = FontAsset ? FontAsset->GetIDString() : "";
+	Archive.Field("FontAsset", FontAssetID);
+
+	if (Archive.IsReading())
 	{
-		Archive.SetString("FontAsset", FontAsset->GetID().ToString());
-	}
-}
-
-void UTextComponent::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
-
-	Text = Archive.GetWString("Text");
-
-	if (!Archive.IsNull("FontAsset"))
-	{
-		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-		FString FontAssetID = Archive.GetString("FontAsset");
-		UFont* LoadedFont = Registry.Get<UFont>(FontAssetID);
-
-		if (LoadedFont)
+		if (!FontAssetID.empty())
 		{
-			SetFont(LoadedFont);
-			return;
-		}
-	}
+			UFont* LoadedFont = FAssetRegistry::GetInstance().Get<UFont>(FontAssetID);
 
-	RebuildTextMesh();
+			if (LoadedFont)
+			{
+				SetFont(LoadedFont);
+				return;
+			}
+		}
+
+		RebuildTextMesh();
+	}
 }

@@ -24,8 +24,8 @@ public:
 	const FVector& GetLightColor() const { return LightColor; }
 	void SetLightColor(const FVector& InColor) { LightColor = InColor; }
 
-	void Serialize(FArchive& Archive) const override;
-	void Deserialize(const FArchive& Archive) override;
+	void Serialize(FArchive& Archive) override;
+
 
 	virtual bool IsOcclusionTarget() const override { return false; }
 

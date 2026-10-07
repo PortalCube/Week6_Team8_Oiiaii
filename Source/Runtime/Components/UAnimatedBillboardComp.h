@@ -11,8 +11,8 @@ class UAnimatedBillboardComp : public UBillboardComponent
 	GENERATED_BODY()
 
 protected:
-	virtual void Serialize(FArchive& Archive) const override;
-	virtual void Deserialize(const FArchive& Archive) override;
+	virtual void Serialize(FArchive& Archive) override;
+
 
 public:
 	void Initialize() override;

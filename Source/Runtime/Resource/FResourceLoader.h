@@ -4,7 +4,7 @@
 #include "Runtime/Core/FString.h"
 #include "Runtime/Core/FName.h"
 
-class FArchive;
+class FJson;
 
 class FResourceLoader
 {
@@ -12,11 +12,11 @@ class FResourceLoader
 private:
 	static constexpr int32 CurrentSchemaVersion = 1;
 
-	static void LoadPipelineAsset(const FArchive& Archive, const FName& ID);
-	static void LoadMaterialAsset(const FArchive& Archive, const FName& ID);
-	static void LoadStaticMeshAsset(const FArchive& Archive, const FName& ID);
-	static void LoadFontAsset(const FArchive& Archive, const FName& ID);
-	static void LoadTextureAsset(const FArchive& Archive, const FName& ID);
+	static void LoadPipelineAsset(const FJson& Archive, const FName& ID);
+	static void LoadMaterialAsset(const FJson& Archive, const FName& ID);
+	static void LoadStaticMeshAsset(const FJson& Archive, const FName& ID);
+	static void LoadFontAsset(const FJson& Archive, const FName& ID);
+	static void LoadTextureAsset(const FJson& Archive, const FName& ID);
 
 	static void LoadMtlMaterial(const std::filesystem::path& MtlFilePath, const std::filesystem::path& RootPath);
 
