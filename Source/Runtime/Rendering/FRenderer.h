@@ -95,6 +95,8 @@ public:
 	void BindPointLights();
 	void UpdateFrameConstants(const FFrameConstants& Constants);
 	void UpdateViewConstants(const FViewConstants& Constants);
+	// 카메라로부터 ViewConstants를 만들어 갱신한다 (Projection은 D3D Clip 기준)
+	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
 	void UpdatePostProcessConstants(const FPostProcessConstants& Constants);
 
 	// Object Constant Buffer를 갱신한다.
@@ -107,14 +109,14 @@ public:
 		// 언리얼 Clip -> D3D Clip 좌표 변환.
 		// Object MVP는 현재 뷰와 World로 계산하고, 그리드 MVP는 전달된 값을 사용한다.
 		TConstants ShaderConstants = Constants;
-		if constexpr (std::is_same_v<TConstants, FObjectConstants>)
-		{
-			ShaderConstants.MVP = ShaderConstants.World * ViewProjection;
-		}
-		if constexpr (requires { ShaderConstants.MVP; })
-		{
-			ShaderConstants.MVP = ShaderConstants.MVP.ToD3DMatrix();
-		}
+		//if constexpr (std::is_same_v<TConstants, FObjectConstants>)
+		//{
+		//	ShaderConstants.MVP = ShaderConstants.World * ViewProjection;
+		//}
+		//if constexpr (requires { ShaderConstants.MVP; })
+		//{
+		//	ShaderConstants.MVP = ShaderConstants.MVP.ToD3DMatrix();
+		//}
 
 		ID3D11Buffer* ObjectCB = GetCurrentFrameResource()->ObjectConstantBuffer.Get();
 

@@ -313,24 +313,7 @@ bool FRenderView::BeginView(const FSceneView& View)
 
 void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel)
 {
-	FMatrix Projection = Camera.GetProjectionMatrix();
-	FMatrix ProjectionD3D = Projection.ToD3DMatrix();
-	FMatrix ViewProjectionD3D = Camera.GetViewMatrix() * ProjectionD3D;
-	FMatrix InverseVPD3D;
-	ViewProjectionD3D.Inverse(InverseVPD3D);
-
-	FViewConstants ViewConstants{
-		.View = Camera.GetViewMatrix(),
-		.Projection = ProjectionD3D,
-		.ViewProjectionInverse = InverseVPD3D,
-		.ViewportSize = ViewportSizePixel,
-		.NearZ = Camera.GetProjection().GetNearPlane(),
-		.FarZ = Camera.GetProjection().GetFarPlane(),
-		.IsPerspective = Camera.GetProjection().GetProjectionType() == EProjectionType::Perspective ? 1.f : 0.f,
-		.CameraPos = Camera.GetPosition(),
-	};
-
-	Renderer.UpdateViewConstants(ViewConstants);
+	Renderer.UpdateViewConstants(Camera, ViewportSizePixel);
 }
 
 // 선택된 오브젝트의 AABB 박스를 렌더한다
@@ -363,7 +346,8 @@ void FRenderView::DrawGrid(const FSceneView& View, FGrid* Grid)
 	Grid->DrawLine(Renderer, View.Camera);
 
 	FGridLineConstants Constants{};
-	Constants.MVP = View.Camera.GetViewProjectionMatrix();
+	FMatrix MVP = View.Camera.GetViewProjectionMatrix();
+	Constants.MVP = MVP.ToD3DMatrix();
 	Constants.CameraPosition = View.Camera.GetPosition();
 	Constants.FadeStartDistance = 3.0f;
 	Constants.FadeEndDistance = 75.0f;
@@ -410,9 +394,9 @@ void FRenderView::RenderSelectedActorUUID(const FSceneView& View, const AActor* 
 			Position = FVector{Bounds.Center.X, Bounds.Center.Y, Bounds.Max.Z};
 		}
 	}
-	Position.Z += 0.5f;
+	Position.Z += 0.2f;
 	const FWString Text = L"UUID : " + std::to_wstring(SelectedActor->GetUUID());
-	Renderer.DrawBillboardText(View, Text, Position, 0.5f);
+	Renderer.DrawBillboardText(View, Text, Position, 0.2f);
 }
 
 void FRenderView::RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo)

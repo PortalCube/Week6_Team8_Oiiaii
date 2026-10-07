@@ -24,10 +24,9 @@ cbuffer ObjectConstants : register(b2)
     float2 UVScale;
     float2 UVOffset;
     row_major float4x4 World;
-    float DisableShading;
-    float3 ObjectPadding;
     row_major float4x4 WorldInverseTranspose;
     float3 EmissiveColor;
+	float DisableShading;
     float EmissiveIntensity;
 }
 

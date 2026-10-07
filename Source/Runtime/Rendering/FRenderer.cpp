@@ -1173,13 +1173,29 @@ void FRenderer::UpdateFrameConstants(const FFrameConstants& Constants)
 void FRenderer::UpdateViewConstants(const FViewConstants& Constants)
 {
 	ViewProjection = Constants.View * Constants.Projection;
-	FViewConstants ShaderConstants = Constants;
-	ShaderConstants.Projection = ShaderConstants.Projection.ToD3DMatrix();
-
-	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &ShaderConstants, 0, 0);
 	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->VSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
 	Context->PSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
+}
+
+void FRenderer::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel)
+{
+	FMatrix Projection = Camera.GetProjectionMatrix();
+	FMatrix ProjectionD3D = Projection.ToD3DMatrix();
+	FMatrix ViewProjectionD3D = Camera.GetViewMatrix() * ProjectionD3D;
+	FMatrix InverseVPD3D;
+	ViewProjectionD3D.Inverse(InverseVPD3D);
+
+	UpdateViewConstants(FViewConstants{
+		.View = Camera.GetViewMatrix(),
+		.Projection = ProjectionD3D,
+		.ViewProjectionInverse = InverseVPD3D,
+		.ViewportSize = ViewportSizePixel,
+		.NearZ = Camera.GetProjection().GetNearPlane(),
+		.FarZ = Camera.GetProjection().GetFarPlane(),
+		.IsPerspective = Camera.GetProjection().GetProjectionType() == EProjectionType::Perspective ? 1.f : 0.f,
+		.CameraPos = Camera.GetPosition(),
+	});
 }
 
 void FRenderer::UpdatePostProcessConstants(const FPostProcessConstants& Constants)
@@ -1213,7 +1229,7 @@ bool FRenderer::UploadObjectConstants(std::span<const FDrawCommand> Commands)
 	{
 		const uint32 ByteOffset = static_cast<uint32>(Index) * ObjectConstantStride;
 		FObjectConstants ShaderConstants = Commands[Index].Constants;
-		ShaderConstants.MVP = (ShaderConstants.World * ViewProjection).ToD3DMatrix();
+		//ShaderConstants.MVP = (ShaderConstants.World * ViewProjection).ToD3DMatrix();
 		std::memcpy(Destination + ByteOffset, &ShaderConstants, sizeof(FObjectConstants));
 	}
 	Context->Unmap(ObjectConstantUploadBuffer.Get(), 0);
@@ -1579,7 +1595,7 @@ void FRenderer::DrawBillboardText(const FSceneView& View, FWStringView Text,
 	}
 
 	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	UFont* FontAsset = Registry.Get<UFont>("Font/BazziOTF.json");
+	UFont* FontAsset = Registry.Get<UFont>("Font/NanumGothicBold.json");
 	UMaterial* MaterialAsset = Registry.Get<UMaterial>("Material/SelectedActor_Text.json");
 	UStaticMesh* MeshAsset = Registry.Get<UStaticMesh>("#Rect");
 	if (!FontAsset || !FontAsset->Get() || !FontAsset->GetTexture() ||
@@ -1625,14 +1641,7 @@ void FRenderer::DrawBillboardText(const FSceneView& View, FWStringView Text,
 	ClearLastRenderState();
 	BindRenderTarget(Target->GetRTV(), ActiveSceneTextures->SceneDepthDSV.Get());
 	SetViewportPixel(View.ViewportSizePixel);
-	UpdateViewConstants(FViewConstants{
-	    .View = View.Camera.GetViewMatrix(),
-	    .Projection = View.Camera.GetProjectionMatrix(),
-	    .ViewportSize = View.ViewportSizePixel,
-	    .NearZ = View.Camera.GetProjection().GetNearPlane(),
-	    .FarZ = View.Camera.GetProjection().GetFarPlane(),
-	    .IsPerspective = View.Camera.GetProjection().GetProjectionType() == EProjectionType::Perspective ? 1.0f : 0.0f,
-	});
+	UpdateViewConstants(View.Camera, View.ViewportSizePixel);
 	DrawTextInstanceData(Command, BillboardWorldInstances);
 	ClearLastRenderState();
 }

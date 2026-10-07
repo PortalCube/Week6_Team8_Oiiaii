@@ -24,7 +24,7 @@ inline FFogSettings GFogSettings = {
 	.StartDistance = 10.f,
 	.FogCutoffDistance = 0.f,
 	.FogMaxOpacity = 1.f,
-	.FogInscatteringColor = FVector(1.f, 1.f, 1.f),
+	.FogInscatteringColor = FVector(0.9f, 0.9f, 0.9f),
 	.FogHeight = -8.5f,
 };
 
