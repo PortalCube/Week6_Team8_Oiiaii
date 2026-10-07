@@ -6,6 +6,7 @@
 #include "Runtime/Components/UTextComponent.h"
 #include "Runtime/Components/UBillboardComponent.h"
 #include "Runtime/Components/UAnimatedBillboardComp.h"
+#include "Runtime/Components/UHeightFogComponent.h"
 #include "Runtime/Components/Mesh/UStaticMeshComponent.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Actors/AActor.h"
@@ -156,7 +157,10 @@ void FImguiPropertyWindow::ShowComponentDetails(FEditor& Editor, AActor& Actor,
 	{
 		ShowFireBallSettings(static_cast<UFireBallComponent&>(Comp));
 	}
-
+	else if (Comp.IsA<UHeightFogComponent>())
+	{
+		ShowHeightFogSettings(static_cast<UHeightFogComponent&>(Comp));
+	}
 	else if (Comp.IsA<UStaticMeshComponent>())
 	{
 		ShowStaticMeshSettings(Actor, static_cast<UStaticMeshComponent&>(Comp), bIsRoot);
@@ -173,16 +177,16 @@ void FImguiPropertyWindow::ShowTransform(FEditor& Editor, USceneComponent& Comp,
 		FVector Location = Editor.SelectedTransform.GetLocation();
 		if (ImGui::DragFloat3("Translation", &Location.X, 0.01f))
 		{
-			Editor.SelectedTransform.SetLocation(Location);
+			//Editor.SelectedTransform.SetLocation(Location);
 		}
 		if (ImGui::DragFloat3("Rotation (deg)", &Editor.SelectedEulerDegDisplay.X, 0.5f))
 		{
-			Editor.SelectedTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Editor.SelectedEulerDegDisplay));
+			//Editor.SelectedTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Editor.SelectedEulerDegDisplay));
 		}
 		FVector Scale = Editor.SelectedTransform.GetScale3D();
 		if (ImGui::DragFloat3("Scale", &Scale.X, 0.01f))
 		{
-			Editor.SelectedTransform.SetScale3D(Scale);
+			//Editor.SelectedTransform.SetScale3D(Scale);
 		}
 		return;
 	}
@@ -446,6 +450,57 @@ void FImguiPropertyWindow::ShowFireBallSettings(UFireBallComponent& FireBallComp
 	if (ImGui::DragFloat("Emissive Intensity", &EmissiveIntensity, 0.05f, 0.0f, 50.0f))
 	{
 		FireBallComp.SetEmissiveIntensity(EmissiveIntensity);
+	}
+}
+
+void FImguiPropertyWindow::ShowHeightFogSettings(UHeightFogComponent& HeightFogComp) const
+{
+	ImGui::Separator();
+	ImGui::Text("Height Fog Settings");
+
+	float FogDensity = HeightFogComp.GetFogDensity();
+	if (ImGui::SliderFloat("Fog Density", &FogDensity, 0.0f, 1.0f, "%.3f"))
+	{
+		HeightFogComp.SetFogDensity(FogDensity);
+	}
+
+	float HeightFalloff = HeightFogComp.GetFogHeightFalloff();
+	if (ImGui::SliderFloat("Height Falloff", &HeightFalloff, 0.0f, 2.0f, "%.3f"))
+	{
+		HeightFogComp.SetFogHeightFalloff(HeightFalloff);
+	}
+
+	//float FogHeight = HeightFogComp.GetFogHeight();
+	//if (ImGui::SliderFloat("Fog Height", &FogHeight, -50.0f, 50.0f, "%.2f"))
+	//{
+	//	HeightFogComp.SetFogHeight(FogHeight);
+	//}
+
+	float StartDistance = HeightFogComp.GetStartDistance();
+	if (ImGui::SliderFloat("Start Distance", &StartDistance, 0.0f, 100.0f, "%.2f"))
+	{
+		HeightFogComp.SetStartDistance(StartDistance);
+	}
+
+	float CutoffDistance = HeightFogComp.GetFogCutoffDistance();
+	if (ImGui::SliderFloat("Cutoff Distance", &CutoffDistance, 0.0f, 1000.0f, "%.1f"))
+	{
+		HeightFogComp.SetFogCutoffDistance(CutoffDistance);
+	}
+
+	float MaxOpacity = HeightFogComp.GetFogMaxOpacity();
+	if (ImGui::SliderFloat("Max Opacity", &MaxOpacity, 0.0f, 1.0f, "%.2f"))
+	{
+		HeightFogComp.SetFogMaxOpacity(MaxOpacity);
+	}
+
+	ImGui::Separator();
+	ImGui::Text("Color Settings");
+
+	FLinearColor InscatteringColor = HeightFogComp.GetFogInscatteringColor();
+	if (ImGui::ColorEdit3("Inscattering Color", &InscatteringColor.R))
+	{
+		HeightFogComp.SetFogInscatteringColor(InscatteringColor);
 	}
 }
 

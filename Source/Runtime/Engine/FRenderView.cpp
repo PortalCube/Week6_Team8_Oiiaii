@@ -20,10 +20,11 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Core/Globals.h"
+#include "Runtime/CoreUObject/FStatsManager.h"
+#include "Runtime/Components/UHeightFogComponent.h"
+#include "Runtime/Actors/AHeightFogActor.h"
 
 #include <fstream>
-
-#include "Runtime/CoreUObject/FStatsManager.h"
 
 FRenderView::FRenderView(FRenderer& Renderer) : Renderer(Renderer) {}
 
@@ -244,15 +245,11 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	}
 
 	// 컬링 측정
-	{
-		CullScene(View, Scene);
-	}
+	CullScene(View, Scene);
 
 	// 씬 컴포넌트 수집 (LOD 선택 포함). 독립 카운터라 부모인 Draw 수치에는 영향이 없다.
-	{
-		SCOPE_CYCLE_COUNTER_IMPL(__COUNTER__, "Collect", true);
-		CollectScenePrimitives(Scene, View, EditorCtx.SelectedActor);
-	}
+	SCOPE_CYCLE_COUNTER_IMPL(__COUNTER__, "Collect", true);
+	CollectScenePrimitives(Scene, View, EditorCtx.SelectedActor);
 
 	if (Globals::bEnableRenderSort)
 	{
@@ -264,6 +261,8 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	Renderer.UploadPointLights(PointLights);
 	Renderer.BindPointLights();
 
+	UHeightFogComponent* HeightFogComp = GetHeightFogComp(Scene);
+
 	// 기본 씬 오브젝트 패스
 	FlushBasePass(View);
 
@@ -273,37 +272,21 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 		RunOcclusionOracle();
 		bOracleRequested = false;
 	}
-
 	Renderer.ClearLastRenderState();
 
-	// 에디터 라인 패스
-	if (EditorCtx.Grid && (View.ShowFlags & static_cast<uint32>(EEngineShowFlags::SF_Grid)) != 0)
-	{
-		DrawGrid(View.Camera, *EditorCtx.Grid);
-	}
+	// Post Process 패스
+	RenderPostProcessPass(View, EditorCtx.SelectedActor, HeightFogComp);
+	Renderer.ClearLastRenderState();
 
-	if (EditorCtx.SelectedPrimitive && EditorCtx.VisualizerRegistry)
-	{
+	// 비주얼라이져 패스
+	DrawVisualizer(View, EditorCtx);
 
-		UClass* ClassType = EditorCtx.SelectedPrimitive->GetClass();
-		FVisualizerRegistry& Registry = *EditorCtx.VisualizerRegistry;
-
-		IVisualizer* Visualizer = Registry.FindVisualizer(ClassType);
-
-		if (Visualizer)
-		{
-			Visualizer->Draw(*EditorCtx.SelectedPrimitive, *this, View.Camera, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f });
-		}
-	}
-
+	// Line Batch 패스
 	FlushLinePass(View.Camera);
-
 	Renderer.ClearLastRenderState();
 
-	// 후처리 외곽선 패스
-	RenderPostProcessPass(View, EditorCtx.SelectedActor);
-
-	Renderer.ClearLastRenderState();
+	// 그리드 패스
+	DrawGrid(View, EditorCtx.Grid);
 }
 
 // 뷰포트 렌더 시작시 실행하는 것들
@@ -319,12 +302,12 @@ bool FRenderView::BeginView(const FSceneView& View)
 	}
 
 	// SceneColor + SceneDepth 바인딩
-	Renderer.BindRenderTarget(SceneTextures->SceneColorRTV.Get(), SceneTextures->SceneDepthDSV.Get());
+	Renderer.BindRenderTarget(SceneTextures->GetCurrentRTV(), SceneTextures->SceneDepthDSV.Get());
 	Renderer.SetViewportPixel(View.ViewportSizePixel);
 	Renderer.UpdateLightConstants(View.LightConstants);
 
 	// SceneTextures(공용 도화지)를 그리기 전에 Clear
-	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->SceneColorRTV.Get(), ClearColor);
+	Renderer.GetContext()->ClearRenderTargetView(SceneTextures->GetCurrentRTV(), ClearColor);
 	Renderer.GetContext()->ClearDepthStencilView(SceneTextures->SceneDepthDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// ViewConstants 갱신
@@ -334,27 +317,54 @@ bool FRenderView::BeginView(const FSceneView& View)
 
 void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel)
 {
-	FViewConstants ViewConstants{
-		.View = Camera.GetViewMatrix(),
-		.Projection = Camera.GetProjectionMatrix(),
-		.ViewportSize = ViewportSizePixel,
-		.NearZ = Camera.GetProjection().GetNearPlane(),
-		.FarZ = Camera.GetProjection().GetFarPlane(),
-		.IsPerspective = Camera.GetProjection().GetProjectionType() == EProjectionType::Perspective ? 1.f : 0.f,
-	};
-
-	Renderer.UpdateViewConstants(ViewConstants);
+	Renderer.UpdateViewConstants(Camera, ViewportSizePixel);
 }
 
-void FRenderView::DrawGrid(const FCamera& Camera, FGrid& Grid)
+// 선택된 오브젝트의 AABB 박스를 렌더한다
+void FRenderView::DrawVisualizer(const FSceneView& View, const FEditorRenderContext& EditorCtx)
 {
-	Grid.DrawLine(Renderer, Camera);
+	if (EditorCtx.SelectedPrimitive && EditorCtx.VisualizerRegistry)
+	{
+		UClass* ClassType = EditorCtx.SelectedPrimitive->GetClass();
+		FVisualizerRegistry& Registry = *EditorCtx.VisualizerRegistry;
+		IVisualizer* Visualizer = Registry.FindVisualizer(ClassType);
+		if (Visualizer)
+		{
+			Visualizer->Draw(*EditorCtx.SelectedPrimitive, *this, View.Camera, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f });
+		}
+	}
+}
+
+void FRenderView::DrawGrid(const FSceneView& View, FGrid* Grid)
+{
+	if (!Grid || ((View.ShowFlags & static_cast<uint32>(EEngineShowFlags::SF_Grid)) == 0))
+	{
+		return;
+	}
+	// SceneDepth에서는 그리드를 그리지 않음
+	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
+	{
+		return;
+	}
+
+	Grid->DrawLine(Renderer, View.Camera);
 
 	FGridLineConstants Constants{};
-	Constants.MVP = Camera.GetViewProjectionMatrix();
-	Constants.CameraPosition = Camera.GetPosition();
+	FMatrix MVP = View.Camera.GetViewProjectionMatrix();
+	Constants.MVP = MVP.ToD3DMatrix();
+	Constants.CameraPosition = View.Camera.GetPosition();
 	Constants.FadeStartDistance = 3.0f;
 	Constants.FadeEndDistance = 75.0f;
+
+	const FViewportRenderTarget* RenderTarget = View.Viewport.RenderTarget.get();
+	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
+
+	// 둘 중 하나라도 없으면 그리지 않는다
+	if (!RenderTarget || !SceneTextures) 
+	{
+		return;
+	}
+	Renderer.BindRenderTarget(RenderTarget->GetRTV(), SceneTextures->SceneDepthDSV.Get());
 	Renderer.FlushLineBatch(Constants, FName("Grid"));
 }
 
@@ -388,9 +398,9 @@ void FRenderView::RenderSelectedActorUUID(const FSceneView& View, const AActor* 
 			Position = FVector{Bounds.Center.X, Bounds.Center.Y, Bounds.Max.Z};
 		}
 	}
-	Position.Z += 0.5f;
+	Position.Z += 0.2f;
 	const FWString Text = L"UUID : " + std::to_wstring(SelectedActor->GetUUID());
-	Renderer.DrawBillboardText(View, Text, Position, 0.5f);
+	Renderer.DrawBillboardText(View, Text, Position, 0.2f);
 }
 
 void FRenderView::RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo)
@@ -473,31 +483,67 @@ void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedA
 
 // Post Process Pass에서 렌더할 것들
 // 어느 분기든 마지막 패스는 반드시 뷰포트 출력 RT 전체를 써야한다
-void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor)
+void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor, const UHeightFogComponent* HeightFogComp)
 {
-	// PostProcess 설정값
-	FPostProcessConstants Constants = {
+	// 스텐실 마스크는 이전에 바인딩 된 DSV에 스텐실을 써야하기 때문에 첫번째로 실행
+	DrawStencilMask(View.Camera, SelectedActor);
+
+	// PostProcess 상수버퍼
+	FPostProcessConstants PostProcessConstants = {
 		.VisMax = 10.f,
+		.VisMinOrtho = 0.1f,
+		.VisMaxOrtho = 10.f,
 	};
-	Renderer.UpdatePostProcessConstants(Constants);
+	Renderer.UpdatePostProcessConstants(PostProcessConstants); // 설정값 (상수버퍼) 업데이트
 
 	// Scene Depth 모드
 	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
 	{
 		Renderer.RenderSceneDepth(View.Viewport);
 	}
-	else
+	// Fog를 그린다
+	else if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_Fog) && HeightFogComp)
 	{
-		// 아웃라인을 Post Process에서 그림 (SceneColor + 외곽선 → 출력 RT)
-		DrawStencilMask(View.Camera, SelectedActor);
-		Renderer.RenderSelectionOutline(View.Viewport);
-		Renderer.RenderViewportFXAA(View.Viewport);
+		FLinearColor FogInscatteringColor = HeightFogComp->GetFogInscatteringColor();
+		FogInscatteringColor.A = HeightFogComp->GetFogMaxOpacity();
+
+		// HeightFog 상수버퍼
+		FHeightFogConstants HeightFogConstants = {
+			.FogHeightFalloff = HeightFogComp->GetFogHeightFalloff(),
+			.CameraHeightDensity = HeightFogComp->GetCameraHeightDensity(View.Camera.GetPosition().Z),
+			.StartDistance = HeightFogComp->GetStartDistance(),
+			.FogCutoffDistance = HeightFogComp->GetFogCutoffDistance(),
+			.FogInscatteringColor = FogInscatteringColor,
+		};
+		Renderer.UpdateHeightFogConstants(HeightFogConstants);
+		Renderer.RenderFog(View.Viewport);
 	}
+
+	// DrawStencilMask에서 쓴 스텐실 대로 아웃라인을 그린다 
+	Renderer.RenderSelectionOutline(View.Viewport);
 }
 
 void FRenderView::DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline)
 {
 	Renderer.DrawInstances(View.Camera, Pipeline, View.ViewMode == EViewModeIndex::VMI_Unlit);
+}
+
+UHeightFogComponent* FRenderView::GetHeightFogComp(const ULevel& Level)
+{
+	const TArray<UPrimitiveComponent*>& Components = Level.GetRenderComponents();
+	for (const auto& Component : Components)
+	{
+		if (!Component)
+		{
+			continue;
+		}
+		auto FogComponent = Component->Cast<UHeightFogComponent>();
+		if (FogComponent)
+		{
+			return FogComponent;
+		}
+	}
+	return nullptr;
 }
 
 void FRenderView::FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId)

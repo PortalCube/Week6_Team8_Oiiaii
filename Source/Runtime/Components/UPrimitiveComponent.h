@@ -34,6 +34,10 @@ public:
 	virtual FAxisAlignedBoundingBox GetLocalBounds() const { return LocalBounds; }
 	virtual const FAxisAlignedBoundingBox& GetWorldBounds() const;
 	virtual FAxisAlignedBoundingBox GetViewBounds(const FCamera& Camera) const;
+
+	// 월드 AABB 업데이트
+	virtual void UpdateWorldBounds();
+
 	const UStaticMesh* GetMeshAsset() const { return RenderData.Mesh; }
 
 	virtual EEngineShowFlags GetShowFlag() const { return EEngineShowFlags::SF_Primitives; }
@@ -47,8 +51,6 @@ public:
 	bool GetBoundDirtyQueued() const { return bBoundDirtyQueued; }
 	void SetBoundDirtyQueued(bool pDirtyQueued) { bBoundDirtyQueued = pDirtyQueued; }
 
-	// 월드 AABB 업데이트
-	void UpdateWorldBounds();
 
 	const std::vector<FMaterial>& GetCachedMaterials() const { return CachedMaterials; }
 	void UpdateMaterialCache();

@@ -17,6 +17,8 @@
 #include <iomanip>
 #include "Runtime/Math/Random.h"
 #include "Editor/Core/EditorConstant.h"
+#include "Runtime/Math/FVector.h"
+#include "Runtime/Rendering/FRenderer.h"
 #include <Windows.h>
 #include <ShlObj.h>
 #include <filesystem>
@@ -45,30 +47,27 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 	ActorSpawnSetting(Editor);
 	// 그리드 설정
 	GridSetting(Editor);
-	// 뷰포트 렌더 모드 및 쇼 플래그 설정
-	RenderModeAndShowFlagSetting(Editor);
 	ImGui::Separator();
 	// 카메라
 	CameraSetting(Editor);
 	ImGui::Separator();
 	// 전역조명
 	DirectionLightSetting(Editor);
-
 	ImGui::Separator();
+
 	BVHDebugSetting(Editor);
-
 	ImGui::Separator();
+
 	RenderStateSort(Editor);
-
 	ImGui::Separator();
+
 	SIMDCullingDebugSetting(Editor);
-
 	ImGui::Separator();
+
 	LODSetting(Editor);
-
 	ImGui::Separator();
-	CullingSetting(Editor);
 
+	CullingSetting(Editor);
 	ImGui::End();
 }
 
@@ -197,7 +196,7 @@ void FImguiControlPanelWindow::RunPickBenchmark(FEditor& Editor, int Iterations)
 	ULevel* Scene = Editor.GetCurrentLevel();
 	SEditorViewport* Viewport = Editor.GetActiveViewport();
 	const bool bUseBVH = Editor.bUseBVHPicking && Scene;
-	if (!bUseBVH && !Viewport)
+	if (!Viewport)
 	{
 		return;
 	}
@@ -215,7 +214,9 @@ void FImguiControlPanelWindow::RunPickBenchmark(FEditor& Editor, int Iterations)
 		FScopeCycleCounter Counter;
 		if (bUseBVH)
 		{
-			Scene->GetSceneBVH().QueryRay(Ray, HitComponent, ImpactPoint);
+			FRayCastingManager::RayIntersectsScene(
+			    Ray, Viewport->GetClient().GetViewportCamera(),
+			    Scene->GetSceneBVH(), HitComponent, ImpactPoint);
 		}
 		else
 		{
@@ -403,49 +404,6 @@ void FImguiControlPanelWindow::GridSetting(FEditor& Editor)
 	}
 	ImGui::SameLine();
 	ImGui::Text("Grid Cell Size");
-}
-
-void FImguiControlPanelWindow::RenderModeAndShowFlagSetting(FEditor& Editor)
-{
-
-	SEditorViewport* ActiveViewport = Editor.GetActiveViewport();
-	if (ActiveViewport)
-	{
-		// 뷰 모드 드롭박스
-		int CurrentViewMode = static_cast<int>(ActiveViewport->GetClient().GetViewMode());
-		const char* ViewModes[] = { "Lit", "Unlit", "Wireframe", "SceneDepth" };
-		ImGui::SetNextItemWidth(180.0f);
-		if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModes, IM_ARRAYSIZE(ViewModes)))
-		{
-			ActiveViewport->GetClient().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
-		}
-		ImGui::SameLine();
-		ImGui::Text("View Mode");
-
-		// 쇼 플래그 드롭박스
-		ImGui::SetNextItemWidth(180.0f);
-		if (ImGui::BeginCombo("##ShowFlags", "Show Flags"))
-		{
-			bool bPrimitives = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_Primitives);
-			if (ImGui::Checkbox("Primitives", &bPrimitives))
-			{
-				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_Primitives);
-			}
-			bool bBillboardText = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_BillboardText);
-			if (ImGui::Checkbox("Billboard Text", &bBillboardText))
-			{
-				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_BillboardText);
-			}
-			bool bGrid = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_Grid);
-			if (ImGui::Checkbox("Grid", &bGrid))
-			{
-				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_Grid);
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::SameLine();
-		ImGui::Text("Show Flags");
-	}
 }
 
 void FImguiControlPanelWindow::CameraSetting(FEditor& Editor)

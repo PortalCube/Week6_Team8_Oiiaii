@@ -11,6 +11,7 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Input/FInputManager.h"
 #include "Runtime/Math/FVector.h"
+#include <cstdio>
 
 
 #include "ThirdParty/Imgui/imgui.h"
@@ -34,6 +35,10 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 	const ImGuiViewport* MainViewport = ImGui::GetMainViewport();
 	const FVector2 ClientSize{ MainViewport->Size.x, MainViewport->Size.y };
 
+	const HWND WindowHandle = static_cast<HWND>(MainViewport->PlatformHandleRaw);
+
+	const bool bAppFocused =  WindowHandle != nullptr && GetForegroundWindow() == WindowHandle;
+
 	BeginWindow();
 
 	// 부모 창의 콘텐츠 영역
@@ -43,6 +48,7 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 
 	if (ClientSize.X <= 0.0f || ClientSize.Y <= 0.0f || ContentSize.x <= 0.0f || ContentSize.y <= 0.0f)
 	{
+		ReleaseCursorClip();
 		EndWindow();
 		return;
 	}
@@ -167,10 +173,85 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 	{
 		//ActiveViewport->GetClient().UpdateFocusedAndHovered(ActiveInput.bFocused, ActiveInput.bHovered);
 		ActiveViewport->UpdateFocusedAndHovered(ActiveInput.bFocused, ActiveInput.bHovered);
+
+		FGameViewportClient& GameClient = ActiveViewport->GetGameClient();
+
+		if (!bAppFocused || !ActiveViewport->IsPIE() || !ActiveInput.bFocused)
+		{
+			// PIE가 끝났거나 다른 ImGui 창으로 포커스가 이동한 경우
+			GameClient.SetCursorHidden(false);
+		}
+		else if (ActiveInput.bPickRequested)
+		{
+			// PIE의 실제 3D 영역을 왼쪽 클릭한 경우
+			GameClient.SetCursorHidden(true);
+		}
+
+		if (GameClient.IsCursorHidden())
+		{
+			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+		}
+
 		UpdateSelection(Editor, *ActiveViewport, ActiveInput);
 		UpdateGizmo(Editor, ActiveInput);
 		UpdateCamera(Editor, *ActiveViewport, ActiveInput, DeltaTime);
 	}
+
+	const bool bShouldClip =
+	    bAppFocused &&
+	    ActiveViewport != nullptr &&
+	    bHasActiveInput &&
+	    ActiveViewport->IsPIE() &&
+	    ActiveInput.bFocused &&
+	    ActiveViewport->GetGameClient().IsCursorHidden();
+
+	if (bShouldClip)
+	{
+		const FVector2 Position = ActiveViewport->GetViewport().GetLeftTop();
+
+		const FVector2 Size = ActiveViewport->GetViewport().GetViewportSize();
+
+		POINT TopLeft{
+			static_cast<LONG>(Position.X),
+			static_cast<LONG>(Position.Y)
+		};
+
+		POINT BottomRight{
+			static_cast<LONG>(Position.X + Size.X),
+			static_cast<LONG>(Position.Y + Size.Y)
+		};
+
+		if (Size.X > 0.0f && Size.Y > 0.0f &&
+		    ClientToScreen(WindowHandle, &TopLeft) &&
+		    ClientToScreen(WindowHandle, &BottomRight))
+		{
+			const RECT ScreenRect{
+				TopLeft.x,
+				TopLeft.y,
+				BottomRight.x,
+				BottomRight.y
+			};
+
+			if (ClipCursor(&ScreenRect))
+			{
+				bCursorClipped = true;
+			}
+			else
+			{
+				ReleaseCursorClip();
+			}
+		}
+		else
+		{
+			ReleaseCursorClip();
+		}
+	}
+	else
+	{
+		ReleaseCursorClip();
+	}
+
+
 	// 현재 ImGui 창은 다시 부모 창
 	ClampWindowToWorkArea();
 	EndWindow();
@@ -207,6 +288,15 @@ void FImguiEditorViewportWindow::BeginWindow() const
 void FImguiEditorViewportWindow::EndWindow() const
 {
 	ImGui::End();
+}
+
+void FImguiEditorViewportWindow::ReleaseCursorClip()
+{
+	if (bCursorClipped)
+	{
+		ClipCursor(nullptr);
+		bCursorClipped = false;
+	}
 }
 
 FImguiEditorViewportWindow::FViewportInput FImguiEditorViewportWindow::GatherInput(const FVector2& ViewportSizePixels, const FVector2& ViewportLeftTopPixels) const
@@ -389,7 +479,9 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 	// 5) 모든 오브젝트(프리미티브)에 대해 충돌 판정
 	if (Editor.bUseBVHPicking && PickScene)
 	{
-		bHit = PickScene->GetSceneBVH().QueryRay(PickRay, HitComponent, ImpactPoint);
+		bHit = FRayCastingManager::RayIntersectsScene(
+		    PickRay, EditorViewport.GetClient().GetViewportCamera(),
+		    PickScene->GetSceneBVH(), HitComponent, ImpactPoint);
 	}
 	else
 	{
@@ -534,79 +626,40 @@ void FImguiEditorViewportWindow::DrawViewportHeader(SEditorViewport& InViewport,
 
 	if (bVisible && ImGui::BeginMenuBar())
 	{
-		ImGui::TextUnformatted("Viewport");
-
 		const ImGuiStyle& Style = ImGui::GetStyle();
 		ImDrawList* HeaderDrawList = ImGui::GetWindowDrawList();
+		FEditorViewportClient& Client = InViewport.GetClient();
 
-		// 오른쪽 끝의 최대화 버튼 위치
-		const float ButtonX = ImGui::GetWindowWidth() - Style.WindowPadding.x - ButtonSize;
+		// 방금 그린 메뉴 버튼에 테두리를 그린다
+		auto DrawMenuBorder = [&](bool bOpen)
+		{
+			const ImVec2 Min = ImGui::GetItemRectMin();
+			const ImVec2 Max = ImGui::GetItemRectMax();
+			const bool bHovered = ImGui::IsItemHovered();
+			HeaderDrawList->AddRect(ImVec2(Min.x + 0.5f, Min.y + 0.5f), ImVec2(Max.x - 0.5f, Max.y - 0.5f), ImGui::GetColorU32((bOpen || bHovered) ? HighlightColor : BorderColor), 3.0f, 0, 1.0f);
+		};
 
-		// 최대화 버튼 왼쪽의 Camera 메뉴 위치
-		const float CameraWidth = ImGui::CalcTextSize("Camera").x + Style.ItemSpacing.x * 3.0f;
-		const float CameraX = ButtonX - CameraWidth;
+		// ===== 카메라 모드 =====
+		static const char* CameraModeNames[] = { "Perspective", "Orthographic", "Top", "Bottom", "Left", "Right", "Front", "Back" };
+		const ECameraMode CurrentCameraMode = Client.GetCameraMode();
 
-		if (CameraX > ImGui::GetCursorPosX())
-			ImGui::SetCursorPosX(CameraX);
-
-		const bool bCameraOpen = ImGui::BeginMenu("Camera");
-
-		// 팝업 내용을 제출하기 전에 메뉴 버튼 정보를 보관
-		const ImVec2 CameraMin = ImGui::GetItemRectMin();
-		const ImVec2 CameraMax = ImGui::GetItemRectMax();
-		const bool bCameraHovered = ImGui::IsItemHovered();
-
-		HeaderDrawList->AddRect(ImVec2(CameraMin.x + 0.5f, CameraMin.y + 0.5f), ImVec2(CameraMax.x - 0.5f, CameraMax.y - 0.5f), ImGui::GetColorU32((bCameraOpen || bCameraHovered) ? HighlightColor : BorderColor), 3.0f, 0, 1.0f);
+		// 라벨은 현재 모드 이름, ID는 ### 뒤로 고정
+		char CameraMenuLabel[64];
+		snprintf(CameraMenuLabel, sizeof(CameraMenuLabel), "%s###CameraMode", CameraModeNames[static_cast<int>(CurrentCameraMode)]);
+		const bool bCameraOpen = ImGui::BeginMenu(CameraMenuLabel);
+		DrawMenuBorder(bCameraOpen);
 
 		/*if (bCameraOpen)
 		{
-			SEditorViewport* Viewport = &InViewport;
-			FCamera& Camera = Viewport->GetClient().GetViewportCamera();
-			ImGui::TextUnformatted("PERSPECTIVE");
-			ImGui::Separator();
-			if (ImGui::MenuItem("Perspective"))
+			ImGui::SeparatorText("PERSPECTIVE");
+			if (ImGui::MenuItem("Perspective", nullptr, CurrentCameraMode == ECameraMode::PERSPECTIVE))
+				Client.SetCameraMode(ECameraMode::PERSPECTIVE);
+
+			ImGui::SeparatorText("ORTHOGRAPHIC");
+			for (int Mode = static_cast<int>(ECameraMode::ORTHOGRAPHIC); Mode <= static_cast<int>(ECameraMode::ORTHOGRAPHIC_BACK); ++Mode)
 			{
-				if (Camera.GetProjection().GetProjectionType() != EProjectionType::Perspective)
-					Camera.SetProjectionType(EProjectionType::Perspective);
-				Viewport->GetClient().SetCameraMode(ECameraMode::PERSPECTIVE);
-			}
-			ImGui::TextUnformatted("ORTHOGRAPHIC");
-			ImGui::Separator();
-			if (ImGui::MenuItem("Orthographic"))
-			{
-				if (Camera.GetProjection().GetProjectionType() != EProjectionType::Orthographic)
-					Camera.SetProjectionType(EProjectionType::Orthographic);
-				Viewport->GetClient().SetCameraMode(ECameraMode::ORTHOGRAPHIC);
-			}
-			if (ImGui::MenuItem("Top"))
-			{
-				if (Viewport->GetClient().GetCameraMode() != ECameraMode::ORTHOGRAPHIC_TOP)
-					Viewport->GetClient().SetCameraMode(ECameraMode::ORTHOGRAPHIC_TOP);
-			}
-			if (ImGui::MenuItem("Bottom"))
-			{
-				if (Viewport->GetClient().GetCameraMode() != ECameraMode::ORTHOGRAPHIC_BOTTOM)
-					Viewport->GetClient().SetCameraMode(ECameraMode::ORTHOGRAPHIC_BOTTOM);
-			}
-			if (ImGui::MenuItem("Left"))
-			{
-				if (Viewport->GetClient().GetCameraMode() != ECameraMode::ORTHOGRAPHIC_LEFT)
-					Viewport->GetClient().SetCameraMode(ECameraMode::ORTHOGRAPHIC_LEFT);
-			}
-			if (ImGui::MenuItem("Right"))
-			{
-				if (Viewport->GetClient().GetCameraMode() != ECameraMode::ORTHOGRAPHIC_RIGHT)
-					Viewport->GetClient().SetCameraMode(ECameraMode::ORTHOGRAPHIC_RIGHT);
-			}
-			if (ImGui::MenuItem("Front"))
-			{
-				if (Viewport->GetClient().GetCameraMode() != ECameraMode::ORTHOGRAPHIC_FRONT)
-					Viewport->GetClient().SetCameraMode(ECameraMode::ORTHOGRAPHIC_FRONT);
-			}
-			if (ImGui::MenuItem("Back"))
-			{
-				if (Viewport->GetClient().GetCameraMode() != ECameraMode::ORTHOGRAPHIC_BACK)
-					Viewport->GetClient().SetCameraMode(ECameraMode::ORTHOGRAPHIC_BACK);
+				if (ImGui::MenuItem(CameraModeNames[Mode], nullptr, static_cast<int>(CurrentCameraMode) == Mode))
+					Client.SetCameraMode(static_cast<ECameraMode>(Mode));
 			}
 			ImGui::EndMenu();
 		}*/
@@ -642,6 +695,57 @@ void FImguiEditorViewportWindow::DrawViewportHeader(SEditorViewport& InViewport,
 			ImGui::EndMenu();
 		}
 
+		// ===== 뷰 모드 =====
+		static const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe", "SceneDepth" };
+		const EViewModeIndex CurrentViewMode = Client.GetViewMode();
+
+		char ViewModeMenuLabel[64];
+		snprintf(ViewModeMenuLabel, sizeof(ViewModeMenuLabel), "%s###ViewMode", ViewModeNames[static_cast<int>(CurrentViewMode)]);
+		const bool bViewModeOpen = ImGui::BeginMenu(ViewModeMenuLabel);
+		DrawMenuBorder(bViewModeOpen);
+
+		if (bViewModeOpen)
+		{
+			ImGui::SeparatorText("VIEW MODE");
+			for (int Mode = 0; Mode < IM_ARRAYSIZE(ViewModeNames); ++Mode)
+			{
+				if (ImGui::MenuItem(ViewModeNames[Mode], nullptr, static_cast<int>(CurrentViewMode) == Mode))
+					Client.SetViewMode(static_cast<EViewModeIndex>(Mode));
+			}
+			ImGui::EndMenu();
+		}
+
+		// ===== 쇼 플래그 =====
+		const bool bShowOpen = ImGui::BeginMenu("Show###ShowFlags");
+		DrawMenuBorder(bShowOpen);
+
+		if (bShowOpen)
+		{
+			struct FShowFlagItem
+			{
+				const char* Name;
+				EEngineShowFlags Flag;
+			};
+			static const FShowFlagItem ShowFlagItems[] = {
+				{ "Primitives", EEngineShowFlags::SF_Primitives },
+				{ "Billboard Text", EEngineShowFlags::SF_BillboardText },
+				{ "Grid", EEngineShowFlags::SF_Grid },
+				{ "Fog", EEngineShowFlags::SF_Fog },
+			};
+
+			ImGui::SeparatorText("SHOW FLAGS");
+			for (const FShowFlagItem& Item : ShowFlagItems)
+			{
+				// 체크박스는 눌러도 메뉴가 닫히지 않아 여러 개를 연달아 토글할 수 있다
+				bool bEnabled = Client.HasShowFlag(Item.Flag);
+				if (ImGui::Checkbox(Item.Name, &bEnabled))
+					Client.ToggleShowFlag(Item.Flag);
+			}
+			ImGui::EndMenu();
+		}
+
+		// 오른쪽 끝의 최대화 버튼 위치
+		const float ButtonX = ImGui::GetWindowWidth() - Style.WindowPadding.x - ButtonSize;
 
 
 

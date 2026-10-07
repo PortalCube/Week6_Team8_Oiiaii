@@ -10,6 +10,7 @@
 #include "Runtime/Engine/FCulling.h"
 #include "Runtime/Engine/FOcclusionCuller.h"
 
+
 class FCamera;
 class FGizmo;
 class FGrid;
@@ -17,6 +18,8 @@ class AActor;
 class ULevel;
 
 struct FPointLightConstants;
+class UHeightFogComponent;
+class AHeightFogActor;
 
 // 커맨드로 제어하는 컬링 옵션
 struct FCullingSettings
@@ -46,10 +49,11 @@ public:
 	// 뷰포트 패스 파이프라인
 	bool BeginView(const FSceneView& View);
 	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
-	void DrawGrid(const FCamera& Camera, FGrid& Grid);
+	void DrawVisualizer(const FSceneView& View, const FEditorRenderContext& EditorCtx);
+	void DrawGrid(const FSceneView& View, FGrid* Grid);
 	void FlushBasePass(const FSceneView& View);
 	void FlushLinePass(const FCamera& Camera);
-	void RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor);
+	void RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor, const UHeightFogComponent* HeightFogComp);
 
 	// 개별 렌더 및 디버그 라인
 	void RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo);
@@ -64,7 +68,7 @@ public:
 	void DrawStencilMask(const FCamera& Camera, const AActor* SelectedActor);
 
 	void DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline);
-	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("#Simple_Line"));
+	void FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId = FName("Simple_Line"));
 	void FlushQueue(const FSceneView& View);
 
 	void CollectPointLights(const ULevel& Scene, TArray<FPointLightConstants>& OutLights);
@@ -86,6 +90,8 @@ public:
 
 	// 측정 : 다음에 렌더되는 뷰 하나에서 오라클을 실행(한 프레임 멈춤)
 	void RequestOcclusionOracle() { bOracleRequested = true; }
+
+	UHeightFogComponent* GetHeightFogComp(const ULevel& Level);
 
 private:
 	FCullingSettings CullingSettings;

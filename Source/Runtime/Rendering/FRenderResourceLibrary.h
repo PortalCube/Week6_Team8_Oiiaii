@@ -127,6 +127,7 @@ private:
 	bool CreateSelectionOutlinePipeline(FRenderer& Renderer);
 	bool CreateFXAAPipeline(FRenderer& Renderer);
 	bool CreateCompositePipeline(FRenderer& Renderer);
+	bool CreateFogPipeline(FRenderer& Renderer);
 	bool CreateSceneDepthPipeline(FRenderer& Renderer);
 	bool CreateCustomPipline(
 	    FRenderer& Renderer,

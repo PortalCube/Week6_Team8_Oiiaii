@@ -144,7 +144,7 @@ LRESULT FWindow::MessageCallback(HWND Window, UINT Message, WPARAM WParam, LPARA
 	case WM_DESTROY:
 	{
 		Globals::bIsRequestingExit = true;
-
+		ClipCursor(nullptr);
 		PostQuitMessage(0);
 		break;
 	}
@@ -232,6 +232,7 @@ LRESULT FWindow::MessageCallback(HWND Window, UINT Message, WPARAM WParam, LPARA
 	case WM_CANCELMODE:
 	case WM_KILLFOCUS:
 	{
+		ClipCursor(nullptr);
 		const FVector2 Last = FInputManager::Get().GetMousePosition();
 		FInputManager::Get().SetMouseButton(EMouseButton::Left, false);
 		FInputManager::Get().SetMouseButton(EMouseButton::Right, false);

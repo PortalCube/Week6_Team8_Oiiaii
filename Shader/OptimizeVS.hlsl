@@ -17,6 +17,7 @@ struct PS_INPUT
 PS_INPUT MainVS(VS_INPUT Input)
 {
     PS_INPUT Output;
+	float4x4 MVP = mul(World, mul(View, Projection));
     Output.Position = mul(float4(Input.Position, 1.0f), MVP);
     Output.Color = Input.Color;
     Output.UV = Input.UV * UVScale + UVOffset;

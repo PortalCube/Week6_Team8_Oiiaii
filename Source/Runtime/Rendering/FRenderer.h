@@ -41,10 +41,11 @@ struct FFrameResource
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ViewConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> PostProcessConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> HeightFogConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> FXAAConstantBuffer;
 };
 
-constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+inline float ClearColor[4] = { 0.6f, 0.75f, 1.0f, 1.0f };
 
 class FRenderer final
 {
@@ -96,7 +97,10 @@ public:
 	void BindPointLights();
 	void UpdateFrameConstants(const FFrameConstants& Constants);
 	void UpdateViewConstants(const FViewConstants& Constants);
+	// 카메라로부터 ViewConstants를 만들어 갱신한다 (Projection은 D3D Clip 기준)
+	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
 	void UpdatePostProcessConstants(const FPostProcessConstants& Constants);
+	void UpdateHeightFogConstants(const FHeightFogConstants& Constants);
 	void UpdateFXAAConstants(const FFXAAConstants& Constants);
 
 	// Object Constant Buffer를 갱신한다.
@@ -109,14 +113,14 @@ public:
 		// 언리얼 Clip -> D3D Clip 좌표 변환.
 		// Object MVP는 현재 뷰와 World로 계산하고, 그리드 MVP는 전달된 값을 사용한다.
 		TConstants ShaderConstants = Constants;
-		if constexpr (std::is_same_v<TConstants, FObjectConstants>)
-		{
-			ShaderConstants.MVP = ShaderConstants.World * ViewProjection;
-		}
-		if constexpr (requires { ShaderConstants.MVP; })
-		{
-			ShaderConstants.MVP = ShaderConstants.MVP.ToD3DMatrix();
-		}
+		//if constexpr (std::is_same_v<TConstants, FObjectConstants>)
+		//{
+		//	ShaderConstants.MVP = ShaderConstants.World * ViewProjection;
+		//}
+		//if constexpr (requires { ShaderConstants.MVP; })
+		//{
+		//	ShaderConstants.MVP = ShaderConstants.MVP.ToD3DMatrix();
+		//}
 
 		ID3D11Buffer* ObjectCB = GetCurrentFrameResource()->ObjectConstantBuffer.Get();
 
@@ -197,10 +201,11 @@ public:
 	}
 
 	// 스크린 패스 / 후처리
-	void RenderSceneDepth(const FViewport& TargetViewport);
-	void RenderSelectionOutline(const FViewport& TargetViewport);
-	void CopySceneColorToViewport(const FViewport& TargetViewport);
 	void DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VIEWPORT& TargetD3DViewport, ID3D11ShaderResourceView* const* SRVs, UINT NumSRVs, const FName& PipelineId);
+	void CopySceneColorToViewport(const FViewport& TargetViewport);
+	void RenderSelectionOutline(const FViewport& TargetViewport);
+	void RenderSceneDepth(const FViewport& TargetViewport);
+	void RenderFog(const FViewport& TargetViewport);
 	void RenderFXAA(ID3D11ShaderResourceView* InputSRV, ID3D11RenderTargetView* OutputRTV, UINT Width, UINT Height);
 	void RenderViewportFXAA(const FViewport& TargetViewport);
 
@@ -242,7 +247,7 @@ private:
 	// 모든 ConstantBuffer의 최대 크기
 	static constexpr UINT ConstantBufferSize = 256u;
 	static constexpr uint32 GPUTimerFrameCount = 3u;
-	static constexpr uint32 NumFrameResourceCount = 4;
+	static constexpr uint32 NumFrameResourceCount = 5;
 
 	FLineBatcher LineBatcher;
 	FMatrix ViewProjection = FMatrix::Identity;

@@ -15,7 +15,6 @@ class UBillboardComponent : public UPrimitiveComponent
 protected:
 	virtual void Serialize(FArchive& Archive);
 
-
 public:
 	void Initialize() override;
 
@@ -24,7 +23,7 @@ public:
 
 	// Object -> World 변환 행렬 생성
 	virtual FMatrix GetRenderMatrix(const FCamera& Camera) const override;
-
+	virtual void UpdateWorldBounds() override;
 	virtual EEngineShowFlags GetShowFlag() const { return EEngineShowFlags::SF_BillboardText; }
 
 	void SetUVScale(FVector2 Value);

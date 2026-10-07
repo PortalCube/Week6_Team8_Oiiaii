@@ -11,11 +11,8 @@ public:
 
 	FJsonDataReader(const nlohmann::json& InJSON);
 	void SetJSON(const nlohmann::json& InJSON);
-	// 입력 JSON은 유지하고 읽기 위치와 참조 상태를 초기화합니다.
+
 	void Clear();
-	FJsonDataReader(const FJsonDataReader&) = delete;
-	FJsonDataReader& operator=(const FJsonDataReader&) = delete;
-	using FArchive::Reference;
 
 	virtual void Serialize(UObject* Object) override;
 
@@ -23,26 +20,29 @@ public:
 	// Field
 	////////////////////////////////////////////////////////////
 
-	virtual void Reference(FStringView Key, UObject*& Value);
+	using FArchive::Reference;
+	virtual void Reference(FStringView Key, UObject*& Value) override;
 
-	virtual void Field(FStringView Key, UObject*& Value);
+	virtual void Field(FStringView Key, UObject*& Value) override;
 
-	virtual void Field(FStringView Key, int32& Value);
-	virtual void Field(FStringView Key, int64& Value);
+	virtual void Field(FStringView Key, int32& Value) override;
+	virtual void Field(FStringView Key, int64& Value) override;
 
-	virtual void Field(FStringView Key, uint32& Value);
-	virtual void Field(FStringView Key, uint64& Value);
+	virtual void Field(FStringView Key, uint32& Value) override;
+	virtual void Field(FStringView Key, uint64& Value) override;
 
-	virtual void Field(FStringView Key, float& Value);
-	virtual void Field(FStringView Key, double& Value);
-	virtual void Field(FStringView Key, bool& Value);
+	virtual void Field(FStringView Key, float& Value) override;
+	virtual void Field(FStringView Key, double& Value) override;
+	virtual void Field(FStringView Key, bool& Value) override;
 
-	virtual void Field(FStringView Key, FString& Value);
-	virtual void Field(FStringView Key, FWString& Value);
+	virtual void Field(FStringView Key, FString& Value) override;
+	virtual void Field(FStringView Key, FWString& Value) override;
 
-	virtual void Field(FStringView Key, FVector& Value);
-	virtual void Field(FStringView Key, FVector2& Value);
-	virtual void Field(FStringView Key, FVector4& Value);
+	virtual void Field(FStringView Key, FVector& Value) override;
+	virtual void Field(FStringView Key, FVector2& Value) override;
+	virtual void Field(FStringView Key, FVector4& Value) override;
+
+	virtual void Field(FStringView Key, FLinearColor& Value);
 
 	template <typename T>
 	void FieldInternal(FStringView Key, T& Value);
@@ -53,8 +53,8 @@ public:
 	// Section
 	////////////////////////////////////////////////////////////
 
-	virtual void BeginSection(FStringView Key);
-	virtual void EndSection();
+	virtual void BeginSection(FStringView Key) override;
+	virtual void EndSection() override;
 
 
 
@@ -62,8 +62,8 @@ public:
 	// Array
 	////////////////////////////////////////////////////////////
 
-	virtual int32 BeginArray(FStringView Key);
-	virtual void EndArray();
+	virtual int32 BeginArray(FStringView Key) override;
+	virtual void EndArray() override;
 
 private:
 
@@ -74,7 +74,6 @@ private:
 
 	FArchiveSection* CurrentSection();
 	nlohmann::json* GetCurrentNode(FStringView Key);
-	UObject* CurrentObject();
 
 	nlohmann::json JSON;
 
@@ -90,5 +89,9 @@ template <typename T>
 inline void FJsonDataReader::FieldInternal(FStringView Key, T& Value)
 {
 	const nlohmann::json* Node = GetCurrentNode(Key);
-	if (Node && !Node->is_null()) Value = Node->get<T>();
+
+	if (Node && !Node->is_null())
+	{
+		Value = Node->get<T>();
+	}
 }

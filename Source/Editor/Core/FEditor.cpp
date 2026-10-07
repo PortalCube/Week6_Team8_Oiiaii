@@ -10,7 +10,7 @@
 #include "Runtime/Actors/ASpotlightActor.h"
 #include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Components/USceneComponent.h"
-#include "Runtime/Engine/FWorldContext.h"
+#include "Runtime/Engine/FWorldContext.h" 
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/FTimeManager.h"
@@ -30,7 +30,7 @@ void FEditor::Initialize(UEditorEngine* EditorEngine)
 
 	PlayManager = std::make_unique<PIEManager>();
 
-	this->EditorEngine = EditorEngine;
+	this->EditorEngine = EditorEngine; 
 }
 
 void FEditor::Shutdown()

@@ -98,6 +98,13 @@ bool FRenderResourceLibrary::CreateSceneDepthPipeline(FRenderer& Renderer)
 	return CreateCustomPipline(Renderer, L"ScreenQuadVS.cso", L"SceneDepthPS.cso", "#SceneDepth");
 }
 
+// Fog 파이프라인
+bool FRenderResourceLibrary::CreateFogPipeline(FRenderer& Renderer)
+{
+	return CreateCustomPipline(Renderer, L"ScreenQuadVS.cso", L"FogPS.cso", "#Fog");
+}
+
+// 파이프라인 펙토리
 bool FRenderResourceLibrary::CreateCustomPipline(
     FRenderer& Renderer, FWString VertexShaderPath, FWString PixelShaderPath,
     FString PipelineName, bool StencilEnable, D3D11_STENCIL_OP StencilPassOp,
@@ -236,7 +243,8 @@ bool FRenderResourceLibrary::InitializePipelines(FRenderer& Renderer)
 	       CreateSelectionOutlinePipeline(Renderer) &&
 	       CreateFXAAPipeline(Renderer) &&
 	       CreateCompositePipeline(Renderer) &&
-		   CreateSceneDepthPipeline(Renderer);
+		   CreateSceneDepthPipeline(Renderer) &&
+	       CreateFogPipeline(Renderer);
 }
 
 bool FRenderResourceLibrary::Initialize(FRenderer& Renderer)

@@ -1,3 +1,4 @@
+#include "Runtime/Rendering/FBillboardRendering.h"
 #include "UBillboardComponent.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Engine/ULevel.h"
@@ -57,22 +58,21 @@ UTexture* UBillboardComponent::GetTexture() const
 
 FMatrix UBillboardComponent::GetRenderMatrix(const FCamera& Camera) const
 {
-	FTransform Transform = GetGlobalTransform();
+	return BillboardRendering::MakeBillboardMatrix(GetGlobalTransform(), Camera);
+}
 
-	FMatrix CameraRotation = Camera.GetRotationMatrix();
-	FVector ViewForward = CameraRotation.TransformPointRow(FVector{ 1.0f, 0.0f, 0.0f }, 0.0f); // X+
-	FVector ViewRight = CameraRotation.TransformPointRow(FVector{ 0.0f, 1.0f, 0.0f }, 0.0f);   // Y+
-	FVector ViewUp = CameraRotation.TransformPointRow(FVector{ 0.0f, 0.0f, 1.0f }, 0.0f);      // Z+
+void UBillboardComponent::UpdateWorldBounds()
+{
+	// 1. 사각형에 Transform 적용
+	WorldBounds = { GetLocalBounds(), GetGlobalTransformMatrix() };
 
-	FVector Up = ViewUp * Transform.GetScale3D().Z;
-	FVector Right = ViewRight * Transform.GetScale3D().Y;
+	// 2. 외접구 반지름
+	float Radius = WorldBounds.Extent.Size();
 
-	return FMatrix{
-		FVector4{ ViewForward, 0.0f },
-		FVector4{ Right, 0.0f },
-		FVector4{ Up, 0.0f },
-		FVector4{ Transform.GetLocation(), 1.0f },
-	};
+	// 3. AABB 계산 후 적용
+	FVector Center = WorldBounds.Center;
+	FVector Extent{ Radius, Radius, Radius };
+	WorldBounds = { Center, Extent };
 }
 
 void UBillboardComponent::SetUVScale(FVector2 Value)

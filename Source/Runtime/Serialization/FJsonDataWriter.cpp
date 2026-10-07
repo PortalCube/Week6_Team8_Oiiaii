@@ -38,17 +38,31 @@ void FJsonDataWriter::Serialize(UObject* Object)
 {
 	Clear();
 	JSON = nlohmann::json::array();
+
+	// 새로 등록해야할 객체. 객체를 큐에 집어넣고 정보 등록
 	AddReferenceKey(Object);
+
 	while (!NextQueue.empty())
 	{
 		UObject* Current = NextQueue.front();
+
 		const int32 Reference = ReferenceTable[Current];
-		auto& Record = JSON[Reference];
+
+		nlohmann::json& Record = JSON[Reference];
 		Record = nlohmann::json::object();
-		SectionStack.push({EArchiveSection::Object, &Record, -1});
+
+		SectionStack.push(
+		    FArchiveSection{
+		        .Type = EArchiveSection::Object,
+		        .Json = &Record,
+		        .Index = -1,
+		    });
+
 		UObject* Outer = Current == Object ? nullptr : Current->GetOuter();
 		this->Reference("Outer", Outer);
+
 		Current->Serialize(*this);
+
 		SectionStack.pop();
 		NextQueue.pop();
 	}
@@ -160,6 +174,18 @@ void FJsonDataWriter::Field(FStringView Key, FVector4& Value)
 	FieldInternal(Key, Array);
 }
 
+void FJsonDataWriter::Field(FStringView Key, FLinearColor& Value)
+{
+	TArray<float> Array;
+
+	Array.push_back(Value.R);
+	Array.push_back(Value.G);
+	Array.push_back(Value.B);
+	Array.push_back(Value.A);
+
+	FieldInternal(Key, Array);
+}
+
 void FJsonDataWriter::BeginSection(FStringView Key)
 {
 	nlohmann::json& Section = *GetCurrentNode(Key);
@@ -212,11 +238,17 @@ nlohmann::json FJsonDataWriter::GetRefJson(int32 ReferenceKey)
 
 int32 FJsonDataWriter::AddReferenceKey(UObject* Reference)
 {
-	const int32 Existing = GetReferenceKey(Reference);
-	if (Existing >= 0) return Existing;
-	const int32 Key = static_cast<int32>(ReferenceTable.size());
+	int32 Key = GetReferenceKey(Reference);
+	if (Key >= 0)
+	{
+		return Key;
+	}
+
+	Key = ReferenceTable.size();
+
 	ReferenceTable[Reference] = Key;
 	NextQueue.push(Reference);
+
 	return Key;
 }
 

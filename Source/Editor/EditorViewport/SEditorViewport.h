@@ -59,6 +59,7 @@ public:
 
 	void DetachGameClient()
 	{
+		GameClient.SetCursorHidden(false);
 		bUsingGameClient = false;
 
 		GameClient.UpdateFocusedAndHovered(false, false);

@@ -14,6 +14,7 @@
 #include "Runtime/Actors/ATextRenderActor.h"
 #include "Runtime/Actors/AFireBallActor.h"
 #include "Runtime/Actors/ACatActor.h"
+#include "Runtime/Actors/AHeightFogActor.h"
 
 namespace EditorConstant
 {
@@ -22,6 +23,7 @@ namespace EditorConstant
 	/// 에디터에서 스폰 가능한 액터들을 정의합니다.
 	/// </summary>
 	inline UClass* const SpawnableActors[]{
+		AActor::StaticClass(),
 		ACatActor::StaticClass(),
 		AAppleNormalActor::StaticClass(),
 		AAppleBittenActor::StaticClass(),
@@ -33,6 +35,7 @@ namespace EditorConstant
 		ASpotlightActor::StaticClass(),
 		ATextRenderActor::StaticClass(),
 		AFireBallActor::StaticClass(),
+		AHeightFogActor::StaticClass(),
 	};
 
 } // namespace EditorConstant

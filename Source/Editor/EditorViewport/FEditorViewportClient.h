@@ -81,7 +81,8 @@ private:
 	// 쇼 플래그
 	uint64 ShowFlags = static_cast<uint64>(EEngineShowFlags::SF_Primitives) |
 	                   static_cast<uint64>(EEngineShowFlags::SF_BillboardText) |
-	                   static_cast<uint64>(EEngineShowFlags::SF_Grid);
+	                   static_cast<uint64>(EEngineShowFlags::SF_Grid) |
+	                   static_cast<uint64>(EEngineShowFlags::SF_Fog);
 	// 그리드
 	FGrid Grid;
 };

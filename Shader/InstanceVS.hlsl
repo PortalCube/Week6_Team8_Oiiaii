@@ -29,7 +29,8 @@ PS_INPUT MainVS(VS_INPUT Input)
 
     // 인스턴스 월드 변환
     float4 WorldPos = mul(float4(Input.Position, 1.0f), Input.InstanceWorld);
-
+	float4x4 MVP = mul(World, mul(View, Projection));
+	
     Output.Position = mul(WorldPos, MVP);
     
     // 색상 결합
