@@ -13,10 +13,8 @@ class FArchive;
 // 참고자료
 // https://dev.epicgames.com/documentation/unreal-engine/objects-in-unreal-engine
 
-
 // 레거시. 원래 언리얼은 UHT가 생성한 코드를 위해 넣어주는데 지금 그런게 없음
 #define GENERATED_BODY()
-
 
 /*
  * 역직렬화를 위한 타입 등록 매크로.
@@ -37,120 +35,118 @@ class FArchive;
 ////////////////////////////////////////////////////////////
 // UObject의 Class 정의 매크로
 ////////////////////////////////////////////////////////////
-#define DECLARE_ROOT_UCLASS(ClassName)					\
-														\
-protected:												\
-	ClassName(UObject* InOuter);						\
-														\
-	ClassName() = default;								\
-	virtual ~ClassName() = default;						\
-														\
-public:													\
-	ClassName(const ClassName&) = delete;				\
-	ClassName(const ClassName&&) = delete;				\
-	ClassName& operator=(const ClassName&) = delete;	\
-	ClassName& operator=(const ClassName&&) = delete;	\
-														\
-public:													\
-	virtual UClass* GetClass() const;					\
-	static UClass* StaticClass();						\
-														\
-private:												\
-	static ClassName* CreateObject(UObject* Outer);		\
-														\
-	static inline UClass* ClassInfo =					\
-	    UClass::RegisterToFactory(						\
-	        #ClassName,									\
-	        "",											\
-	        nullptr,									\
-	        &ClassName::CreateObject);					\
-														\
-	template <UObjectType TObject>						\
-	friend TObject* NewObject(UObject* Outer);			\
-
+#define DECLARE_ROOT_UCLASS(ClassName)                \
+                                                      \
+protected:                                            \
+	ClassName(UObject* InOuter);                      \
+                                                      \
+	ClassName() = default;                            \
+	virtual ~ClassName() = default;                   \
+                                                      \
+public:                                               \
+	ClassName(const ClassName&) = delete;             \
+	ClassName(const ClassName&&) = delete;            \
+	ClassName& operator=(const ClassName&) = delete;  \
+	ClassName& operator=(const ClassName&&) = delete; \
+                                                      \
+public:                                               \
+	virtual UClass* GetClass() const;                 \
+	static UClass* StaticClass();                     \
+                                                      \
+private:                                              \
+	static ClassName* CreateObject(UObject* Outer);   \
+                                                      \
+	static inline UClass* ClassInfo =                 \
+	    UClass::RegisterToFactory(                    \
+	        #ClassName,                               \
+	        "",                                       \
+	        nullptr,                                  \
+	        &ClassName::CreateObject);                \
+                                                      \
+	template <UObjectType TObject>                    \
+	friend TObject* NewObject(UObject* Outer);
 
 ////////////////////////////////////////////////////////////
 // UObject의 Class 구현 매크로
 ////////////////////////////////////////////////////////////
-#define IMPLEMENT_ROOT_UCLASS(ClassName)                                    \
-	ClassName::ClassName(UObject* InOuter)									\
-        : Outer{ InOuter }													\
-	{																		\
-	}																		\
-																			\
-	UObject* ClassName::CreateObject(UObject* Outer)                        \
-	{                                                                       \
-		return NewObject<ClassName>(Outer);                                 \
-	}                                                                       \
-																			\
-	UClass* ClassName::StaticClass()                                        \
-	{                                                                       \
-		return ClassInfo;                                                   \
-	}                                                                       \
-																			\
-	UClass* ClassName::GetClass() const                                     \
-	{                                                                       \
-		return StaticClass();                                               \
-	}																		\
-
+#define IMPLEMENT_ROOT_UCLASS(ClassName)             \
+	ClassName::ClassName(UObject* InOuter)           \
+	    : Outer{ InOuter }                           \
+	{                                                \
+	}                                                \
+                                                     \
+	UObject* ClassName::CreateObject(UObject* Outer) \
+	{                                                \
+		return NewObject<ClassName>(Outer);          \
+	}                                                \
+                                                     \
+	UClass* ClassName::StaticClass()                 \
+	{                                                \
+		return ClassInfo;                            \
+	}                                                \
+                                                     \
+	UClass* ClassName::GetClass() const              \
+	{                                                \
+		return StaticClass();                        \
+	}
 
 ////////////////////////////////////////////////////////////
 // 자식 클래스의 Class 정의 매크로
 ////////////////////////////////////////////////////////////
-#define DECLARE_UCLASS(ClassName, ParentClass)										   \
-protected:                                            								   \
-	ClassName(UObject* InOuter);                      								   \
-                                                      								   \
-	ClassName() = default;                            								   \
-	virtual ~ClassName() = default;                   								   \
-                                                      								   \
-public:                                               								   \
-	ClassName(const ClassName&) = delete;             								   \
-	ClassName(const ClassName&&) = delete;            								   \
-	ClassName& operator=(const ClassName&) = delete;  								   \
-	ClassName& operator=(const ClassName&&) = delete; 								   \
-                                                      								   \
-public:																				   \
-	UClass* GetClass() const override;												   \
-	static UClass* StaticClass();													   \
-	using Super = ParentClass;														   \
-																					   \
-private:																			   \
-	static UObject* CreateObject(UObject* Outer);									   \
-																					   \
-	static inline UClass* ClassInfo =												   \
-		UClass::RegisterToFactory(													   \
-			#ClassName,																   \
-			#ParentClass,															   \
-			ParentClass::StaticClass(),												   \
-			&ClassName::CreateObject);												   \
-																					   \
-	template <UObjectType TObject>													   \
-    friend TObject* NewObject(UObject* Outer);										   \
+#define DECLARE_UCLASS(ClassName, ParentClass)        \
+protected:                                            \
+	ClassName(UObject* InOuter);                      \
+                                                      \
+	ClassName() = default;                            \
+	virtual ~ClassName() = default;                   \
+                                                      \
+public:                                               \
+	ClassName(const ClassName&) = delete;             \
+	ClassName(const ClassName&&) = delete;            \
+	ClassName& operator=(const ClassName&) = delete;  \
+	ClassName& operator=(const ClassName&&) = delete; \
+                                                      \
+public:                                               \
+	UClass* GetClass() const override;                \
+	static UClass* StaticClass();                     \
+	using Super = ParentClass;                        \
+                                                      \
+private:                                              \
+	static UObject* CreateObject(UObject* Outer);     \
+                                                      \
+	static inline UClass* ClassInfo =                 \
+	    UClass::RegisterToFactory(                    \
+	        #ClassName,                               \
+	        #ParentClass,                             \
+	        ParentClass::StaticClass(),               \
+	        &ClassName::CreateObject);                \
+                                                      \
+	template <UObjectType TObject>                    \
+	friend TObject* NewObject(UObject* Outer);
 
 ////////////////////////////////////////////////////////////
 // 자식 클래스의 Class 구현 매크로
 ////////////////////////////////////////////////////////////
-#define IMPLEMENT_UCLASS(ClassName, ParentClass)    \
-	ClassName::ClassName(UObject* InOuter)          \
-	    : ParentClass{ InOuter }                    \
-	{                                               \
-	}												\
-													\
-	UObject* ClassName::CreateObject(UObject* Outer)\
-	{                                               \
-		return NewObject<ClassName>(Outer);         \
-	}                                               \
-												    \
-	UClass* ClassName::StaticClass()                \
-	{                                               \
-		return ClassInfo;                           \
-	}                                               \
-												    \
-	UClass* ClassName::GetClass() const             \
-	{                                               \
-		return StaticClass();                       \
-	}                                               \
+#define IMPLEMENT_UCLASS(ClassName, ParentClass)     \
+	ClassName::ClassName(UObject* InOuter)           \
+	    : ParentClass{ InOuter }                     \
+	{                                                \
+	}                                                \
+                                                     \
+	UObject* ClassName::CreateObject(UObject* Outer) \
+	{                                                \
+		return NewObject<ClassName>(Outer);          \
+	}                                                \
+                                                     \
+	UClass* ClassName::StaticClass()                 \
+	{                                                \
+		return ClassInfo;                            \
+	}                                                \
+                                                     \
+	UClass* ClassName::GetClass() const              \
+	{                                                \
+		return StaticClass();                        \
+	}
 
 ////////////////////////////////////////////////////////////
 // UClass에 메타데이터 추가 매크로
@@ -162,9 +158,7 @@ private:																			   \
 		{                                                   \
 			ClassName::StaticClass()->SetMeta(#Key, Value); \
 		}                                                   \
-	} _MetaRegisterInstance_##ClassName##_##Key;            \
-
-
+	} _MetaRegisterInstance_##ClassName##_##Key;
 
 class UObject
 {
@@ -174,7 +168,6 @@ class UObject
 	friend class FUObjectArray;
 
 public:
-
 	////////////////////////////////////////////////////////////
 	// UUID
 	////////////////////////////////////////////////////////////
@@ -185,16 +178,12 @@ public:
 	uint32 GetUUID() const { return UUID; }
 	void SetUUID(uint32 InUUID) { UUID = InUUID; }
 
-
-
 	////////////////////////////////////////////////////////////
 	// 생명 주기
 	////////////////////////////////////////////////////////////
 
 	virtual void Initialize();
 	virtual void Release();
-
-
 
 	////////////////////////////////////////////////////////////
 	// Memory Allocator
@@ -222,30 +211,22 @@ public:
 		return TotalAllocationCount;
 	}
 
-
-
 	////////////////////////////////////////////////////////////
 	// 직렬화 / 역직렬화
 	////////////////////////////////////////////////////////////
 
 	virtual void Serialize(FArchive& Archive);
 
-
-
-
 	////////////////////////////////////////////////////////////
 	// CreateDefaultSubobject
 	////////////////////////////////////////////////////////////
 
 protected:
-
-	template<UObjectType T>
+	template <UObjectType T>
 	T* CreateDefaultSubobject();
 
-	template<UObjectType T>
+	template <UObjectType T>
 	T* CreateEditorOnlyDefaultSubobject();
-
-
 
 	////////////////////////////////////////////////////////////
 	// Editor Flag
@@ -254,21 +235,17 @@ protected:
 	virtual void MarkAsEditorOnlySubobject() {}
 	virtual bool IsEditorOnly() const;
 
-
-
 	////////////////////////////////////////////////////////////
 	// Editor Flag
 	////////////////////////////////////////////////////////////
 
 	bool bIsExternal = false;
 
-
 	////////////////////////////////////////////////////////////
 	// 상속 관계
 	////////////////////////////////////////////////////////////
 
 public:
-
 	// 이 UObject를 가지고 있는 객체를 가리킵니다.
 	UObject* Outer = nullptr;
 
@@ -281,8 +258,6 @@ public:
 	UObject* GetTypedOuter(UClass* Class) const;
 
 	virtual class UWorld* GetWorld() const;
-
-
 
 	////////////////////////////////////////////////////////////
 	// Type Check
@@ -298,10 +273,7 @@ public:
 
 	template <typename T>
 	const T* Cast() const;
-
 };
-
-
 
 ////////////////////////////////////////////////////////////
 // 템플릿 함수 구현부
