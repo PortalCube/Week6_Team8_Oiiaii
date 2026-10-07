@@ -11,6 +11,7 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
+#include "Editor/Engine/UEditorEngine.h"
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
@@ -35,10 +36,12 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 
 	ImGui::Separator();
 
-	if (ImGui::Button("대회 씬 바로 불러오기"))
-	{
-		Editor.LoadScene("DefaultScene/Default.scene");
-	}
+	//if (ImGui::Button("테스트"))
+	//{
+	//	FRequestPlaySessionParams Params{};
+
+	//	Globals::Editor->StartPIESession(Params);
+	//}
 
 	// 액터 스폰
 	ActorSpawnSetting(Editor);
@@ -409,7 +412,7 @@ void FImguiControlPanelWindow::CameraSetting(FEditor& Editor)
 {
 	if (SEditorViewport* Viewport = Editor.GetActiveViewport())
 	{
-		FCamera& Camera = Viewport->GetClient().GetViewportCamera();
+		FCamera& Camera = Viewport->GetActiveCamera();
 
 		bool bOrthographic =
 		    (Camera.GetProjection().GetProjectionType() == EProjectionType::Orthographic);

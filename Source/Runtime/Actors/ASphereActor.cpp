@@ -9,11 +9,15 @@ UCLASS_META(ASphereActor, DisplayName, "Sphere Actor")
 
 void ASphereActor::Initialize()
 {
-	// 기본 구체 컴포넌트 장착
-	UStaticMeshComponent* Object = CreateDefaultSubobject<UStaticMeshComponent>();
-	SetRootComponent(Object);
+	Super::Initialize();
 
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	Object->SetMesh(Registry.Get<UStaticMesh>("#Sphere"));
-	Object->SetMaterial(Registry.Get<UMaterial>("Material/Textured.json"));
+	auto Component = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
+
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetMesh(Registry.Get<UStaticMesh>("#Sphere"));
+		Component->SetMaterial(Registry.Get<UMaterial>("Material/Textured.json"));
+	}
 }

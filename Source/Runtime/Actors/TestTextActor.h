@@ -12,7 +12,4 @@ class ATestTextActor : public AActor
 
 public:
 	virtual void Initialize() override;
-	UTextComponent* GetTextInstanceComponent() const;
 };
-
-using TestTextActor = ATestTextActor;

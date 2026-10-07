@@ -14,6 +14,10 @@
 #include "Runtime/Utility/EngineUtil.h"
 #include "Runtime/Utility/FileUtil.h"
 
+#include "Runtime/Actors/ACubeActor.h"
+#include "Runtime/Actors/ACatActor.h"
+#include "Runtime/Components/Mesh/UStaticMeshComponent.h"
+
 #include "Editor/UI/Imgui/FImguiPropertyWindow.h"
 #include "Editor/UI/Imgui/FImguiControlPanelWindow.h"
 #include "Editor/UI/Imgui/FImguiContentsDrawer.h"
@@ -45,14 +49,12 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 	}
 
 	// 에디터 WorldContext 등록
-	FWorldContext EditorWorldContext{
-		.World = nullptr,
-		.WorldType = EWorldType::Editor,
-		.TravelURL = "",
-		.bTravelEmptyLevel = true, // 첫 Tick에서 월드 생성
-	};
+	WorldList.push_back({
+	    .World = nullptr,
+	    .WorldType = EWorldType::Editor,
+	});
 
-	WorldList.push_back(EditorWorldContext);
+	EditorWorldContext = &WorldList[0];
 
 	// ImGui 초기화
 	ImguiManager.Initialize_ImplWin32DX11(*Window, Device, Context);
@@ -78,6 +80,9 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 	Editor.Initialize(this);
 	Editor.SetViewLayout(Editor.State.GetSplitMode());
 	Editor.LoadState();
+
+	// 새로운 Level으로 World 불러오기
+	LoadMap(*EditorWorldContext, "");
 }
 
 void UEditorEngine::Tick(float DeltaTime)
@@ -93,24 +98,26 @@ void UEditorEngine::Tick(float DeltaTime)
 		// 렌더러 스왑체인 조정
 		Renderer.OnWindowSize(Globals::ResizeWidth, Globals::ResizeHeight);
 
-		//FVector2 ViewportSize{
-		//	static_cast<float>(Globals::ResizeWidth),
-		//	static_cast<float>(Globals::ResizeHeight)
-		//};
-
-		//// 뷰포트 종횡비 갱신
-		//for (auto& Viewport : Editor.GetViewports())
-		//{
-		//	const FVector2 SizePixels = Viewport.LengthUV * ViewportSize;
-		//	Viewport.ViewportCamera.SetAspectRatio(SizePixels.X / SizePixels.Y);
-		//}
-
 		Globals::bIsRequestingResize = false;
 	}
 
 	////////////////////////////////////////////////////////////
 	// 에디터 로직 Update
 	////////////////////////////////////////////////////////////
+
+	const EPIESessionState PIEState = Editor.GetPIEState();
+
+	const bool bCanEndPIE =
+	    PIEState == EPIESessionState::Starting ||
+	    PIEState == EPIESessionState::Running ||
+	    PIEState == EPIESessionState::Paused;
+	// ESC 누르면 바로 PIE 모드 종료
+	if (bCanEndPIE && FInputManager::Get().IsKeyDown(VK_ESCAPE))
+	{
+		Editor.RequestEndPIE();
+	}
+
+	Editor.ProcessPIERequests();
 	{
 		SCOPE_CYCLE_COUNTER("Game");
 
@@ -123,8 +130,21 @@ void UEditorEngine::Tick(float DeltaTime)
 			// World Travel 체크
 			TickWorldTravel(WorldContext, DeltaTime);
 
-			// 월드 틱 실행
-			WorldContext.World->Tick(DeltaTime);
+			if (!WorldContext.World)
+			{
+				continue;
+			}
+
+			const bool bIsPIEWorld = WorldContext.WorldType == EWorldType::PIE;
+
+			const bool bCanTickWorld = !bIsPIEWorld || Editor.GetPIEState() == EPIESessionState::Running;
+
+			if (bCanTickWorld)
+			{
+				// 월드 틱 실행
+				WorldContext.World->Tick(DeltaTime);
+			}
+			
 		}
 
 		// 모든 윈도우 Tick
@@ -160,7 +180,8 @@ void UEditorEngine::Tick(float DeltaTime)
 			}
 
 			// 뷰포트 렌더링 명세 구성
-			FSceneView View = EditorViewport.GetClient().GetSceneView(Editor.GlobalLight);
+			// FSceneView View = EditorViewport.GetClient().GetSceneView(Editor.GlobalLight);
+			FSceneView View = EditorViewport.GetRenderSceneView(Editor.GlobalLight);
 
 			// 뷰포트의 RT를 준비
 			if (!RenderView.GetRenderer().PrepareViewportRenderTarget(EditorViewport.GetViewport()))
@@ -169,13 +190,34 @@ void UEditorEngine::Tick(float DeltaTime)
 			}
 
 			// 에디터 렌더링 컨텍스트 구성
-			FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(EditorViewport, &VisualizerRegistry);
+			// FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(EditorViewport, &VisualizerRegistry);
 
-			// 뷰포트 렌더링 일괄 수행
-			RenderView.RenderView(View, *GetEditorWorld()->GetCurrentLevel(), EditorRenderContext);
+			FEditorRenderContext EditorRenderContext{};
 
-			// 기즈모 그리기
-			if (Editor.ObjectSelected())
+			// PIE 모드가 아닐때에만 
+			if (!EditorViewport.IsPIE())
+			{
+				EditorRenderContext = Editor.GetEditorRenderContext( EditorViewport, &VisualizerRegistry);
+			}
+
+			FWorldContext* Context = EditorViewport.GetRenderWorldContext();
+
+			if (!Context || !Context->World)
+			{
+				continue;
+			}
+
+			ULevel* Level = Context->World->GetCurrentLevel();
+			if (!Level)
+			{
+				continue;
+			}
+
+			// 선택한 카메라와 월드로 렌더링
+			RenderView.RenderView(View, *Level, EditorRenderContext);
+
+			// 기즈모 그리기(PIE 모드가 아닐때만)
+			if (!EditorViewport.IsPIE() && Editor.ObjectSelected())
 			{
 				RenderView.RenderOverlayPass(View, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
 				RenderView.RenderGizmo(View, Editor.SelectedTransform, Editor.GetGizmo());
@@ -206,7 +248,6 @@ void UEditorEngine::Tick(float DeltaTime)
 void UEditorEngine::Exit()
 {
 	Editor.Shutdown();
-	Renderer.Shutdown();
 
 	UEngine::Exit();
 }
@@ -225,13 +266,37 @@ void UEditorEngine::SaveLevel(const FString& Path, ULevel* Level)
 	Level->Serialize(LevelArchive);
 	Archive.SetArchive("Level", LevelArchive);
 
-	FileUtil::WriteArchive(Path, LevelArchive);
+	FileUtil::WriteArchive(Path, Archive);
 }
 
 UWorld* UEditorEngine::GetEditorWorld() const
 {
-	// 대충 임시
-	return WorldList[0].World;
+	if (!EditorWorldContext)
+	{
+		return nullptr;
+	}
+
+	return EditorWorldContext->World;
+}
+
+FWorldContext* UEditorEngine::GetEditorWorldContext() const
+{
+	return EditorWorldContext;
+}
+
+UWorld* UEditorEngine::GetPIEWorld() const
+{
+	if (!PIEWorldContext)
+	{
+		return nullptr;
+	}
+
+	return PIEWorldContext->World;
+}
+
+FWorldContext* UEditorEngine::GetPIEWorldContext() const
+{
+	return PIEWorldContext;
 }
 
 void UEditorEngine::ExecuteCommand(const char* Command)
@@ -286,4 +351,136 @@ void UEditorEngine::ExecuteCommand(const char* Command)
 		UE_LOG("Unknown command: '%s'\n", Command);
 		return;
 	}
+}
+
+void UEditorEngine::OnWorldLoaded(FWorldContext& Context)
+{
+	Editor.OnWorldLoaded(Context);
+}
+
+bool UEditorEngine::StartPIESession(const FRequestPlaySessionParams& Params)
+{
+	// 일단 대충 구현
+	// 지연된 시작은 조금 나중에 구현
+
+	if (PIEWorldContext)
+	{
+		return false;
+	}
+
+	// 현재 구현은 Editor 월드 1개 + PIE 월드 1개를 전제로 한다.
+	if (!EditorWorldContext || !GetEditorWorld() ||  WorldList.size() != 1 ||  WorldList.capacity() < 2)
+	{
+		return false;
+	}
+
+	if (Params.sessionDestination != EPlaySessionDestinationType::InProcess ||
+	    Params.worldType != EPlaySessionWorldType::PlayInEditor)
+	{
+		return false;
+	}
+
+	// 씬 교체와 PIE 시작이 동시에 진행되지 않게 한다.
+	if (EditorWorldContext->bTravelEmptyLevel ||
+	    !EditorWorldContext->TravelURL.empty())
+	{
+		return false;
+	}
+
+	const int32 Index = Params.DestinationViewportIndex;
+
+	if (Index < 0 || Index >= static_cast<int32>(MAX_VIEWPORT_COUNT))
+	{
+		return false;
+	}
+
+	 SEditorViewport& TargetViewport = Editor.GetViewportLayout().Viewports[Index];
+
+	if (!TargetViewport.IsRenderable())
+	{
+		return false;
+	}
+
+	// 에디터 카메라를 사용
+	//const FCamera InitialCamera = TargetViewport.GetClient().GetViewportCamera();
+
+	// 에디터 WorldContext 등록
+	WorldList.push_back({
+	    .World = nullptr,
+	    .WorldType = EWorldType::PIE,
+	});
+
+	PIEWorldContext = &WorldList[1];
+
+	Editor.GetViewportLayout().SetActiveViewport(&TargetViewport);
+
+	// TODO: Editor World를 복제하기
+	// 지금은 비어있는 월드를 생성
+	LoadMap(*PIEWorldContext, "");
+
+	if (!PIEWorldContext->World || !TargetViewport.IsPIE() || TargetViewport.GetRenderWorldContext() != PIEWorldContext)
+	{
+		StopPIESession();
+		return false;
+	}
+
+	UWorld* PlayWorld = PIEWorldContext->World;
+
+	// 테스트. 나중에 없애야함
+	FVector Location;
+	ACatActor* TestActor1 = PIEWorldContext->World->SpawnActor<ACatActor>(ACatActor::StaticClass());
+	UStaticMeshComponent* TestMesh1 = TestActor1->GetRootComponent()->Cast<UStaticMeshComponent>();
+
+	Location = {0.0, 5.0f, 0.0f};
+	TestMesh1->SetRelativeLocation(Location);
+
+	ACatActor* TestActor2 = PIEWorldContext->World->SpawnActor<ACatActor>(ACatActor::StaticClass());
+	UStaticMeshComponent* TestMesh2 = TestActor2->GetRootComponent()->Cast<UStaticMeshComponent>();
+
+	Location = { 0.0, 0.0f, 5.0f };
+	TestMesh2->SetRelativeLocation(Location);
+
+
+	ULevel* Level = PlayWorld->GetCurrentLevel();
+	Level->UpdateDirtyBounds();
+	Level->GetSceneBVH().Build(Level->GetRenderComponents());
+
+	Editor.UnSelectActor();
+	Editor.GetGizmo().EndInteraction();
+
+	// 요청할 때 확정한 뷰포트에 연결한다.
+	// TargetViewport.AttachGameClient(PIEWorldContext, InitialCamera);
+
+	return true;
+
+}
+
+void UEditorEngine::StopPIESession()
+{
+	if (!PIEWorldContext)
+	{
+		return;
+	}
+
+	for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
+	{
+		if (Viewport.IsPIE())
+		{
+			Viewport.DetachGameClient();
+		}
+	}
+
+	if (PIEWorldContext)
+	{
+		// TODO: AGameMode의 StartToLeaveMap 실행
+
+		PIEWorldContext->World->EndPlay();
+		PIEWorldContext->World->CleanupWorld();
+		DestroyObject(PIEWorldContext->World);
+	}
+
+	PIEWorldContext->World = nullptr;
+	PIEWorldContext = nullptr;
+
+	 WorldList.pop_back();
 }

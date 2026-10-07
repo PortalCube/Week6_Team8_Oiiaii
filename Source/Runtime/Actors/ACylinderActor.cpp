@@ -9,11 +9,15 @@ UCLASS_META(ACylinderActor, DisplayName, "Cylinder Actor")
 
 void ACylinderActor::Initialize()
 {
-	// 기본 실린더 컴포넌트 장착
-	UStaticMeshComponent* Object = CreateDefaultSubobject<UStaticMeshComponent>();
-	SetRootComponent(Object);
+	Super::Initialize();
 
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	Object->SetMesh(Registry.Get<UStaticMesh>("#Cylinder"));
-	Object->SetMaterial(Registry.Get<UMaterial>("Material/Textured.json"));
+	auto Component = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (Component)
+	{
+		SetRootComponent(Component);
+
+		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+		Component->SetMesh(Registry.Get<UStaticMesh>("#Cylinder"));
+		Component->SetMaterial(Registry.Get<UMaterial>("Material/Textured.json"));
+	}
 }

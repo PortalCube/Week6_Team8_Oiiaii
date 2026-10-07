@@ -166,7 +166,8 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 	// 활성 뷰포트의 입력을 한 번만 처리
 	if (ActiveViewport && bHasActiveInput)
 	{
-		ActiveViewport->GetClient().UpdateFocusedAndHovered(ActiveInput.bFocused, ActiveInput.bHovered);
+		//ActiveViewport->GetClient().UpdateFocusedAndHovered(ActiveInput.bFocused, ActiveInput.bHovered);
+		ActiveViewport->UpdateFocusedAndHovered(ActiveInput.bFocused, ActiveInput.bHovered);
 		UpdateSelection(Editor, *ActiveViewport, ActiveInput);
 		UpdateGizmo(Editor, ActiveInput);
 		UpdateCamera(Editor, *ActiveViewport, ActiveInput, DeltaTime);
@@ -268,7 +269,7 @@ void FImguiEditorViewportWindow::UpdateCamera(FEditor& Editor, SEditorViewport& 
 	CameraController.CameraRotateSpeed = Editor.State.GetCameraSensitivity();
 	CameraController.CameraMoveSpeed = Editor.State.GetCameraSpeed();
 
-	FCamera& Camera = EditorViewport.GetClient().GetViewportCamera();
+	FCamera& Camera = EditorViewport.IsPIE() ? EditorViewport.GetGameClient().GetViewportCamera() : EditorViewport.GetClient().GetViewportCamera();
 
 	// ORTHOGRAPHIC 화면모드와의 분기
 	const bool bOrthographic = Camera.GetProjection().GetProjectionType() == EProjectionType::Orthographic;
@@ -404,13 +405,13 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 
 	// 필요 시 'isHit' 결과를 활용해 추가 로직 처리
 	// 피킹은 액터 단위로 선택한다. 소유 액터가 없으면 선택할 수 없다.
-	if (!bHit || !HitComponent || !HitComponent->GetActorOwner())
+	if (!bHit || !HitComponent || !HitComponent->GetOwner())
 	{
 		Editor.UnSelectActor();
 		return;
 	}
 
-	AActor* OwnerActor = HitComponent->GetActorOwner();
+	AActor* OwnerActor = HitComponent->GetOwner();
 	Editor.SelectActor(OwnerActor);
 
 	const char* ActorClass =
@@ -557,7 +558,7 @@ void FImguiEditorViewportWindow::DrawViewportHeader(SEditorViewport& InViewport,
 		const bool bCameraOpen = ImGui::BeginMenu(CameraMenuLabel);
 		DrawMenuBorder(bCameraOpen);
 
-		if (bCameraOpen)
+		/*if (bCameraOpen)
 		{
 			ImGui::SeparatorText("PERSPECTIVE");
 			if (ImGui::MenuItem("Perspective", nullptr, CurrentCameraMode == ECameraMode::PERSPECTIVE))
@@ -569,6 +570,37 @@ void FImguiEditorViewportWindow::DrawViewportHeader(SEditorViewport& InViewport,
 				if (ImGui::MenuItem(CameraModeNames[Mode], nullptr, static_cast<int>(CurrentCameraMode) == Mode))
 					Client.SetCameraMode(static_cast<ECameraMode>(Mode));
 			}
+			ImGui::EndMenu();
+		}*/
+
+		if (bCameraOpen)
+		{
+			auto DrawCameraItem = [&InViewport](const char* Label, ECameraMode Mode)
+			{
+				const bool bSelected = InViewport.GetActiveCameraMode() == Mode;
+
+				if (ImGui::MenuItem(Label, nullptr, bSelected) && !bSelected)
+				{
+					InViewport.SetActiveCameraMode(Mode);
+				}
+			};
+
+			ImGui::TextUnformatted("PERSPECTIVE");
+			ImGui::Separator();
+
+			DrawCameraItem("Perspective", ECameraMode::PERSPECTIVE);
+
+			ImGui::TextUnformatted("ORTHOGRAPHIC");
+			ImGui::Separator();
+
+			DrawCameraItem("Orthographic", ECameraMode::ORTHOGRAPHIC);
+			DrawCameraItem("Top", ECameraMode::ORTHOGRAPHIC_TOP);
+			DrawCameraItem("Bottom", ECameraMode::ORTHOGRAPHIC_BOTTOM);
+			DrawCameraItem("Left", ECameraMode::ORTHOGRAPHIC_LEFT);
+			DrawCameraItem("Right", ECameraMode::ORTHOGRAPHIC_RIGHT);
+			DrawCameraItem("Front", ECameraMode::ORTHOGRAPHIC_FRONT);
+			DrawCameraItem("Back", ECameraMode::ORTHOGRAPHIC_BACK);
+
 			ImGui::EndMenu();
 		}
 
@@ -623,6 +655,8 @@ void FImguiEditorViewportWindow::DrawViewportHeader(SEditorViewport& InViewport,
 
 		// 오른쪽 끝의 최대화 버튼 위치
 		const float ButtonX = ImGui::GetWindowWidth() - Style.WindowPadding.x - ButtonSize;
+
+
 
 		// 최대화 버튼 오른쪽 정렬
 		if (ButtonX > ImGui::GetCursorPosX())

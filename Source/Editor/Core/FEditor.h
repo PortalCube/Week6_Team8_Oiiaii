@@ -8,15 +8,20 @@
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/CoreUObject/TWeakObjectPtr.h"
 #include "Runtime/Actors/AActor.h"
+#include "Runtime/Actors/ASelectedTextActor.h"
 #include "Runtime/Rendering/ShaderConstants.h"
 #include "Runtime/Components/UTextComponent.h"
 
 #include "Runtime/Engine/UWorld.h"
 #include "Runtime/Engine/ULevel.h"
 
+#include <memory>
+
 #include "Runtime/UI/SSplitter.h"
 #include "Editor/EditorViewport/SEditorViewport.h"
 #include "Editor/EditorViewport/FEditorViewportLayout.h"
+#include "Editor/PlayInEditor/FPlayInEditorManager.h"
+
 
 enum class EEditorPrimitiveType : uint8
 {
@@ -28,6 +33,8 @@ enum class EEditorPrimitiveType : uint8
 };
 
 class UEditorEngine;
+class PIEManager;
+struct FRequestPlaySessionParams;
 
 class FEditor
 {
@@ -56,6 +63,8 @@ public:
 	void Shutdown();
 
 	void Process();
+
+	void OnWorldLoaded(FWorldContext& Context);
 
 	// Scene
 	void NewScene();
@@ -97,12 +106,27 @@ public:
 		PickingAttempts = 0;
 	}
 
+	// PIE
+	bool RequestStartPIE(const FRequestPlaySessionParams& Params);
+	void RequestEndPIE();
+	void ProcessPIERequests();
+	EPIESessionState GetPIEState() const
+	{
+		return PlayManager ? PlayManager->GetState() : EPIESessionState::Stopped;
+	}
+
+	void PausePIE() {if(PlayManager) {PlayManager->PasuePIE();}}
+
+	void ResumePIE(){if(PlayManager) {PlayManager->ResumePIE();}}
+
 private:
 	UEditorEngine* EditorEngine = nullptr;
 	FGizmo Gizmo;
 	TWeakObjectPtr<AActor> SelectedActor;
+	TWeakObjectPtr<ASelectedTextActor> SelectedActorTextActor;
 	TWeakObjectPtr<UTextComponent> SelectedActorTextComp;
 
 	// Viewport
 	FEditorViewportLayout ViewportLayout;
+	std::unique_ptr<PIEManager> PlayManager;
 };

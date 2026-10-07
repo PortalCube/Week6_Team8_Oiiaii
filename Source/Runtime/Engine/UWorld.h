@@ -19,23 +19,39 @@ private:
 		
 	EWorldType WorldType;
 
-	// TODO: Sub Level
-	// TArray<ULevel*> Level;
+	// 월드가 가진 모든 레벨 목록.
+	// 지금은 생성 직후를 제외하고는 요소 갯수가 항상 1개로 고정되어야 함
+	TArray<ULevel*> Levels;
 
+	// 월드와 생명을 같이하는 멤버 변수.
+	// PersistentLevel과 World는 같이 생성되고 같이 삭제된다.
+	ULevel* PersistentLevel;
+
+	// 에디터에서 현재 선택된 레벨.
 	ULevel* CurrentLevel;
 
 public:
+
+	bool bBegunPlay = false;
 
 	////////////////////////////////////////////////////////////
 	// World 생명주기
 	////////////////////////////////////////////////////////////
 
 	void Initialize() override;
+	void Release() override;
+
+	void InitWorld();
+	void CleanupWorld();
+
 	void BeginPlay();
 	void Tick(float DeltaSeconds);
 	void EndPlay();
-	void CleanupWorld();
-	void Release() override;
+
+	void UpdateWorldComponents();
+	void ClearWorldComponents();
+
+	void InitializeActorsForPlay();
 
 
 
@@ -44,7 +60,15 @@ public:
 	////////////////////////////////////////////////////////////
 
 	ULevel* GetCurrentLevel() const;
+	ULevel* GetPersistentLevel() const;
 	void LoadLevel(ULevel* Level);
+
+	// 나중에 SubLevel을 구현하려면 이 함수 구현
+	// void AddToWorld(ULevel* Level, const FTransform& LevelTransform);
+
+	static UWorld* CreateWorld(EWorldType InWorldType);
+	static UWorld* CreateWorldWithEmptyLevel(EWorldType InWorldType);
+	static UWorld* CreateWorldWithLevel(const FArchive& Archive, EWorldType InWorldType);
 
 
 
@@ -67,7 +91,7 @@ public:
 	// Raycast & Physics
 	////////////////////////////////////////////////////////////
 
-	// TODO: 구현 예정
+	// TODO: 나중에 필요하면 하나씩 구현
 
 	// 주어진 Ray에 대해 충돌하는 물체가 있는지 확인합니다.
 	// bool LineTraceTest(struct FHitResult& OutHit, const FVector& Start, const FVector& End) const;
@@ -77,6 +101,8 @@ public:
 
 	// 주어진 Ray에 대해 충돌하는 모든 물체를 찾습니다.
 	// bool LineTraceMulti(TArray<struct FHitResult>& OutHits, const FVector& Start, const FVector& End) const;
+
+
 
 	////////////////////////////////////////////////////////////
 	// Time
@@ -104,27 +130,5 @@ public:
 template <AActorType T>
 T* UWorld::SpawnActor(UClass* Class, FTransform const* Transform)
 {
-	if (!CurrentLevel)
-	{
-		return nullptr;
-	}
-
-	// 새로운 액터 생성
-	T* Actor = NewObject<T>(this, Class);
-
-	if (Transform)
-	{
-		Actor->SetTransform(*Transform);
-	}
-
-	// 생명주기 실행
-	Actor->Initialize();
-	Actor->Register(*CurrentLevel);
-
-	// 현재 레벨에 추가
-	CurrentLevel->Actors.push_back(Actor);
-
-	return Actor;
-
-	return nullptr;
+	return SpawnActor(Class, Transform)->Cast<T>();
 }

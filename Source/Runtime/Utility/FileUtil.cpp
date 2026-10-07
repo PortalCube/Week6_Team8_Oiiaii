@@ -47,6 +47,8 @@ void FileUtil::WriteTextFile(FStringView Path, const FString& Text)
 	{
 		throw EngineUtil::CreateError("[FileUtil::WriteTextFile] 파일을 쓰는데 실패했습니다.");
 	}
+
+	File << Text;
 }
 
 nlohmann::json FileUtil::ReadJSONFile(FStringView Path)

@@ -8,18 +8,18 @@
 #include "Runtime/Actors/ACylinderActor.h"
 #include "Runtime/Actors/ASphereActor.h"
 #include "Runtime/Actors/ASpotlightActor.h"
+#include "Runtime/Actors/ASelectedTextActor.h"
 #include "Runtime/Asset/FAssetRegistry.h"
-#include "Runtime/Components/UPrimitiveComponent.h"
+#include "Runtime/Components/USceneComponent.h"
+#include "Runtime/Engine/FWorldContext.h" 
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Input/FInputManager.h"
 #include "Runtime/Math/Random.h"
-#include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Core/Globals.h"
-#include <numbers>
-#include <Runtime/Engine/FSceneBVH.h>
 #include "Editor/Engine/UEditorEngine.h"
+#include "Editor/PlayInEditor/FPlayInEditorManager.h"
 
 
 void FEditor::Initialize(UEditorEngine* EditorEngine)
@@ -28,23 +28,17 @@ void FEditor::Initialize(UEditorEngine* EditorEngine)
 	Gizmo.Initialize();
 
 	UWorld* World = EditorEngine->GetEditorWorld();
-	SelectedActorTextComp = NewObject<UTextComponent>(World /* ?? */);
-	if (SelectedActorTextComp)
-	{
-		SelectedActorTextComp->Initialize();
-		SelectedActorTextComp->SetInheritRotation(false);
 
-		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-		SelectedActorTextComp->SetMesh(Registry.Get<UStaticMesh>("#Rect"));
-		SelectedActorTextComp->SetMaterial(Registry.Get<UMaterial>("Material/SelectedActor_Text.json"));
-		SelectedActorTextComp->SetFont(Registry.Get<UFont>("Font/NanumGothic.json"));
-	}
+	PlayManager = std::make_unique<PIEManager>();
 
 	this->EditorEngine = EditorEngine; 
 }
 
 void FEditor::Shutdown()
 {
+	RequestEndPIE();
+	ProcessPIERequests();
+
 	SaveState();
 	State.FlushToFile();
 }
@@ -89,6 +83,32 @@ void FEditor::Process()
 	State.Tick(FTimeManager::GetDeltaTime());
 }
 
+void FEditor::OnWorldLoaded(FWorldContext& Context)
+{
+	if (Context.WorldType == EWorldType::Editor)
+	{
+		SelectedActorTextActor = GetCurrentWorld()->SpawnActor<ASelectedTextActor>(ASelectedTextActor::StaticClass());
+
+		SelectedActorTextComp = SelectedActorTextActor->TextComponent;
+
+		for (auto& Viewport : ViewportLayout.Viewports)
+		{
+			Viewport.GetClient().SetWorldContext(EditorEngine->GetEditorWorldContext());
+		}
+	}
+	else if (Context.WorldType == EWorldType::PIE)
+	{
+		SEditorViewport* TargetViewport = ViewportLayout.ActiveViewport;
+
+		if (!TargetViewport)
+		{
+			return;
+		}
+
+		TargetViewport->AttachGameClient(&Context, TargetViewport->GetClient().GetViewportCamera());
+	}
+}
+
 void FEditor::SaveState()
 {
 	SEditorViewport* Viewport = GetPerspectiveViewport();
@@ -126,6 +146,60 @@ void FEditor::LoadState()
 	Gizmo.SetGizmoSpace(static_cast<EGizmoSpace>(State.GetGizmoSpace()));
 
 	ViewportLayout.SetSplitterRatio(State.GetSplitter());
+}
+
+bool FEditor::RequestStartPIE(const FRequestPlaySessionParams& Params)
+{
+	if (!PlayManager)
+	{
+		return false;
+	}
+
+	FRequestPlaySessionParams ResolvedParams = Params;
+
+	if (ResolvedParams.DestinationViewportIndex == -1)
+	{
+		SEditorViewport* ActiveViewport = GetActiveViewport();
+
+		for (int32 Index = 0; Index < static_cast<int32>(MAX_VIEWPORT_COUNT); ++Index)
+		{
+			if (&ViewportLayout.Viewports[Index] == ActiveViewport)
+			{
+				ResolvedParams.DestinationViewportIndex = Index;
+				break;
+			}
+		}
+	}
+
+	const int32 Index = ResolvedParams.DestinationViewportIndex;
+
+	if (Index < 0 || Index >= static_cast<int32>(MAX_VIEWPORT_COUNT))
+	{
+		return false;
+	}
+
+	if (!ViewportLayout.Viewports[Index].bVisible)
+	{
+		return false;
+	}
+
+	return PlayManager->RequestStartPIE(ResolvedParams);
+}
+
+void FEditor::RequestEndPIE()
+{
+	if (PlayManager)
+	{
+		PlayManager->RequestEndPIE();
+	}
+}
+
+void FEditor::ProcessPIERequests()
+{
+	if (PlayManager)
+	{
+		PlayManager->ProcessRequests();
+	}
 }
 
 void FEditor::NewScene()
@@ -203,7 +277,7 @@ bool FEditor::SelectActor(AActor* Actor)
 
 		if (SelectedActorTextComp)
 		{
-			SelectedActorTextComp->SetActorOwner(SelectedActor.Get());
+			SelectedActorTextComp->AttachToComponent(SelectedActor.Get()->GetRootComponent());
 			FTransform RelativeTrans;
 			RelativeTrans.SetLocation(FVector{ 0.0f, 0.0f, 0.7f });
 			RelativeTrans.SetScale3D(FVector{ 1.0f, 0.2f, 0.2f });
@@ -221,10 +295,12 @@ void FEditor::UnSelectActor()
 	{
 		SelectedActor->SetTransform(SelectedTransform);
 	}
+
 	SelectedActor = nullptr;
+
 	if (SelectedActorTextComp)
 	{
-		SelectedActorTextComp->SetActorOwner(nullptr);
+		SelectedActorTextComp->DetachFromComponent();
 	}
 }
 

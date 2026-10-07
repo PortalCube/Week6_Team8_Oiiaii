@@ -31,20 +31,30 @@ void UEngine::Init(FEngineLoop* InEngineLoop)
 	FStatsManager::Get().Initialize(Renderer.GetDevice());
 	FMemory::Init();
 
-	FRenderResourceLibrary& RenderResources = FRenderResourceLibrary::Get(); // 로딩 스크린
+	FRenderResourceLibrary& RenderResources = FRenderResourceLibrary::Get(); // TODO: 로딩 스크린 적용
 	if (!RenderResources.Initialize(Renderer))
 	{
 		throw EngineUtil::CreateError("FRenderResourceLibrary 초기화에 실패했습니다.");
 	}
 
-	FResourceLoader::LoadAssets(); // 로딩 스크린
+	FResourceLoader::LoadAssets(); // TODO: 로딩 스크린 적용
+
+	WorldList.reserve(10);
 }
 
 // Tick은 각 엔진별 내부 구현
-void UEngine::Tick(float DeltaTime) { }
+void UEngine::Tick(float DeltaTime) {}
 
 void UEngine::Exit()
 {
+	// 월드 정리
+	for (auto& WorldContext : WorldList)
+	{
+		WorldContext.World->EndPlay();
+		WorldContext.World->CleanupWorld();
+		DestroyObject(WorldContext.World);
+	}
+
 	Renderer.Shutdown();
 }
 
@@ -96,30 +106,32 @@ void UEngine::TickWorldTravel(FWorldContext& Context, float DeltaTime)
 		return;
 	}
 
-	// 파일에서 불러올지 여부
-	// 빈 레벨보다 파일 레벨을 우선함
-	bool bLoadFromFile = !Context.TravelURL.empty();
-	Context.bTravelEmptyLevel = false;
+	// Note: TravelURL과 bTravelEmptyLevel이 동시에 지정되었으면
+	// TravelURL대로 불러옴
+	LoadMap(Context, Context.TravelURL);
 
+	Context.TravelURL = "";
+	Context.bTravelEmptyLevel = false;
+}
+
+void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
+{
 	// 파일 경로에서 Archive 생성
-	// TODO: 여기 FArchive가 아마 3번 만들어질텐데 구조 바꿔야 됨
 	FArchive Archive;
 
-	if (bLoadFromFile)
+	if (!Path.empty())
 	{
+
 		try
 		{
-			Archive = FileUtil::ReadArchive(Context.TravelURL);
+			// TODO: 대입이라 RVO가 발생하질 못해서 FArchive가 2번 만들어지는데 다른 구조로 바꿔야 됨..
+			Archive = FileUtil::ReadArchive(Path);
 		}
 		catch (...)
 		{
 			UE_LOG("[OpenLevel] 파일에서 Level을 불러오는데 실패했습니다.");
-			Context.TravelURL = "";
 			return;
 		}
-
-		// URL Flush
-		Context.TravelURL = "";
 
 		// Version 체크
 		int32 Version = Archive.GetInt32("Version");
@@ -142,35 +154,37 @@ void UEngine::TickWorldTravel(FWorldContext& Context, float DeltaTime)
 		}
 	}
 
+	// 기존 월드 제거
 	if (Context.World)
 	{
-		// 기존 월드 파괴 시작
-
 		// TODO: AGameMode의 StartToLeaveMap 실행
 
 		Context.World->EndPlay();
 		Context.World->CleanupWorld();
-	}
-
-
-	UWorld* World = NewObject<UWorld>(Globals::Engine);
-	ULevel* Level = NewObject<ULevel>(World);
-	Level->Initialize();
-
-	if (bLoadFromFile)
-	{
-		// 레벨 불러오기
-		FArchive LevelArchive = Archive.GetArchive("Level");
-
-		Level->Deserialize(LevelArchive);
-	}
-	
-	// World에 할당
-	if (Context.World)
-	{
 		DestroyObject(Context.World);
 	}
 
-	Context.World = World;
-	World->LoadLevel(Level);
+	if (!Path.empty())
+	{
+		// 새로운 월드로 대입
+		Context.World = UWorld::CreateWorldWithLevel(Archive, Context.WorldType);
+	}
+	else
+	{
+		Context.World = UWorld::CreateWorldWithEmptyLevel(Context.WorldType);
+	}
+
+	// 월드 초기화 (Subsystem 및 물리 등록)
+	Context.World->InitWorld();
+
+	// Subsystem에 모든 월드 액터/컴포넌트를 등록
+	Context.World->UpdateWorldComponents();
+
+	// 액터/컴포넌트들의 상호 초기화 단계
+	Context.World->InitializeActorsForPlay();
+
+	// BeginPlay
+	Context.World->BeginPlay();
+	
+	OnWorldLoaded(Context);
 }

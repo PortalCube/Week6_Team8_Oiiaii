@@ -13,7 +13,4 @@ class AAnimatedBillboardActor : public AActor
 
 public:
 	virtual void Initialize() override;
-	UAnimatedBillboardComp* GetAnimatedBillboardComponent() const;
 };
-
-using AnimatedBillboardActor = AAnimatedBillboardActor;

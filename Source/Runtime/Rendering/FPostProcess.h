@@ -19,13 +19,13 @@ struct FFogSettings
 // ImGui에서 조절하는 전역 Fog 설정값
 // TODO 컴포넌트로 옮기기
 inline FFogSettings GFogSettings = {
-	.FogDensity = 0.02f,
-	.FogHeightFalloff = 0.06f,
-	.StartDistance = 0.5f,
+	.FogDensity = 0.3f,
+	.FogHeightFalloff = 0.2f,
+	.StartDistance = 10.f,
 	.FogCutoffDistance = 0.f,
-	.FogMaxOpacity = 0.5f,
-	.FogInscatteringColor = FVector(0.447, 0.638, 1.0),
-	.FogHeight = -5.f,
+	.FogMaxOpacity = 1.f,
+	.FogInscatteringColor = FVector(1.f, 1.f, 1.f),
+	.FogHeight = -8.5f,
 };
 
 class FPostProcess

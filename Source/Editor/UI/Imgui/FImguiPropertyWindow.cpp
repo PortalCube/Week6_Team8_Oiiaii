@@ -81,7 +81,7 @@ void FImguiPropertyWindow::ShowComponentHierarchy(const AActor& Actor) const
 		ImGui::BulletText("[Root] %s (ID: %u)", RootName, RootComp->GetUUID());
 	}
 
-	for (const USceneComponent* Comp : Actor.GetAttachedComponents())
+	for (const UActorComponent* Comp : Actor.GetOwnedComponents())
 	{
 		if (!Comp || Comp == RootComp)
 		{
@@ -99,7 +99,7 @@ void FImguiPropertyWindow::ShowComponentSections(FEditor& Editor, AActor& Actor)
 {
 	USceneComponent* RootComp = Actor.GetRootComponent();
 
-	for (USceneComponent* Comp : Actor.GetAttachedComponents())
+	for (auto Comp : Actor.GetOwnedComponents())
 	{
 		if (!Comp)
 		{
@@ -127,9 +127,12 @@ void FImguiPropertyWindow::ShowComponentSections(FEditor& Editor, AActor& Actor)
 }
 
 void FImguiPropertyWindow::ShowComponentDetails(FEditor& Editor, AActor& Actor,
-    USceneComponent& Comp, bool bIsRoot)
+    UActorComponent& Comp, bool bIsRoot)
 {
-	ShowTransform(Editor, Comp, bIsRoot);
+	if (Comp.IsA<USceneComponent>())
+	{
+		ShowTransform(Editor, static_cast<USceneComponent&>(Comp), bIsRoot);
+	}
 
 	if (Comp.IsA<UTextComponent>())
 	{

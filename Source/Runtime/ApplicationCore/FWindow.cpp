@@ -54,9 +54,6 @@ TUniquePtr<FWindow> FWindow::Create(const FWindowDesc& Desc)
 
 	WindowPtr->Handle = Window;
 
-	// TODO: 이거 제대로 고칠것
-	// ShowWindow(Window, 10);
-
 	return WindowPtr;
 }
 

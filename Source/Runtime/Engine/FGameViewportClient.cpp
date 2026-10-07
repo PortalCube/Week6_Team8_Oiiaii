@@ -1,15 +1,16 @@
-#include "FEditorViewportClient.h"
+#include "FGameViewportClient.h"
 #include "Runtime/Engine/FWorldContext.h"
+//#include <cassert>
 
-void FEditorViewportClient::UpdateFocusedAndHovered(bool bFocused, bool bHovered)
+void FGameViewportClient::UpdateFocusedAndHovered(bool bInFocused, bool bInHovered)
 {
-	this->bFocused = bFocused;
-	this->bHovered = bHovered;
+	bFocused = bInFocused;
+	bHovered = bInHovered;
 	return;
 }
 
 // CameraMode에 따라 Camera의 설정을 변경
-void FEditorViewportClient::SetCameraMode(ECameraMode Mode)
+void FGameViewportClient::SetCameraMode(ECameraMode Mode)
 {
 	// CameraMode에 따라 뷰포트 카메라의 EProjectionType도 변경
 	if (Mode == ECameraMode::PERSPECTIVE)
@@ -55,17 +56,18 @@ void FEditorViewportClient::SetCameraMode(ECameraMode Mode)
 		ViewportCamera.SetRotation(0.0f, 180.0f);
 		break;
 	}
-
 }
 
-void FEditorViewportClient::SetWorldContext(class FWorldContext* InWorldContext)
+void FGameViewportClient::SetWorldContext(FWorldContext* InWorldContext)
 {
 	WorldContext = InWorldContext;
 }
 
-// FEditorApplication::Render() 에서 필요한 FSceneView를 만들어 반환
-FSceneView FEditorViewportClient::GetSceneView(const FLightConstants& InLightConstants)
+FSceneView FGameViewportClient::GetSceneView(const FLightConstants& InLightConstants)
 {
+	// 렌더링 전에 SEditorViewport의 FViewport가 연결되어야 한다.
+	//assert(Viewport != nullptr);
+
 	FSceneView SceneView
 	{
 		.Camera = ViewportCamera,
@@ -74,7 +76,8 @@ FSceneView FEditorViewportClient::GetSceneView(const FLightConstants& InLightCon
 		.ViewportSizePixel = Viewport->GetViewportSize(),
 		.ViewMode = ViewMode,
 		.ShowFlags = ShowFlags,
-		.LightConstants = InLightConstants
+		.LightConstants = InLightConstants,
 	};
+
 	return SceneView;
 }
