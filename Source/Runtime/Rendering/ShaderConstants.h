@@ -101,10 +101,10 @@ struct FLightConstants
 {
 	// 기본 조명 파라미터
 	FVector LightDirection{ -0.5f, -0.5f, -1.0f };
-	float Intensity = 0.2f;
+	float Intensity = 1.0f;
 
 	FVector LightColor{ 1.0f, 1.0f, 1.0f };
-	float AmbientIntensity = 0.05f;
+	float AmbientIntensity = 0.35f;
 };
 static_assert(sizeof(FLightConstants) % 16 == 0);
 

@@ -1,6 +1,7 @@
 #include "FileUtil.h"
 
 #include "Runtime/Utility/EngineUtil.h"
+#include "Runtime/Utility/WindowsUtil.h"
 
 #include <fstream>
 #include <sstream>
@@ -9,16 +10,42 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
+FString FileUtil::GetEngineDirectory()
+{
+	FWString ExecutablePath(MAX_PATH, L'\0');
+	while (true)
+	{
+		const DWORD PathLength = GetModuleFileNameW(
+		    nullptr, ExecutablePath.data(),
+		    static_cast<DWORD>(ExecutablePath.size()));
+
+		if (PathLength == 0)
+		{
+			throw EngineUtil::CreateError("[FileUtil::GetEngineDirectory] 실행 파일 경로를 찾지 못했습니다.");
+		}
+
+		if (PathLength < ExecutablePath.size())
+		{
+			ExecutablePath.resize(PathLength);
+			return WindowsUtil::ToString(fs::path(ExecutablePath).parent_path().wstring());
+		}
+
+		ExecutablePath.resize(ExecutablePath.size() * 2);
+	}
+}
+
+FString FileUtil::GetContentDirectory()
+{
+	return WindowsUtil::ToString((fs::u8path(GetEngineDirectory()) / L"Content").wstring());
+}
+
+FString FileUtil::GetContentPath(FStringView Path)
+{
+	return WindowsUtil::ToString((fs::u8path(GetContentDirectory()) / fs::u8path(Path.begin(), Path.end())).wstring());
+}
+
 FString FileUtil::ReadTextFile(FStringView Path)
 {
-	// std::string_view::data()는 null 종료 문자를 보장하지 않음.
-	// 그래서 이걸 std::string::c_str()으로 바꿔야 하나 싶은데..
-	// 이거 하나 때문에 FString으로 복사하는 비용이 과연 괜찮은지 모르겠음
-
-	// 일단 지금은 이거 쓸 땐 FStringView를 substr 하지 않아야함 (부디 그런 사례가 없을거라고 믿음)
-	// substr 해도 data()로 반환된 값은 null 종료 문자가 없으므로, 그냥 원래의 문자열이 나오거나
-	// 최악의 경우엔 지정된 영역을 벗어나는 버퍼 오버런이 발생함
-
 	std::ifstream File(Path.data());
 	if (!File)
 	{
@@ -77,7 +104,7 @@ void FileUtil::WriteJSONFile(FStringView Path, const nlohmann::json& JSON)
 
 FJson FileUtil::ReadJson(FStringView Path)
 {
-	return FJson{ReadJSONFile(Path)};
+	return FJson{ ReadJSONFile(Path) };
 }
 
 void FileUtil::WriteJson(FStringView Path, const FJson& Json)
