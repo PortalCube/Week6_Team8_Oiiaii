@@ -3,7 +3,7 @@
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 
 IMPLEMENT_UCLASS(URotationMovementComponent, UMovementComponent)
-UCLASS_META(URotationMovementComponent, DisplayName, "Rotation Movement")
+UCLASS_META(URotationMovementComponent, DisplayName, "Rotation Movement Component")
 
 void URotationMovementComponent::Initialize()
 {

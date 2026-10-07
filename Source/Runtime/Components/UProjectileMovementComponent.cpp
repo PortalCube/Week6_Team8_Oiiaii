@@ -3,7 +3,7 @@
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 
 IMPLEMENT_UCLASS(UProjectileMovementComponent, UMovementComponent)
-UCLASS_META(UProjectileMovementComponent, DisplayName, "Projectile Movement")
+UCLASS_META(UProjectileMovementComponent, DisplayName, "Projectile Movement Component")
 
 void UProjectileMovementComponent::Initialize()
 {

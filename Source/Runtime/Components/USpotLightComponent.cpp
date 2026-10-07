@@ -6,7 +6,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 
 IMPLEMENT_UCLASS(USpotLightComponent, UPrimitiveComponent)
-UCLASS_META(USpotLightComponent, DisplayName, "SpotLight")
+UCLASS_META(USpotLightComponent, DisplayName, "Spotlight Component")
 UCLASS_META(USpotLightComponent, MeshName, "#SpotlightCone")
 
 void USpotLightComponent::Initialize()

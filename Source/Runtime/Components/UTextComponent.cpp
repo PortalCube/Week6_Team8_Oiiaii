@@ -14,6 +14,7 @@
 #include <windows.h>
 
 IMPLEMENT_UCLASS(UTextComponent, UInstancePrimitiveComponent)
+UCLASS_META(UTextComponent, DisplayName, "Text Component")
 
 void UTextComponent::Initialize()
 {

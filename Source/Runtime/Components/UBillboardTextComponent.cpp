@@ -3,6 +3,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 
 IMPLEMENT_UCLASS(UBillboardTextComponent, UTextComponent)
+UCLASS_META(UBillboardTextComponent, DisplayName, "Billboard Text Component")
 
 FMatrix UBillboardTextComponent::GetRenderMatrix(const FCamera& Camera) const
 {

@@ -5,6 +5,7 @@
 #include <numbers>
 
 IMPLEMENT_UCLASS(UStaticMeshComponent, UMeshComponent)
+UCLASS_META(UStaticMeshComponent, DisplayName, "Static Mesh Component")
 
 float UStaticMeshComponent::ComputeScreenSize(const FCamera& Camera) const
 {

@@ -5,7 +5,7 @@
 #include <algorithm>
 
 IMPLEMENT_UCLASS(UAnimatedBillboardComp, UBillboardComponent)
-UCLASS_META(UAnimatedBillboardComp, DisplayName, "AnimatedBillboard")
+UCLASS_META(UAnimatedBillboardComp, DisplayName, "Animated Billboard Component")
 
 void UAnimatedBillboardComp::Initialize()
 {

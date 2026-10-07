@@ -16,8 +16,8 @@ class UPrimitiveComponent : public USceneComponent
 
 public:
 	void Initialize() override;
-	void OnRegister() override;
-	void OnUnregister() override;
+	void Register() override;
+	void Unregister() override;
 
 	virtual void SetMesh(UStaticMesh* Mesh);
 

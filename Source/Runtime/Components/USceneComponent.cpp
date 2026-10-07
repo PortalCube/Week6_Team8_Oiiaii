@@ -7,6 +7,7 @@
 #include "Runtime/Engine/ULevel.h"
 
 IMPLEMENT_UCLASS(USceneComponent, UActorComponent)
+UCLASS_META(USceneComponent, DisplayName, "Scene Component")
 
 void USceneComponent::SetupAttachment(USceneComponent* InParent)
 {

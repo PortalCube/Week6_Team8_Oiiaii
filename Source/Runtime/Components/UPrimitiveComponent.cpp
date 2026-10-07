@@ -7,6 +7,7 @@
 #include "Runtime/Asset/UStaticMesh.h"
 
 IMPLEMENT_UCLASS(UPrimitiveComponent, USceneComponent)
+UCLASS_META(UPrimitiveComponent, DisplayName, "Pritmitive Component")
 
 void UPrimitiveComponent::Initialize()
 {
@@ -96,9 +97,14 @@ FAxisAlignedBoundingBox UPrimitiveComponent::GetViewBounds(const FCamera& Camera
 	return FAxisAlignedBoundingBox(GetWorldBounds(), Camera.GetViewMatrix());
 }
 
-void UPrimitiveComponent::OnRegister()
+void UPrimitiveComponent::Register()
 {
-	Super::OnRegister();
+	if (bRegistered)
+	{
+		return;
+	}
+
+	Super::Register();
 
 	if (RenderData.Type == ERenderType::None)
 	{
@@ -108,9 +114,14 @@ void UPrimitiveComponent::OnRegister()
 	GetComponentLevel()->AddRenderComponent(this);
 }
 
-void UPrimitiveComponent::OnUnregister()
+void UPrimitiveComponent::Unregister()
 {
-	Super::OnUnregister();
+	if (!bRegistered)
+	{
+		return;
+	}
+
+	Super::Unregister();
 
 	GetComponentLevel()->RemoveRenderComponent(this);
 }

@@ -14,7 +14,7 @@
 #include <cctype>
 
 IMPLEMENT_UCLASS(UBillboardComponent, UPrimitiveComponent)
-UCLASS_META(UBillboardComponent, DisplayName, "BillBoard")
+UCLASS_META(UBillboardComponent, DisplayName, "Billboard Component")
 UCLASS_META(UBillboardComponent, MeshName, "BillBoard")
 
 void UBillboardComponent::Initialize()

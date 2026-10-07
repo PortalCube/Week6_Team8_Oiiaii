@@ -6,6 +6,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 
 IMPLEMENT_UCLASS(UInstancePrimitiveComponent, UPrimitiveComponent)
+UCLASS_META(UInstancePrimitiveComponent, DisplayName, "Instance Pritmitive Component")
 
 void UInstancePrimitiveComponent::Initialize()
 {
