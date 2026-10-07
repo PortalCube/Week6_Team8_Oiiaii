@@ -3,6 +3,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/ULevel.h"
+#include "Runtime/Input/FInputManager.h"
 #include "Editor/Core/FEditor.h"
 #include "ThirdParty/Imgui/imgui.h"
 #include <string>
@@ -93,11 +94,11 @@ void FImguiWorldOutliner::Process(FEditor& Editor, float DeltaTime)
 	// 하단 컨트롤 영역
 	if (SelectedActor)
 	{
-		if (ImGui::Button("Delete"))
+		if (ImGui::Button("Delete") || FInputManager::Get().IsKeyPressed(VK_DELETE))
 		{
-			AActor* ActorToDelete = SelectedActor;
+			AActor* Target = SelectedActor;
 			Editor.UnSelectActor();
-			ActorToDelete->Destroy();
+			Target->Destroy();
 			bCacheDirty = true;
 		}
 	}

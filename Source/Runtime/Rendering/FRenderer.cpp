@@ -1,4 +1,9 @@
 #include "FRenderer.h"
+#include "FTextRendering.h"
+#include "Runtime/Asset/FAssetRegistry.h"
+#include "Runtime/Asset/UFont.h"
+#include "Runtime/Asset/UMaterial.h"
+#include "Runtime/Asset/UStaticMesh.h"
 #include "FRenderResourceLibrary.h"
 
 #include <d3d11.h>
@@ -79,6 +84,10 @@ void FRenderer::Shutdown()
 	BackBufferRTV.Reset();
 	SceneTexturesPool.clear();
 	ActiveSceneTextures = nullptr;
+	CachedBillboardText.clear();
+	CachedBillboardFont = nullptr;
+	CachedBillboardGlyphs.clear();
+	BillboardWorldInstances.clear();
 
 	for (FGPUTimerQuery& Query : GPUTimerQueries)
 	{
@@ -1163,6 +1172,11 @@ void FRenderer::UpdateFrameConstants(const FFrameConstants& Constants)
 
 void FRenderer::UpdateViewConstants(const FViewConstants& Constants)
 {
+	ViewProjection = Constants.View * Constants.Projection;
+	FViewConstants ShaderConstants = Constants;
+	ShaderConstants.Projection = ShaderConstants.Projection.ToD3DMatrix();
+
+	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &ShaderConstants, 0, 0);
 	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->VSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
 	Context->PSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
@@ -1198,7 +1212,8 @@ bool FRenderer::UploadObjectConstants(std::span<const FDrawCommand> Commands)
 	for (size_t Index = 0; Index < Commands.size(); ++Index)
 	{
 		const uint32 ByteOffset = static_cast<uint32>(Index) * ObjectConstantStride;
-		const FObjectConstants& ShaderConstants = Commands[Index].Constants;
+		FObjectConstants ShaderConstants = Commands[Index].Constants;
+		ShaderConstants.MVP = (ShaderConstants.World * ViewProjection).ToD3DMatrix();
 		std::memcpy(Destination + ByteOffset, &ShaderConstants, sizeof(FObjectConstants));
 	}
 	Context->Unmap(ObjectConstantUploadBuffer.Get(), 0);
@@ -1244,9 +1259,6 @@ void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLig
 
 // ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Constants Buffer ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
 // =====================================================================
-
-
-
 
 
 // =====================================================================
@@ -1488,12 +1500,17 @@ void FRenderer::DrawTextInstances(const FDrawCommand& Command)
 
 	auto& ResLib = FRenderResourceLibrary::Get();
 
-	UpdateBuffer(Command.Constants, 2);
-
 	const TArray<FInstanceData>& InstanceData = ResLib.GetInstancingArray(Command.Mesh, &Command.Materials[0]);
+	DrawTextInstanceData(Command, InstanceData);
+}
 
-	if (InstanceData.empty())
+void FRenderer::DrawTextInstanceData(const FDrawCommand& Command, std::span<const FInstanceData> InstanceData)
+{
+	if (!Command.Mesh || Command.Materials.empty() || InstanceData.empty())
+	{
 		return;
+	}
+	UpdateBuffer(Command.Constants, 2);
 
 	const UINT InstanceCount = static_cast<UINT>(InstanceData.size());
 	const UINT RequiredSize = InstanceCount * sizeof(FInstanceData);
@@ -1550,6 +1567,74 @@ void FRenderer::DrawTextInstances(const FDrawCommand& Command)
 		INC_DWORD_STAT_BY("Prims", Mesh->VertexCount / 3u * InstanceCount);
 	}
 	INC_DWORD_STAT("Draws");
+}
+
+void FRenderer::DrawBillboardText(const FSceneView& View, FWStringView Text,
+    const FVector& WorldPosition, float WorldSize)
+{
+	const FViewportRenderTarget* Target = View.Viewport.RenderTarget.get();
+	if (!Target || !ActiveSceneTextures || Text.empty() || WorldSize <= 0.0f)
+	{
+		return;
+	}
+
+	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+	UFont* FontAsset = Registry.Get<UFont>("Font/BazziOTF.json");
+	UMaterial* MaterialAsset = Registry.Get<UMaterial>("Material/SelectedActor_Text.json");
+	UStaticMesh* MeshAsset = Registry.Get<UStaticMesh>("#Rect");
+	if (!FontAsset || !FontAsset->Get() || !FontAsset->GetTexture() ||
+	    !MaterialAsset || !MaterialAsset->GetPipeline() || !MeshAsset || !MeshAsset->Get())
+	{
+		return;
+	}
+
+	const FFont* Font = FontAsset->Get();
+	if (CachedBillboardText != Text || CachedBillboardFont != Font)
+	{
+		float Width, Height;
+		TextRendering::BuildGlyphInstances(Text, *Font, FVector4{1.0f, 1.0f, 1.0f, 1.0f},
+		    CachedBillboardGlyphs, Width, Height);
+		CachedBillboardText = Text;
+		CachedBillboardFont = Font;
+	}
+
+	FTransform Transform;
+	Transform.SetLocation(WorldPosition);
+	Transform.SetScale3D(FVector{WorldSize, WorldSize, WorldSize});
+	const FMatrix Billboard = TextRendering::MakeBillboardMatrix(Transform, View.Camera);
+	BillboardWorldInstances.clear();
+	BillboardWorldInstances.reserve(CachedBillboardGlyphs.size());
+	for (const FInstanceData& Glyph : CachedBillboardGlyphs)
+	{
+		FInstanceData Instance = Glyph;
+		Instance.World *= Billboard;
+		BillboardWorldInstances.push_back(Instance);
+	}
+
+	FMaterial Material;
+	Material.SetPipeLine(MaterialAsset->GetPipeline()->Get());
+	Material.SetTexture(FontAsset->GetTexture()->Get());
+	Material.SetSamplerDesc(MaterialAsset->GetSamplerDesc());
+	FDrawCommand Command;
+	Command.Mesh = MeshAsset->Get();
+	Command.Materials = std::span<const FMaterial>(&Material, 1);
+	Command.Type = ERenderType::Text;
+	// 글자 인스턴스에 월드 변환이 이미 적용되어 있으므로 World는 Identity.
+	Command.Constants.World = FMatrix::Identity;
+
+	ClearLastRenderState();
+	BindRenderTarget(Target->GetRTV(), ActiveSceneTextures->SceneDepthDSV.Get());
+	SetViewportPixel(View.ViewportSizePixel);
+	UpdateViewConstants(FViewConstants{
+	    .View = View.Camera.GetViewMatrix(),
+	    .Projection = View.Camera.GetProjectionMatrix(),
+	    .ViewportSize = View.ViewportSizePixel,
+	    .NearZ = View.Camera.GetProjection().GetNearPlane(),
+	    .FarZ = View.Camera.GetProjection().GetFarPlane(),
+	    .IsPerspective = View.Camera.GetProjection().GetProjectionType() == EProjectionType::Perspective ? 1.0f : 0.0f,
+	});
+	DrawTextInstanceData(Command, BillboardWorldInstances);
+	ClearLastRenderState();
 }
 
 void FRenderer::ClearTextInstances()

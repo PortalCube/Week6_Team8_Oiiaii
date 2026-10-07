@@ -13,8 +13,8 @@ class UBillboardComponent : public UPrimitiveComponent
 	GENERATED_BODY()
 
 protected:
-	virtual void Serialize(FArchive& Archive) const;
-	virtual void Deserialize(const FArchive& Archive);
+	virtual void Serialize(FArchive& Archive);
+
 
 public:
 	void Initialize() override;

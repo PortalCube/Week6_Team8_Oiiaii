@@ -50,11 +50,11 @@ namespace
 			.Mesh = Data.Mesh->Get(LODIndex),
 			.Materials = std::span<const FMaterial>(CachedMaterials.data(), CachedMaterials.size()),
 			.Constants = {
-			    Material.Color,
-			    Material.UVScale,
-			    Material.UVOffset,
-			    FMatrix::Identity,
-			    Material.bDisableShading ? 1.0f : 0.0f,
+			    .Color = Material.Color,
+			    .UVScale = Material.UVScale,
+			    .UVOffset = Material.UVOffset,
+			    .World = FMatrix::Identity,
+			    .DisableShading = Material.bDisableShading ? 1.0f : 0.0f,
 			},
 			.Type = Data.Type,
 			.Instances = std::span<const FInstanceData>(Data.Instances.data(), Data.Instances.size()),
@@ -390,36 +390,29 @@ void FRenderView::FlushLinePass(const FCamera& Camera)
 	FlushLineBatch(Camera.GetViewProjectionMatrix());
 }
 
-// Overlay 되는 것 그리는 Pass (지금은 기즈모, 텍스트)
-void FRenderView::RenderOverlayPass(const FSceneView& View, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp)
+void FRenderView::RenderSelectedActorUUID(const FSceneView& View, const AActor* SelectedActor)
 {
-	// 출력 RT(뷰포트 크기) + SceneDepthDSV(같은 크기)를 함께 바인딩. 
-	const FViewportRenderTarget* RenderTarget = View.Viewport.RenderTarget.get();
-	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
-
-	// 둘 중 하나라도 없으면 그리지 않는다
-	if (!RenderTarget || !SceneTextures) 
+	if (!SelectedActor || !(View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
 	{
 		return;
 	}
-	Renderer.BindRenderTarget(RenderTarget->GetRTV(), SceneTextures->SceneDepthDSV.Get());
-
-	// 뷰포트 크기 재설정
-	Renderer.SetViewportPixel(View.ViewportSizePixel);
-	UpdateViewConstants(View.Camera, View.ViewportSizePixel);
-
-	// 텍스트 오버레이 렌더링
-	if (TextComp && (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
+	const USceneComponent* Root = SelectedActor->GetRootComponent();
+	if (!Root)
 	{
-		Renderer.ClearDepth();
-		FDrawCommand Command = GetDrawCommand(*TextComp, View.Camera, TextComp->GetWorldBounds(), UStaticMeshComponent::MakeLODView(View.Camera));
-		if (!Command.Instances.empty())
+		return;
+	}
+	FVector Position = Root->GetGlobalTransform().GetLocation();
+	if (const UPrimitiveComponent* Primitive = Root->Cast<UPrimitiveComponent>())
+	{
+		const FAxisAlignedBoundingBox& Bounds = Primitive->GetWorldBounds();
+		if (Bounds.IsValid())
 		{
-			Renderer.AddTextInstanceArray(Command);
-			Renderer.DrawTextInstances(Command);
-			Renderer.ClearTextInstances();
+			Position = FVector{Bounds.Center.X, Bounds.Center.Y, Bounds.Max.Z};
 		}
 	}
+	Position.Z += 0.5f;
+	const FWString Text = L"UUID : " + std::to_wstring(SelectedActor->GetUUID());
+	Renderer.DrawBillboardText(View, Text, Position, 0.5f);
 }
 
 void FRenderView::RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo)

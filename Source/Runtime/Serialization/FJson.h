@@ -12,22 +12,17 @@
 #include "Runtime/Utility/EngineUtil.h"
 
 /// <summary>
-/// UObject의 데이터를 직렬화/역직렬화 하는 클래스입니다.
-/// UObject의 데이터를 이 클래스에 담을 수도 있고, 이 데이터로 UObject를 만들 수도 있습니다.
+/// JSON 데이터를 담고 필드, 중첩 객체, 배열에 접근하는 클래스입니다.
+/// 리소스 설정과 같은 순수 JSON 데이터에 사용합니다.
 /// </summary>
-class FArchive
+class FJson
 {
-	// 언젠가 JSON이 아니라 네트워크 패킷에서 직렬화/역직렬화 데이터를 가져올 일이 있을지도 모름 (ex. 멀티플레이)
-	// 그래서 JSON을 Serialize/Deserialize 함수에 때려박지 않고 이 클래스가 별도로 존재하는 것
-
-	// 따라서, 언젠가는 이 코드가 JSON에 강하게 커플링된 문제를 해소해야할지도 모름
-
 private:
 	nlohmann::json Object;
 
 public:
-	FArchive();
-	explicit FArchive(const nlohmann::json& InObject);
+	FJson();
+	explicit FJson(const nlohmann::json& InObject);
 
 	nlohmann::json GetJSON() const { return Object; }
 
@@ -70,11 +65,11 @@ public:
 	template <typename T>
 	void SetArray(const FString& Key, const TArray<T>& Value);
 
-	TArray<FArchive> GetArchiveArray(const FString& Key) const;
-	void SetArchiveArray(const FString& Key, const TArray<FArchive>& Value);
+	TArray<FJson> GetJsonArray(const FString& Key) const;
+	void SetJsonArray(const FString& Key, const TArray<FJson>& Value);
 
-	FArchive GetArchive(const FString& Key) const;
-	void SetArchive(const FString& Key, const FArchive& Archive);
+	FJson GetJson(const FString& Key) const;
+	void SetJson(const FString& Key, const FJson& Archive);
 
 	template <typename T>
 	T GetEnum(const FString& Key, TMap<FString, T>& EnumMap);
@@ -84,7 +79,7 @@ public:
 };
 
 template <typename T>
-inline TArray<T> FArchive::GetArray(const FString& Key) const
+inline TArray<T> FJson::GetArray(const FString& Key) const
 {
 	TArray<T> Array;
 
@@ -98,7 +93,7 @@ inline TArray<T> FArchive::GetArray(const FString& Key) const
 }
 
 template <typename T>
-inline void FArchive::SetArray(const FString& Key, const TArray<T>& Value)
+inline void FJson::SetArray(const FString& Key, const TArray<T>& Value)
 {
 	Object[Key] = nlohmann::json::array();
 
@@ -109,30 +104,13 @@ inline void FArchive::SetArray(const FString& Key, const TArray<T>& Value)
 }
 
 template <typename T>
-inline T FArchive::GetEnum(const FString& Key, TMap<FString, T>& EnumMap)
+inline T FJson::GetEnum(const FString& Key, TMap<FString, T>& EnumMap)
 {
-	FString Value = GetString(Key);
-
-	auto It = EnumMap.find(Value);
-	if (It == EnumMap.end())
-	{
-		throw EngineUtil::CreateError("[FArchive::GetEnum] 키 {}에서 대해서 EnumMap에 없는 값이 있습니다. ({})", Key, Value);
-	}
-
-	return It->second;
+	return EnumMap.at(GetString(Key));
 }
 
 template <typename T>
-inline void FArchive::SetEnum(const FString& Key, T Value, TMap<T, FString>& EnumMap)
+inline void FJson::SetEnum(const FString& Key, T Value, TMap<T, FString>& EnumMap)
 {
-	auto It = EnumMap.find(Value);
-
-	if (It == EnumMap.end())
-	{
-		throw EngineUtil::CreateError(
-		    "[FArchive::SetEnum] 키 {}에서 대해서 EnumMap에 없는 값이 있습니다. ({})",
-		    Key, static_cast<int>(Value));
-	}
-
-	SetString(Key, It->second);
+	SetString(Key, EnumMap.at(Value));
 }

@@ -8,7 +8,6 @@
 #include "Runtime/Actors/ACylinderActor.h"
 #include "Runtime/Actors/ASphereActor.h"
 #include "Runtime/Actors/ASpotlightActor.h"
-#include "Runtime/Actors/ASelectedTextActor.h"
 #include "Runtime/Asset/FAssetRegistry.h"
 #include "Runtime/Components/USceneComponent.h"
 #include "Runtime/Engine/FWorldContext.h" 
@@ -53,15 +52,8 @@ void FEditor::Process()
 
 	if (SelectedActor)
 	{
-		// 선택된 액터 Delete 키로 삭제
-		if (FInputManager::Get().IsKeyPressed(VK_DELETE))
-		{
-			AActor* Target = SelectedActor;
-			UnSelectActor();
-			Target->Destroy();
-		}
-
 		// BVH 갱신
+		if (SelectedActor)
 		{
 			USceneComponent* Root = SelectedActor->GetRootComponent();
 			const bool bChanged = Root && !(Root->GetRelativeTransform() == SelectedTransform);
@@ -76,6 +68,7 @@ void FEditor::Process()
 		}
 	}
 
+
 	// 현재 상태를 State에 저장
 	SaveState();
 
@@ -87,9 +80,7 @@ void FEditor::OnWorldLoaded(FWorldContext& Context)
 {
 	if (Context.WorldType == EWorldType::Editor)
 	{
-		SelectedActorTextActor = GetCurrentWorld()->SpawnActor<ASelectedTextActor>(ASelectedTextActor::StaticClass());
 
-		SelectedActorTextComp = SelectedActorTextActor->TextComponent;
 
 		for (auto& Viewport : ViewportLayout.Viewports)
 		{
@@ -260,6 +251,11 @@ SEditorViewport* FEditor::GetPerspectiveViewport()
 
 bool FEditor::SelectActor(AActor* Actor)
 {
+	if (Actor && !Actor->IsSelectable())
+	{
+		return false;
+	}
+
 	if (SelectedActor)
 	{
 		UnSelectActor();
@@ -275,15 +271,6 @@ bool FEditor::SelectActor(AActor* Actor)
 			Gizmo.Mode = EGizmoMode::Translate;
 		}
 
-		if (SelectedActorTextComp)
-		{
-			SelectedActorTextComp->AttachToComponent(SelectedActor.Get()->GetRootComponent());
-			FTransform RelativeTrans;
-			RelativeTrans.SetLocation(FVector{ 0.0f, 0.0f, 0.7f });
-			RelativeTrans.SetScale3D(FVector{ 1.0f, 0.2f, 0.2f });
-			SelectedActorTextComp->SetRelativeTransform(RelativeTrans);
-			SelectedActorTextComp->SetText(L"UUID : " + std::to_wstring(SelectedActor->GetUUID()));
-		}
 	}
 
 	return true;
@@ -297,11 +284,6 @@ void FEditor::UnSelectActor()
 	}
 
 	SelectedActor = nullptr;
-
-	if (SelectedActorTextComp)
-	{
-		SelectedActorTextComp->DetachFromComponent();
-	}
 }
 
 const TArray<UPrimitiveComponent*>& FEditor::GetPrimitiveComponents() const
@@ -422,7 +404,6 @@ FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& EditorView
 		.VisualizerRegistry = VisualizerRegistry,
 		.SelectedTransform = SelectedTransform,
 		.Gizmo = ObjectSelected() ? &Gizmo : nullptr,
-		.TextComp = ObjectSelected() ? SelectedActorTextComp : nullptr,
 	};
 
 	if (SelectedActor)

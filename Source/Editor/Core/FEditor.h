@@ -8,9 +8,7 @@
 #include "Runtime/CoreUObject/UObject.h"
 #include "Runtime/CoreUObject/TWeakObjectPtr.h"
 #include "Runtime/Actors/AActor.h"
-#include "Runtime/Actors/ASelectedTextActor.h"
 #include "Runtime/Rendering/ShaderConstants.h"
-#include "Runtime/Components/UTextComponent.h"
 
 #include "Runtime/Engine/UWorld.h"
 #include "Runtime/Engine/ULevel.h"
@@ -88,8 +86,6 @@ public:
 	ULevel* GetCurrentLevel() const;
 	void SpawnActorToCurrentScene(UClass* Type, int Count = 1);
 
-	UTextComponent* GetTextcomp() { return SelectedActorTextComp; }
-	
 	// 피킹 등에서 현재 씬의 렌더링 대상 컴포넌트가 필요할 때 사용
 	const TArray<UPrimitiveComponent*>& GetPrimitiveComponents() const;
 	FGizmo& GetGizmo() { return Gizmo; }
@@ -123,8 +119,6 @@ private:
 	UEditorEngine* EditorEngine = nullptr;
 	FGizmo Gizmo;
 	TWeakObjectPtr<AActor> SelectedActor;
-	TWeakObjectPtr<ASelectedTextActor> SelectedActorTextActor;
-	TWeakObjectPtr<UTextComponent> SelectedActorTextComp;
 
 	// Viewport
 	FEditorViewportLayout ViewportLayout;

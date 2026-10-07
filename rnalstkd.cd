@@ -1,0 +1,1534 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="FConfigArchive" Collapsed="true">
+    <Position X="19.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AADAAAogACAQAgAoAEAABAAAAAAAAAARAAEABCBAAAI=</HashCode>
+      <FileName>Source\Editor\Core\FConfigArchive.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FEditor" Collapsed="true">
+    <Position X="21" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AmhQEAYAAgQBEQQACgAICUAAMAgAIAhIIEAARGxAgAQ=</HashCode>
+      <FileName>Source\Editor\Core\FEditor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FEditorState" Collapsed="true">
+    <Position X="22.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAQACAgCIACYUgHCAEgFUYBCAJKINGGQIQAAAJWUA=</HashCode>
+      <FileName>Source\Editor\Core\FEditorState.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FEditorViewportClient" Collapsed="true">
+    <Position X="24.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQQBqBAEQAlAABAQABAAAAAEBgAAQACAAIAEAABAAA=</HashCode>
+      <FileName>Source\Editor\EditorViewport\FEditorViewportClient.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UObjViewerEngine" Collapsed="true">
+    <Position X="9.25" Y="10.5" Width="1.5" />
+    <InheritanceLine Type="UEngine" FixedFromPoint="true">
+      <Path>
+        <Point X="16.5" Y="9.441" />
+        <Point X="16.5" Y="10.125" />
+        <Point X="10" Y="10.125" />
+        <Point X="10" Y="10.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAACAAAAQAA=</HashCode>
+      <FileName>Source\Editor\Engine\FObjViewerEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UEditorEngine" Collapsed="true">
+    <Position X="11.25" Y="10.5" Width="1.5" />
+    <InheritanceLine Type="UEngine" FixedFromPoint="true">
+      <Path>
+        <Point X="16.5" Y="9.441" />
+        <Point X="16.5" Y="10.125" />
+        <Point X="12" Y="10.125" />
+        <Point X="12" Y="10.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AIAAABAAAAEABAAQQIAAAAAAAAAIAAAEIAACAAAAQAA=</HashCode>
+      <FileName>Source\Editor\Engine\UEditorEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FGizmo" Collapsed="true">
+    <Position X="19.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IFAgAYAIAIBEAwAAAgAEIgAAAEAAKAAAUAASAABAAAA=</HashCode>
+      <FileName>Source\Editor\Gizmo\FGizmo.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FGrid" Collapsed="true">
+    <Position X="21" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAQIAAAAAEAAAAAAAEAAAAAAAEA=</HashCode>
+      <FileName>Source\Editor\Grid\FGrid.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IEditorWindow" Collapsed="true">
+    <Position X="8.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAEAAAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\UI\IEditorWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiConsoleWindow" Collapsed="true">
+    <Position X="10" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAQBIgIAAAAAIAQBAgAAAiKAghAAwQAAAAAiBgAIAAA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiConsoleWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiContentsDrawer" Collapsed="true">
+    <Position X="14.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIBAAAAIIAgQAAAAAAAAAUAAAAABiAAAAAgA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiContentsDrawer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiControlPanelWindow" Collapsed="true">
+    <Position X="1" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAggAAEIIIggAAgAAAIAQAAAABAAAwAAAAAAM=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiControlPanelWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiEditorViewportWindow" Collapsed="true">
+    <Position X="5.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAEgAIAAQEgA8LAAAAAAKBBAAAABhIACAAAA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiEditorViewportWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiManager" Collapsed="true">
+    <Position X="22.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAQAAAwAAAAAQAAAAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiPropertyWindow" Collapsed="true">
+    <Position X="12.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAIAQAEAABAAAgBAEAIBCAAAAACAAIBgMggAAGA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiPropertyWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiStatsWindow" Collapsed="true">
+    <Position X="16.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAGACAEIAAEAoAhIQgAAABABAAAoABAAAAIhAQAAgEg=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiStatsWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiToolbar" Collapsed="true">
+    <Position X="3.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAgEAAgAAAAAAAAAAAQAAAEAgAAABQAA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiToolBar.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FImguiWorldOutliner" Collapsed="true">
+    <Position X="7.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAQAAAAABBAAEyQAIAAAAAAAAAFEAAChACAEAQI=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiWorldOutliner.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FBillboardVisualizer" Collapsed="true">
+    <Position X="5.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\Visualizer\FBillboardVisualizer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FPrimitiveVisualizer" Collapsed="true">
+    <Position X="7.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\Visualizer\FPrimitiveVisualizer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FSpotlightVisualizer" Collapsed="true">
+    <Position X="1" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\Visualizer\FSpotlightVisualizer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FTextVisualizer" Collapsed="true">
+    <Position X="3.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\Visualizer\FTextVisualizer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FVisualizerRegistry" Collapsed="true">
+    <Position X="24.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAgAAAAAA=</HashCode>
+      <FileName>Source\Editor\Visualizer\FVisualizerRegistry.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IVisualizer" Collapsed="true">
+    <Position X="4.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\Visualizer\IVisualizer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AActor" Collapsed="true">
+    <Position X="17.75" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABQAAQCAEKAYAWAAAABAAREAACBBAAAAAAEBEBQgEAA=</HashCode>
+      <FileName>Source\Runtime\Actors\AActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AAnimatedBillboardActor" Collapsed="true">
+    <Position X="9.25" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\AAnimatedBillboardActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AAppleBittenActor" Collapsed="true">
+    <Position X="11.5" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAQAAAAAAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\AAppleBittenActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AAppleNormalActor" Collapsed="true">
+    <Position X="13.75" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAQAAAAAAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\AAppleNormalActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ABillboardActor" Collapsed="true">
+    <Position X="16" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAABAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\ABillboardActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACatActor" Collapsed="true">
+    <Position X="18.25" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABQBAEAAAAAAAUAAAAAAAAAAEAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\ACatActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACubeActor" Collapsed="true">
+    <Position X="20.5" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\ACubeActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ACylinderActor" Collapsed="true">
+    <Position X="11" Y="21" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\ACylinderActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AFireBallActor" Collapsed="true">
+    <Position X="13.25" Y="21" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIQAABAAIAAAEAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\AFireBallActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ASphereActor" Collapsed="true">
+    <Position X="15.5" Y="21" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\ASphereActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ASpotlightActor" Collapsed="true">
+    <Position X="17.75" Y="21" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\ASpotlightActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ATextRenderActor" Collapsed="true">
+    <Position X="20" Y="21" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\ATextRenderActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ATestTextActor" Collapsed="true">
+    <Position X="22.75" Y="19.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAABAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Actors\TestTextActor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FWindow" Collapsed="true">
+    <Position X="94.25" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAFACAAACRgAAAAEAAQABAAEIAAAAgAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\ApplicationCore\FWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FWindowsApplication" Collapsed="true">
+    <Position X="96" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAEAAAAAAgAABAAQFAgAEgAAQA=</HashCode>
+      <FileName>Source\Runtime\ApplicationCore\FWindowApplication.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FAssetRegistry" Collapsed="true">
+    <Position X="87.25" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAAABAQAAAAAAABAABAAAAAAAAAAhEAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\FAssetRegistry.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UAsset" Collapsed="true">
+    <Position X="20" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAABABAAAAAgAAAAAAAgAQAAAAAAAAAAAAAAAAABAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UAsset.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UFont" Collapsed="true">
+    <Position X="20" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAACAAAAAABAAAAAAAAAAAAAAAAAAAIAAAACAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UFont.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMaterial" Collapsed="true">
+    <Position X="21.25" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAACAAAAAAAAAAAEAgAAAAAAAAAAAAIEAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UMaterial.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UPackage" Collapsed="true">
+    <Position X="16.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UPackage.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UPipeline" Collapsed="true">
+    <Position X="22.25" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAACAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UPipeline.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UStaticMesh" Collapsed="true">
+    <Position X="18.75" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAABAAAAACAAQAAAAAAAAABAAAgAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UStaticMesh.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UTexture" Collapsed="true">
+    <Position X="23.75" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAABAAAAAAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UTexture.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UAnimatedBillboardComp" Collapsed="true">
+    <Position X="36" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAahAAAAACAACSAAAAAgICAgAiTACAwAoigQAQAAACA=</HashCode>
+      <FileName>Source\Runtime\Components\UAnimatedBillboardComp.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBillboardComponent" Collapsed="true">
+    <Position X="36" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAACAAAAAQAAAAAAABAQACBAAAgAAAAAAAAAAAE=</HashCode>
+      <FileName>Source\Runtime\Components\UBillboardComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UFireBallComponent" Collapsed="true">
+    <Position X="38.25" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIQMBAAgAAAAAoQAAAAAAARIAAAAAAAAAAgAIAiAAAg=</HashCode>
+      <FileName>Source\Runtime\Components\UFireBallComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UInstancePrimitiveComponent" Collapsed="true">
+    <Position X="40.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAACAgAAAUAAAgAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Components\UInstancePrimitiveComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMovementComponent" Collapsed="true">
+    <Position X="27.75" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Components\UMovementComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UPrimitiveComponent" Collapsed="true">
+    <Position X="36" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQQQAgCDAIIMUEAHBACAACkACABAQgWgAhAoIAAEAE=</HashCode>
+      <FileName>Source\Runtime\Components\UPrimitiveComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UProjectileMovementComponent" Collapsed="true">
+    <Position X="26.75" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>Source\Runtime\Components\UProjectileMovementComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="URotationMovementComponent" Collapsed="true">
+    <Position X="29" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Components\URotationMovementComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="USceneComponent" Collapsed="true">
+    <Position X="31" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAVAAUAAEQgEQQASAAEAAUKjADJBRABJBiEAFBIgEAQ=</HashCode>
+      <FileName>Source\Runtime\Components\USceneComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="USpotLightComponent" Collapsed="true">
+    <Position X="31.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAACCAAQCYEAAAAAAAAIACBAAIAAgAgAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Components\USpotLightComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UTextComponent" Collapsed="true">
+    <Position X="40.5" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQQAIgABAAAAUAIAIIAAEDAAChAJAgAQAAACEACIAA=</HashCode>
+      <FileName>Source\Runtime\Components\UTextComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMeshComponent" Collapsed="true">
+    <Position X="33.75" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAEAAAAABAAAAAAAAAEAAAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Components\Mesh\UMeshComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UStaticMeshComponent" Collapsed="true">
+    <Position X="33.75" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAQAEAAAAABEAICCABACEAAACBACACAAAAAAAAgAQA=</HashCode>
+      <FileName>Source\Runtime\Components\Mesh\UStaticMeshComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FAllocator" Collapsed="true">
+    <Position X="83.75" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAEAABAAAAAAAAQAAAAAAAAAAAAACAAAAAAI=</HashCode>
+      <FileName>Source\Runtime\Core\FAllocator.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FName" Collapsed="true">
+    <Position X="90.75" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABQACAAAAAAABAEAAAAAQQAAAAAAAACAABAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Core\FName.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FNamePool" Collapsed="true">
+    <Position X="92.5" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAggAAAAAAAIAAAAAAABAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Core\FNamePool.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FPoolAllocator" Collapsed="true">
+    <Position X="83.75" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAQEAECAAAAAAAIAAQAQAAAAAAQCAAAAACACFACAI=</HashCode>
+      <FileName>Source\Runtime\Core\FPoolAllocator.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FLogManager" Collapsed="true">
+    <Position X="85.5" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQQAAAAAABAAAEAAAAAAAAAAAQAAAAkAABAACA=</HashCode>
+      <FileName>Source\Runtime\Core\Log.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FStatsManager" Collapsed="true">
+    <Position X="83.75" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QCAFAgAAIAAAASJAABAAAAEABEABAAAAAABgAAAIAAA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\FStatsManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FUObjectArray" Collapsed="true">
+    <Position X="90.75" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAACADAAAABABAAAggAAAQhAAAAAEAAAAgAIAICEA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\FUObjectArray.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TObjectIterator&lt;TObject&gt;" Collapsed="true">
+    <Position X="97.75" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAACAAAAAEQAAAAgAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\TObjectIterator.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TWeakObjectPtr&lt;T&gt;" Collapsed="true">
+    <Position X="87.25" Y="34.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAIAAAAABABEAAiAAwAAAAAAAAgAAAAgAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\TWeakObjectPtr.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UClass" Collapsed="true">
+    <Position X="90.75" Y="34.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAABgBCAAIgBAAAAAAABAAAAAMAAACCAAAACBAg=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\UClass.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UObject" Collapsed="true">
+    <Position X="15.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACIAFAAaQAAAYAAEAAAARAAACFAAAAAgAABgBQAAAA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\UObject.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FArchive" Collapsed="true">
+    <Position X="85.5" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAEAogASBQAgAgAEhIJIAAAgAAAAQ5AAEAjCRAACI=</HashCode>
+      <FileName>Source\Runtime\Engine\FArchive.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FCamera" Collapsed="true">
+    <Position X="89" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>mUBEAUZQBCAABEMoEAAAQACQQCIEQggABiBEAAgQAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FCameraProjection" Collapsed="true">
+    <Position X="92.5" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ECAEAAYAJAAAAEAIgSAACACAQCBAAAgAAIAAAAgAECk=</HashCode>
+      <FileName>Source\Runtime\Engine\FCameraProjection.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IPrimitiveCuller" Collapsed="true">
+    <Position X="0.75" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FCulling.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FFlatFrustumCuller" Collapsed="true">
+    <Position X="0.75" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FCulling.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FEngineLoop" Collapsed="true">
+    <Position X="94.25" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAQAACAAAAAAAAJEACAAAAQAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FEngineLoop.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FOcclusionBuffer" Collapsed="true">
+    <Position X="96" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAhAAAQADAAAAAgAAAAAAEBAAAAQAAAgCBAQAEFAAEA=</HashCode>
+      <FileName>Source\Runtime\Engine\FOcclusionCuller.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FOcclusionCuller" Collapsed="true">
+    <Position X="97.75" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAUAAAAAAAAAAAAAAAAAAAAAAIgEAQAAAAgAAQAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FOcclusionCuller.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FRenderView" Collapsed="true">
+    <Position X="94.25" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAFABAEACAwDgBaUIAHAIEGEAAgEWACQDCwABFAkBk=</HashCode>
+      <FileName>Source\Runtime\Engine\FRenderView.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FSceneBVH" Collapsed="true">
+    <Position X="97.75" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAhACAAABAAAKwACAAAAAAABABAgRGAEAACAQACCAg=</HashCode>
+      <FileName>Source\Runtime\Engine\FSceneBVH.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FTimeManager" Collapsed="true">
+    <Position X="87.25" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQQAAAAAAAAAAQABAAAAAAAAICAAAAAAAAAQAAAAAQA=</HashCode>
+      <FileName>Source\Runtime\Engine\FTimeManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UEngine" Collapsed="true">
+    <Position X="15.75" Y="8.75" Width="1.5" />
+    <InheritanceLine Type="UObject" ManuallyRouted="true">
+      <Path>
+        <Point X="16.5" Y="6.812" />
+        <Point X="16.5" Y="8.75" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAAAAIEBAAAIACCAQBAQAA=</HashCode>
+      <FileName>Source\Runtime\Engine\UEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UGameEngine" Collapsed="true">
+    <Position X="13.25" Y="10.5" Width="1.5" />
+    <InheritanceLine Type="UEngine" FixedFromPoint="true">
+      <Path>
+        <Point X="16.5" Y="9.441" />
+        <Point X="16.5" Y="10.125" />
+        <Point X="14" Y="10.125" />
+        <Point X="14" Y="10.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAACAAAAQAA=</HashCode>
+      <FileName>Source\Runtime\Engine\UGameEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ULevel" Collapsed="true">
+    <Position X="18.75" Y="7.5" Width="1.5" />
+    <InheritanceLine Type="UObject" FixedFromPoint="true">
+      <Path>
+        <Point X="16.5" Y="6.812" />
+        <Point X="16.5" Y="7.187" />
+        <Point X="19.5" Y="7.187" />
+        <Point X="19.5" Y="7.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>IARCKQCAkYBBgQhAEAIAAAACICBAAQCAAAAAEBCgAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\ULevel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UWorld" Collapsed="true">
+    <Position X="14.75" Y="7.5" Width="1.5" />
+    <InheritanceLine Type="UObject" ManuallyRouted="true" FixedFromPoint="true">
+      <Path>
+        <Point X="16.5" Y="6.812" />
+        <Point X="16.5" Y="7.187" />
+        <Point X="15.5" Y="7.187" />
+        <Point X="15.5" Y="7.5" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>gAACAAAAEAAAAUAAIAAAIBAEAAAEAAAAAEABABAgQAA=</HashCode>
+      <FileName>Source\Runtime\Engine\UWorld.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TUniquePtr&lt;T&gt;" Collapsed="true">
+    <Position X="85.5" Y="34.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAABAAEAAAAQgAAQIAAAAAAAAAgABAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\Types\PointerTypes.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TSharedPtr&lt;T&gt;" Collapsed="true">
+    <Position X="83.75" Y="34.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAABAAEAQAAQwAAQAAAAAAAAAAkABAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\Types\PointerTypes.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TWeakPtr&lt;T&gt;" Collapsed="true">
+    <Position X="89" Y="34.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQQAAAAAAABAAMAAAAQwAAQAAAAAAAAAAkABAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\Types\PointerTypes.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FTransform" Collapsed="true">
+    <Position X="89" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAADAACAAIAAAAIECQAIAAAAAAgoAAAgAAAgAAA=</HashCode>
+      <FileName>Source\Runtime\Geometry\FTransform.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FCameraInputController" Collapsed="true">
+    <Position X="90.75" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAAAAAAAAAgAAEAAQAAAAAAAAAABAAAAEAAAEADA=</HashCode>
+      <FileName>Source\Runtime\Input\FCameraInputController.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FInputManager" Collapsed="true">
+    <Position X="97.75" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEjAFEAoQUAEMABQgAAAAAAFEAAQggBAgCAgQAEAAAA=</HashCode>
+      <FileName>Source\Runtime\Input\FInputManager.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FViewerCameraController" Collapsed="true">
+    <Position X="92.5" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAGAEAAAAAAAAAAAAAAQAABAAAAAQCE=</HashCode>
+      <FileName>Source\Runtime\Input\FViewerCameraController.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FObjParser" Collapsed="true">
+    <Position X="94.25" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACQAAAAAAAAAAACCAAAEABABAAAAAAABAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Parser\FObjParser.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FFont" Collapsed="true">
+    <Position X="96" Y="30.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAAEAAAAAAAAAIAAAAAAAACAAAAAAAAIAAAAAAAQ=</HashCode>
+      <FileName>Source\Runtime\Rendering\FFont.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FLineBatcher" Collapsed="true">
+    <Position X="83.75" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EABAgAAAAAAAAQAAAAAAAQAAAAAAAAAAAFIAAAMYAAg=</HashCode>
+      <FileName>Source\Runtime\Rendering\FLineBatcher.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FMaterial" Collapsed="true">
+    <Position X="87.25" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAAAAAAAAAAAMAgAAACAAAAAAAAIEAEAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FMaterial.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FMesh" Collapsed="true">
+    <Position X="89" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAGAISBA0CiCAGAEgMRACAAQAAFASAgAAEAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FMesh.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FPostProcess" Collapsed="true">
+    <Position X="85.5" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FPostProcess.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FRenderPipeline" Collapsed="true">
+    <Position X="89" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAEAgABAMAAACgAIAAAAABKAAAAAQARAQAAAAiEAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderPipeline.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FRenderQueue" Collapsed="true">
+    <Position X="90.75" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAACEAABEAAABFAQAAAAAAAAAAAAAAASAFBACAE=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderQueue.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FRenderResourceLibrary" Collapsed="true">
+    <Position X="92.5" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAQAEACAAgBFSZAAAEAAgABoAgAACEAAAhRAIQBCSE=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderResourceLibrary.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FRenderer" Collapsed="true">
+    <Position X="87.25" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEFEMIQlAqGsDwGgwAAYC5RajBBSLA3pwCqNXV/g4Ag=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FTexture" Collapsed="true">
+    <Position X="85.5" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAkAAAAAhAAAAAAAABAAAEBAAAgAAAAAAAAABEAAACA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FTexture.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FResourceLoader" Collapsed="true">
+    <Position X="96" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAQAAAAACAQAQAAAAAEAABADAAACAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Resource\FResourceLoader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SSplitter" Collapsed="true">
+    <Position X="4" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAIAAAAAAAAAAAAAAACAAACAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\UI\SSplitter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SSplitterH" Collapsed="true">
+    <Position X="3" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\UI\SSplitter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SSplitterV" Collapsed="true">
+    <Position X="5.25" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\UI\SSplitter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SWindow" Collapsed="true">
+    <Position X="2.5" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAQAAIAAAAACAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\UI\SWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="FEditorViewportLayout" Collapsed="true">
+    <Position X="21" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAgAAAEACEAgAAAAACAAAAgAAAAAIAAAIEkEAA=</HashCode>
+      <FileName>Source\Editor\EditorViewport\FEditorViewportLayout.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SEditorViewport" Collapsed="true">
+    <Position X="1" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABQAAAEAAAAgABAAAAAAAAAAAAAAAAgAABAAAQ=</HashCode>
+      <FileName>Source\Editor\EditorViewport\SEditorViewport.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FContentDragPayload" Collapsed="true">
+    <Position X="19.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiDragDrop.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FOutlinerItem" Collapsed="true">
+    <Position X="22.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAEAAAAAgAgAAAAAAgAQBAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiWorldOutliner.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="`anonymous-namespace'::FVisibleConsoleLine" Collapsed="true">
+    <Position X="24.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiConsoleWindow.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FWindowDesc" Collapsed="true">
+    <Position X="83.75" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABACAAAAAgAAAAEAAAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\ApplicationCore\FWindow.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FFolderView" Collapsed="true">
+    <Position X="97.75" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\FAssetRegistry.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="UAssetDesc" Collapsed="true">
+    <Position X="5.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAABAAAAAgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UAsset.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="UFontDesc" Collapsed="true">
+    <Position X="5.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAACAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UFont.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="UMaterialDesc" Collapsed="true">
+    <Position X="7.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAECAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UMaterial.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="UPipelineDesc" Collapsed="true">
+    <Position X="9.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UPipeline.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FStaticMeshLOD" Collapsed="true">
+    <Position X="92.5" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UStaticMesh.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="UStaticMeshDesc" Collapsed="true">
+    <Position X="0.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UStaticMesh.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="UTextureDesc" Collapsed="true">
+    <Position X="3" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Asset\UTexture.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FPointLightConstants" Collapsed="true">
+    <Position X="97.75" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAACAAAAAAAAAAAAIAAAAAAEAAAIAgAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Components\UFireBallComponent.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMemory" Collapsed="true">
+    <Position X="94.25" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAACQAAAAAAAAAAAAECAAAAAAI=</HashCode>
+      <FileName>Source\Runtime\Core\FMemory.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FNameEntry" Collapsed="true">
+    <Position X="87.25" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAIAAAAAAAQAAAAAQAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Core\FName.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FPoolChunk" Collapsed="true">
+    <Position X="85.5" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Core\FPoolAllocator.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FStatEntry" Collapsed="true">
+    <Position X="90.75" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAgACAQgAAAAAAAAAAQEgIAAAAAA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\FStatsManager.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FStatId" Collapsed="true">
+    <Position X="94.25" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAQAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\FStatsManager.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FScopeCycleCounter" Collapsed="true">
+    <Position X="89" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAACAAAAAAAAKAQIEOAACAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\FStatsManager.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FInputLatencyTimer" Collapsed="true">
+    <Position X="92.5" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAgAACAAAAAABBAAAAAAAAAAIAAAAAAAAAgAAAARAA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\FStatsManager.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FOccluderShape" Collapsed="true">
+    <Position X="94.25" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAIAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FOcclusionCuller.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRay" Collapsed="true">
+    <Position X="92.5" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAgAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FRayCastingManager.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRenderData" Collapsed="true">
+    <Position X="96" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAQQAAAAEAgAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FRenderData.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FCullingSettings" Collapsed="true">
+    <Position X="90.75" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FRenderView.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FSceneView" Collapsed="true">
+    <Position X="87.25" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAIAAAAAAAgBAAAAAAAAAEBAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Source\Runtime\Engine\FSceneView.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FEditorRenderContext" Collapsed="true">
+    <Position X="96" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAQAAAAAEAAAAIAAEAAAAAAAAQAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FSceneView.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FViewport" Collapsed="true">
+    <Position X="97.75" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAAAAAAAARAgAAAAAKAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FViewport.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FWorldContext" Collapsed="true">
+    <Position X="85.5" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAQAAAAAIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FWorldContext.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="TSharedControlBlock&lt;T&gt;" Collapsed="true">
+    <Position X="96" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAQAAAIAAAAAAAAAAAAAE=</HashCode>
+      <FileName>Source\Runtime\Engine\Types\PointerTypes.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FAxisAlignedBoundingBox" Collapsed="true">
+    <Position X="83.75" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAABAAAAAAEAgAAQAAAAAAAAAAAAAAAQAIAQA=</HashCode>
+      <FileName>Source\Runtime\Geometry\FAxisAlignedBoundingBox.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FPlane" Collapsed="true">
+    <Position X="96" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAIAABAAAAABAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Geometry\FFrustum.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FFrustum" Collapsed="true">
+    <Position X="87.25" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAQAAAA=</HashCode>
+      <FileName>Source\Runtime\Geometry\FFrustum.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FBlendDesc" Collapsed="true">
+    <Position X="87.25" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAQAgAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FBlendDesc.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FDepthStencilDesc" Collapsed="true">
+    <Position X="92.5" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAAAAAACAAAAAAAAAAQgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FDepthStencilDesc.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMaterialInstance" Collapsed="true">
+    <Position X="89" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAACIAAAAABAAgAEAAAAAAAAAAFBAAIAgAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FMaterialInstance.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRasterizerDesc" Collapsed="true">
+    <Position X="89" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAECAAIAAAAAAAAAAAQAAAIAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FRasterizerDesc.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FTextureSamplerDesc" Collapsed="true">
+    <Position X="97.75" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAQAAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>Source\Runtime\Material\FTextureSamplerDesc.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMathSSE" Collapsed="true">
+    <Position X="90.75" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CIgAEgBAAUACACqACAAAAAQAAABAYAEIgABBAAcQwYE=</HashCode>
+      <FileName>Source\Runtime\Math\FMathSSE.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMatrix" Collapsed="true">
+    <Position X="92.5" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQcACgAAAAAAgAIIAQAAEACEACAAAMAgAAoAACA=</HashCode>
+      <FileName>Source\Runtime\Math\FMatrix.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FQuaternion" Collapsed="true">
+    <Position X="87.25" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACkAABEAIAACAAAAEAAAAQBAAAAAAIAAAEAgAAAcYAE=</HashCode>
+      <FileName>Source\Runtime\Math\FQuaternion.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FVector" Collapsed="true">
+    <Position X="85.5" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAjCAAEAAAAQAACAEEQAAIACCkBAAAYAE=</HashCode>
+      <FileName>Source\Runtime\Math\FVector.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FVector2" Collapsed="true">
+    <Position X="87.25" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAgAgCAAAAAAAQAACAEAAAAIACAgAAAAYAA=</HashCode>
+      <FileName>Source\Runtime\Math\FVector2.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FVector4" Collapsed="true">
+    <Position X="89" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgCAAAAAAAQCACAEAAAAIACAgAAAIYAE=</HashCode>
+      <FileName>Source\Runtime\Math\FVector4.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FObjIndexHash" Collapsed="true">
+    <Position X="92.5" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Parser\FObjParser.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FObjIndex" Collapsed="true">
+    <Position X="90.75" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAQAAAAAAAAABABAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Parser\FObjParser.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRawObjData" Collapsed="true">
+    <Position X="90.75" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAEAAAAAAgAAIAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Parser\FObjParser.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMtlData" Collapsed="true">
+    <Position X="85.5" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAEAAAAEAAQAgAAAQAAAAACQAAgFEAAAAAEAAAA=</HashCode>
+      <FileName>Source\Runtime\Parser\FObjParser.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMeshFileHeader" Collapsed="true">
+    <Position X="97.75" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAIAAAAAAAAAEAEQAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Parser\FObjParser.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FCharacterInfo" Collapsed="true">
+    <Position X="89" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQgBAAAAAAAAAAQgQAAAAAAAAAAAAAAQABIAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FFont.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FInstanceBatchKey" Collapsed="true">
+    <Position X="94.25" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FInstanceBatchKey.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FLineVertex" Collapsed="true">
+    <Position X="83.75" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FLineBatcher.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMeshSection" Collapsed="true">
+    <Position X="83.75" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAQAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FMesh.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMeshDesc" Collapsed="true">
+    <Position X="96" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAQAAEAAAAAAkAARAAAAAAAEgAAAAAQAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FMesh.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRenderPipelineDesc" Collapsed="true">
+    <Position X="83.75" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAQAAAAQAAEAAABAAAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderPipeline.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRenderPipelineCreateInfo" Collapsed="true">
+    <Position X="97.75" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAEAAAAAEAAAAAABAAAAAAQAAAAAAAQiEAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderPipeline.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FDrawCommand" Collapsed="true">
+    <Position X="94.25" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAIAAAAAAAEAAAAAAAggQQAAAAEAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderQueue.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FTextVertex" Collapsed="true">
+    <Position X="83.75" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAABIAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderResourceLibrary.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FFrameResource" Collapsed="true">
+    <Position X="85.5" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAAAAAAAAAAAAAAAACAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderer.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FSceneTextures" Collapsed="true">
+    <Position X="85.5" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAIBACAAAAAABAAAAAABAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FRenderer.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FTextureDesc" Collapsed="true">
+    <Position X="96" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAAAAAAAAGAAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FTexture.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FFrameConstants" Collapsed="true">
+    <Position X="83.75" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAIAAAAAAQA=</HashCode>
+      <FileName>Source\Runtime\Rendering\ShaderConstants.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FViewConstants" Collapsed="true">
+    <Position X="96" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAgAIAAAAQAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\ShaderConstants.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FObjectConstants" Collapsed="true">
+    <Position X="89" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAABAAAAQAAQAQAAAAAAAAAAEBAAIAgAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\ShaderConstants.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FPointLightCountConstants" Collapsed="true">
+    <Position X="83.75" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\ShaderConstants.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FGridConstants" Collapsed="true">
+    <Position X="89" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAEAAAAAAgAIAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\ShaderConstants.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FGridLineConstants" Collapsed="true">
+    <Position X="90.75" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABIAAAAAAAAAEAAAAAAAAAAAgAIAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\ShaderConstants.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FLightConstants" Collapsed="true">
+    <Position X="97.75" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAABAAAAAIAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\ShaderConstants.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FInstanceData" Collapsed="true">
+    <Position X="96" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAAEBAAAAgAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\Vertices.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FVertexData" Collapsed="true">
+    <Position X="90.75" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAoQRJhAQAAABA=</HashCode>
+      <FileName>Source\Runtime\Rendering\Vertices.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FVertexLayouts" Collapsed="true">
+    <Position X="94.25" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\Vertices.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FVertexInstanceLayouts" Collapsed="true">
+    <Position X="92.5" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\Vertices.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRect" Collapsed="true">
+    <Position X="94.25" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAABAQAABAAIAIAAAACACAAEAAAAA=</HashCode>
+      <FileName>Source\Runtime\UI\SWindow.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="std::hash&lt;FName&gt;" Collapsed="true">
+    <Position X="87.25" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Core\FName.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="std::hash&lt;FBlendDesc&gt;" Collapsed="true">
+    <Position X="89" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FBlendDesc.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="std::hash&lt;FDepthStencilDesc&gt;" Collapsed="true">
+    <Position X="90.75" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FDepthStencilDesc.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="std::hash&lt;FRasterizerDesc&gt;" Collapsed="true">
+    <Position X="92.5" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FRasterizerDesc.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="std::hash&lt;FTextureSamplerDesc&gt;" Collapsed="true">
+    <Position X="94.25" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FTextureSamplerDesc.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="MeshLODBuilder::FLODSetting" Collapsed="true">
+    <Position X="87.25" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Source\Runtime\Mesh\MeshLODBuilder.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="MeshLODBuilder::FLODMeshData" Collapsed="true">
+    <Position X="85.5" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAEEAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Mesh\MeshLODBuilder.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="`anonymous-namespace'::FBin" Collapsed="true">
+    <Position X="85.5" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Rendering\FMesh.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="EEditorPrimitiveType" Collapsed="true">
+    <Position X="21" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAgAAAAAAAEAAQAAAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\Core\FEditor.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ECameraMode" Collapsed="true">
+    <Position X="19.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAAAQAAAAAIAAAAQICAAAEAAQAAAAA=</HashCode>
+      <FileName>Source\Editor\EditorViewport\FEditorViewportClient.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EGizmoMode" Collapsed="true">
+    <Position X="24.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAEAAAAAAAAAAEAAEAAAA=</HashCode>
+      <FileName>Source\Editor\Gizmo\FGizmo.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EGizmoSpace" Collapsed="true">
+    <Position X="19.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\Gizmo\FGizmo.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EGizmoHandle" Collapsed="true">
+    <Position X="22.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAEAAAA=</HashCode>
+      <FileName>Source\Editor\Gizmo\FGizmo.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EOutlinerItemRowType" Collapsed="true">
+    <Position X="21" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>Source\Editor\UI\Imgui\FImguiWorldOutliner.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EStatType" Collapsed="true">
+    <Position X="85.5" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAAAAAQAAAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\CoreUObject\FStatsManager.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EProjectionType" Collapsed="true">
+    <Position X="92.5" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FCameraProjection.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ERenderType" Collapsed="true">
+    <Position X="83.75" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAAAAACAAAAAACIEAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FRenderData.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EIntersection" Collapsed="true">
+    <Position X="89" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAAAAAEAAAAAAAAAAAAAAABAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\FSceneBVH.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EViewModeIndex" Collapsed="true">
+    <Position X="90.75" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAABAAAAAAAAAAABAAAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Source\Runtime\Engine\ShowFlags.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EEngineShowFlags" Collapsed="true">
+    <Position X="87.25" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAQAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\ShowFlags.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EWorldType" Collapsed="true">
+    <Position X="92.5" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAQAAEAAAAAAgAAAAAAAAAAAGAAAA=</HashCode>
+      <FileName>Source\Runtime\Engine\Types\EngineTypes.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EMouseButton" Collapsed="true">
+    <Position X="90.75" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACACQAAAAAAI=</HashCode>
+      <FileName>Source\Runtime\Input\FInputManager.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EBlendMode" Collapsed="true">
+    <Position X="83.75" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAIAAgAAQAAACAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FBlendDesc.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EDepthWriteMode" Collapsed="true">
+    <Position X="85.5" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FDepthStencilDesc.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ERasterizerFillMode" Collapsed="true">
+    <Position X="96" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FRasterizerDesc.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ERasterizerCullMode" Collapsed="true">
+    <Position X="94.25" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FRasterizerDesc.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ERasterizerFrontFaceMode" Collapsed="true">
+    <Position X="97.75" Y="43.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FRasterizerDesc.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ETextureSamplerFilterMode" Collapsed="true">
+    <Position X="87.25" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAgBCAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FTextureSamplerDesc.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ETextureSamplerWrapMode" Collapsed="true">
+    <Position X="89" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAABAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Source\Runtime\Material\FTextureSamplerDesc.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="맑은 고딕" Size="9" />
+</ClassDiagram>

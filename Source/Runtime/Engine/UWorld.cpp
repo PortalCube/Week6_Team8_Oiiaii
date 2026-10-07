@@ -1,11 +1,13 @@
+#include "Runtime/Serialization/FJsonDataReader.h"
 #include "UWorld.h"
 
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Engine/UEngine.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FJson.h"
 #include "Runtime/Actors/AActor.h"
+#include "Runtime/Serialization/FJsonDataWriter.h"
 
 IMPLEMENT_UCLASS(UWorld, UObject)
 UCLASS_META(UWorld, SerializeName, "World")
@@ -114,9 +116,9 @@ void UWorld::InitializeActorsForPlay()
 {
 	// 모든 액터, 컴포넌트의 BeginPlay 이전 초기화
 	for (ULevel* Level : Levels)
-    {
-        Level->RouteActorInitialize();
-    }
+	{
+		Level->RouteActorInitialize();
+	}
 }
 
 ULevel* UWorld::GetCurrentLevel() const
@@ -161,14 +163,11 @@ UWorld* UWorld::CreateWorldWithEmptyLevel(EWorldType InWorldType)
 	return NewWorld;
 }
 
-UWorld* UWorld::CreateWorldWithLevel(const FArchive& Archive, EWorldType InWorldType)
+UWorld* UWorld::CreateWorldWithLevel(const FJson& Snapshot, EWorldType InWorldType)
 {
 	UWorld* NewWorld = CreateWorldWithEmptyLevel(InWorldType);
-
-	// 레벨 불러오기
-	FArchive LevelArchive = Archive.GetArchive("Level");
-	NewWorld->PersistentLevel->Deserialize(LevelArchive);
-	
+	FJsonDataReader Reader(Snapshot.GetJson("Level").GetJSON());
+	Reader.Serialize(NewWorld->PersistentLevel);
 	return NewWorld;
 }
 
@@ -214,6 +213,23 @@ void UWorld::RemoveActor(AActor* Actor, bool bShouldModifyLevel)
 			return;
 		}
 	}
+}
+
+UWorld* UWorld::DuplicateWorld(EWorldType InWorldType)
+{
+	FJsonDataWriter Writer;
+	Writer.Serialize(PersistentLevel);
+
+	auto Data = Writer.CloneJSON();
+	for (auto& Record : Data)
+		Record.erase("UUID");
+
+	UWorld* Copy = CreateWorldWithEmptyLevel(InWorldType);
+
+	FJsonDataReader Reader(Data);
+	Reader.Serialize(Copy->PersistentLevel);
+
+	return Copy;
 }
 
 UWorld* UWorld::GetWorld() const

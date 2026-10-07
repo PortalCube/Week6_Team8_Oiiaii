@@ -3,6 +3,8 @@
 #include "UPrimitiveComponent.h"
 #include "Runtime/Math/FVector4.h"
 
+class FArchive;
+
 struct FPointLightConstants
 {
 	FVector PositionWS{ 0.0f, 0.0f, 0.0f };
@@ -24,6 +26,8 @@ class UFireBallComponent : public UPrimitiveComponent
 	GENERATED_BODY()
 
 public:
+	void Serialize(FArchive& Archive) override;
+
 	FPointLightConstants GetPointLightData() const;
 
 	float GetIntensity() const { return Intensity; }

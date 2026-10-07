@@ -68,8 +68,8 @@ public:
 	// 직렬화, 역직렬화
 	////////////////////////////////////////////////////////////
 
-	virtual void Serialize(FArchive& Archive) const override;
-	virtual void Deserialize(const FArchive& Archive) override;
+	virtual void Serialize(FArchive& Archive) override;
+
 
 
 
