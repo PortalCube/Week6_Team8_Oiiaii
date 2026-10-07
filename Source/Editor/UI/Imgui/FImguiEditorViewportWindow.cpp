@@ -479,7 +479,9 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 	// 5) 모든 오브젝트(프리미티브)에 대해 충돌 판정
 	if (Editor.bUseBVHPicking && PickScene)
 	{
-		bHit = PickScene->GetSceneBVH().QueryRay(PickRay, HitComponent, ImpactPoint);
+		bHit = FRayCastingManager::RayIntersectsScene(
+		    PickRay, EditorViewport.GetClient().GetViewportCamera(),
+		    PickScene->GetSceneBVH(), HitComponent, ImpactPoint);
 	}
 	else
 	{

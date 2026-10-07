@@ -1,3 +1,4 @@
+#include "Runtime/Rendering/FBillboardRendering.h"
 #include "UTextComponent.h"
 #include "Runtime/Rendering/FTextRendering.h"
 #include "Runtime/Asset/UFont.h"
@@ -86,24 +87,24 @@ void UTextComponent::RebuildTextMesh()
 	{
 		TextRendering::BuildGlyphInstances(Text, *Font, TextColor, Instances, Width, Height);
 	}
+	MarkBoundDirty();
 }
 FMatrix UTextComponent::GetRenderMatrix(const FCamera& Camera) const
 {
 	FTransform Transform = GetGlobalTransform();
 
 	FMatrix ScaleTransform = FMatrix::MakeScale({ 1.0f, Width, Height });
-	FMatrix ModelMatrix = TextRendering::MakeBillboardMatrix(Transform, Camera);
+	FMatrix ModelMatrix = BillboardRendering::MakeBillboardMatrix(Transform, Camera);
 
 	return ScaleTransform * ModelMatrix;
 }
 
 const FRenderData& UTextComponent::GetRenderData(const FCamera& Camera) const
 {
-
 	TArray<FInstanceData> Built;
 
 	FTransform Transform = GetGlobalTransform();
-	FMatrix ModelMatrix = TextRendering::MakeBillboardMatrix(Transform, Camera);
+	FMatrix ModelMatrix = BillboardRendering::MakeBillboardMatrix(Transform, Camera);
 
 	// 글자별 FInstanceData에 빌보드 월드 행렬 적용
 	for (const FInstanceData& Inst : Instances)
@@ -116,6 +117,21 @@ const FRenderData& UTextComponent::GetRenderData(const FCamera& Camera) const
 	RenderData.Instances = std::move(Built);
 
 	return RenderData;
+}
+
+void UTextComponent::UpdateWorldBounds()
+{
+	// 1. 사각형에 Transform 적용
+	FMatrix ScaleTransform = FMatrix::MakeScale({ 1.0f, Width, Height });
+	WorldBounds = { GetLocalBounds(), ScaleTransform * GetGlobalTransformMatrix() };
+
+	// 2. 외접구 반지름
+	float Radius = WorldBounds.Extent.Size();
+
+	// 3. AABB 계산 후 적용
+	FVector Center = WorldBounds.Center;
+	FVector Extent{ Radius, Radius, Radius };
+	WorldBounds = { Center, Extent };
 }
 
 void UTextComponent::Serialize(FArchive& Archive)
