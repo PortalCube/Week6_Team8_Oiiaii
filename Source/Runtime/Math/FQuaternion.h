@@ -144,28 +144,40 @@ struct FQuaternion
 		Normalize();
 	}
 
+	// FromEulerXYZDeg의 역변환. 반환 단위는 라디안입니다.
 	FVector GetEulerXYZ() const
 	{
-		float rx, ry, rz;
-		FMatrix R = ToMatrixRow();
-		const float sy = std::clamp(R.M[0][2], -1.0f, 1.0f);
-		// ry 복원
-		ry = asinf(sy);
-		const float cy = cosf(ry);
+		// 특이점 부근의 작은 행렬 성분이 float 연산으로 소실되지 않도록
+		// 정규화와 필요한 행렬 성분 계산을 double로 수행합니다.
+		const double x = X, y = Y, z = Z, w = W;
+		const double NormSquared = x * x + y * y + z * z + w * w;
+		if (NormSquared == 0.0)
+			return FVector(0.0f, 0.0f, 0.0f);
+		const double S = 2.0 / NormSquared;
+		const double R00 = 1.0 - S * (y * y + z * z);
+		const double R01 = S * (x * y + w * z);
+		const double R10 = S * (x * y - w * z);
+		const double R11 = 1.0 - S * (x * x + z * z);
+		const double R12 = S * (y * z + w * x);
+		const double R22 = 1.0 - S * (x * x + y * y);
+		const double sy = std::clamp(S * (x * z - w * y), -1.0, 1.0);
+		double rx, rz;
+		// asin(sy)는 ±90도 부근에서 sy가 ±1로 반올림되면 정보를 잃습니다.
+		const double cy = std::hypot(R00, R01);
+		const double ry = std::atan2(sy, cy);
 
-		// ry가 0이아니라면
-		if (fabsf(cy) > 1e-6f)
+		// 짐벌락 부근에서는 불안정한 X/Z 분리 대신 Z를 0으로 고정합니다.
+		if (cy > 1e-6)
 		{
-			rx = atan2f(-R.M[1][2], R.M[2][2]);
-			rz = atan2f(R.M[0][1], R.M[0][0]);
+			rx = std::atan2(-R12, R22);
+			rz = std::atan2(R01, R00);
 		}
 		else
 		{
 			rz = 0.0f;
-			rx = (sy > 0.0f) ? atan2f(R.M[2][0], R.M[1][0])
-			                 : atan2f(-R.M[2][0], -R.M[1][0]);
+			rx = std::atan2((sy > 0.0 ? 1.0 : -1.0) * R10, R11);
 		}
-		return FVector(rx, ry, rz);
+		return FVector(static_cast<float>(rx), static_cast<float>(ry), static_cast<float>(rz));
 	}
 
 	// 디그리 단위 오일러 각도 반환
