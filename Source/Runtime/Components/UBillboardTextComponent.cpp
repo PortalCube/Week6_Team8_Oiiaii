@@ -9,7 +9,7 @@ FMatrix UBillboardTextComponent::GetRenderMatrix(const FCamera& Camera) const
 	FTransform Transform = GetGlobalTransform();
 
 	FMatrix ScaleTransform = FMatrix::MakeScale({ 1.0f, GetWidth(), GetHeight() });
-	FMatrix ModelMatrix = BillboardRendering::MakeBillboardMatrix(GTransform, Camera);
+	FMatrix ModelMatrix = BillboardRendering::MakeBillboardMatrix(Transform, Camera);
 
 	return ScaleTransform * ModelMatrix;
 }
