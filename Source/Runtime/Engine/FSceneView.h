@@ -35,4 +35,6 @@ struct FEditorRenderContext
 	FVisualizerRegistry* VisualizerRegistry = nullptr;
 	FTransform SelectedTransform;
 	const FGizmo* Gizmo = nullptr;
+	bool bIsPIE = false;
+	bool bIsObjectSelected = false;
 };

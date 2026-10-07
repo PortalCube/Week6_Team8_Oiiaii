@@ -277,7 +277,7 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	// Post Process 패스
 	RenderPostProcessPass(View, EditorCtx.SelectedActor, HeightFogComp);
 	Renderer.ClearLastRenderState();
-
+	
 	// 비주얼라이져 패스
 	DrawVisualizer(View, EditorCtx);
 
@@ -287,6 +287,21 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 
 	// 그리드 패스
 	DrawGrid(View, EditorCtx.Grid);
+
+	// 기즈모 그리기(PIE 모드가 아닐때만)
+	if (!EditorCtx.bIsPIE && EditorCtx.bIsObjectSelected)
+	{
+		RenderSelectedActorUUID(View, EditorCtx.SelectedActor);
+		RenderGizmo(View, EditorCtx.SelectedTransform, *EditorCtx.Gizmo);
+	}
+
+	// FXAA 플래그가 켜진 경우 FXAA 처리
+	if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_FXAA))
+	{
+		Renderer.RenderFXAA(View.Viewport);
+		Renderer.SwapPingPong();
+	}
+	Renderer.CopySceneColorToViewport(View.Viewport);
 }
 
 // 뷰포트 렌더 시작시 실행하는 것들
@@ -323,6 +338,15 @@ void FRenderView::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSi
 // 선택된 오브젝트의 AABB 박스를 렌더한다
 void FRenderView::DrawVisualizer(const FSceneView& View, const FEditorRenderContext& EditorCtx)
 {
+	// DrawVisualizer는 현재 바인딩된 RT에 그대로 쓰기만 한다.
+	// 따라서 TargetRTV가 아닌 CurrentRTV에 쓴다(SwapPingPong이 필요 없음)
+	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
+	if (!SceneTextures)
+	{
+		return;
+	}
+	Renderer.BindRenderTarget(SceneTextures->GetCurrentRTV(), nullptr);
+
 	if (EditorCtx.SelectedPrimitive && EditorCtx.VisualizerRegistry)
 	{
 		UClass* ClassType = EditorCtx.SelectedPrimitive->GetClass();
@@ -356,15 +380,13 @@ void FRenderView::DrawGrid(const FSceneView& View, FGrid* Grid)
 	Constants.FadeStartDistance = 3.0f;
 	Constants.FadeEndDistance = 75.0f;
 
-	const FViewportRenderTarget* RenderTarget = View.Viewport.RenderTarget.get();
 	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
-
-	// 둘 중 하나라도 없으면 그리지 않는다
-	if (!RenderTarget || !SceneTextures) 
+	if (!SceneTextures)
 	{
 		return;
 	}
-	Renderer.BindRenderTarget(RenderTarget->GetRTV(), SceneTextures->SceneDepthDSV.Get());
+	Renderer.BindRenderTarget(SceneTextures->GetCurrentRTV(), SceneTextures->SceneDepthDSV.Get());
+
 	Renderer.FlushLineBatch(Constants, FName("Grid"));
 }
 
@@ -375,6 +397,15 @@ void FRenderView::FlushBasePass(const FSceneView& View)
 
 void FRenderView::FlushLinePass(const FCamera& Camera)
 {
+	// FlushLinePass는 현재 바인딩된 RT에 그대로 쓰기만 한다.
+	// 따라서 TargetRTV가 아닌 CurrentRTV에 쓴다(SwapPingPong이 필요 없음)
+	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
+	if (!SceneTextures)
+	{
+		return;
+	}
+	Renderer.BindRenderTarget(SceneTextures->GetCurrentRTV(), nullptr);
+
 	FlushLineBatch(Camera.GetViewProjectionMatrix());
 }
 
@@ -398,20 +429,21 @@ void FRenderView::RenderSelectedActorUUID(const FSceneView& View, const AActor* 
 			Position = FVector{Bounds.Center.X, Bounds.Center.Y, Bounds.Max.Z};
 		}
 	}
-	Position.Z += 0.2f;
+	Position.Z += 0.25f;
 	const FWString Text = L"UUID : " + std::to_wstring(SelectedActor->GetUUID());
 	Renderer.DrawBillboardText(View, Text, Position, 0.2f);
 }
 
 void FRenderView::RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo)
 {
-	const FViewportRenderTarget* RenderTarget = View.Viewport.RenderTarget.get();
+	// RenderGizmo는 현재 바인딩된 RT에 그대로 쓰기만 한다.
+	// 따라서 TargetRTV가 아닌 CurrentRTV에 쓴다(SwapPingPong이 필요 없음)
 	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
-	if (!RenderTarget || !SceneTextures)
+	if (!SceneTextures)
 	{
 		return;
 	}
-	Renderer.BindRenderTarget(RenderTarget->GetRTV(), SceneTextures->SceneDepthDSV.Get());
+	Renderer.BindRenderTarget(SceneTextures->GetCurrentRTV(), SceneTextures->SceneDepthDSV.Get());
 
 	Renderer.SetViewportPixel(View.ViewportSizePixel);
 	UpdateViewConstants(View.Camera, View.ViewportSizePixel);
@@ -500,6 +532,7 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
 	{
 		Renderer.RenderSceneDepth(View.Viewport);
+		Renderer.SwapPingPong();
 	}
 	// Fog를 그린다
 	else if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_Fog) && HeightFogComp)
@@ -517,15 +550,12 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 		};
 		Renderer.UpdateHeightFogConstants(HeightFogConstants);
 		Renderer.RenderFog(View.Viewport);
+		Renderer.SwapPingPong();
 	}
 
 	// DrawStencilMask에서 쓴 스텐실 대로 아웃라인을 그린다 
 	Renderer.RenderSelectionOutline(View.Viewport);
-
-	if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_FXAA))
-	{
-		Renderer.RenderViewportFXAA(View.Viewport);
-	}
+	Renderer.SwapPingPong();
 }
 
 void FRenderView::DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline)

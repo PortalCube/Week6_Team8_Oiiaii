@@ -404,6 +404,8 @@ FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& EditorView
 		.VisualizerRegistry = VisualizerRegistry,
 		.SelectedTransform = SelectedTransform,
 		.Gizmo = ObjectSelected() ? &Gizmo : nullptr,
+		.bIsPIE = EditorViewport.IsPIE(),
+		.bIsObjectSelected = ObjectSelected() ? true : false,
 	};
 
 	if (SelectedActor)

@@ -229,13 +229,6 @@ void UEditorEngine::Tick(float DeltaTime)
 			// 선택한 카메라와 월드로 렌더링
 			RenderView.RenderView(View, *Level, EditorRenderContext);
 
-			// 기즈모 그리기(PIE 모드가 아닐때만)
-			if (!EditorViewport.IsPIE() && Editor.ObjectSelected())
-			{
-				RenderView.RenderSelectedActorUUID(View, Editor.GetSelectedActor());
-				RenderView.RenderGizmo(View, Editor.SelectedTransform, Editor.GetGizmo());
-			}
-
 			// 백버퍼 바인딩 후 셰이더로 합성
 			RenderView.GetRenderer().CompositeViewport(EditorViewport.GetViewport());
 

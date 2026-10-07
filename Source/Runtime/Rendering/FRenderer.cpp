@@ -1624,8 +1624,9 @@ void FRenderer::DrawTextInstanceData(const FDrawCommand& Command, std::span<cons
 void FRenderer::DrawBillboardText(const FSceneView& View, FWStringView Text,
     const FVector& WorldPosition, float WorldSize)
 {
-	const FViewportRenderTarget* Target = View.Viewport.RenderTarget.get();
-	if (!Target || !ActiveSceneTextures || Text.empty() || WorldSize <= 0.0f)
+	//const FViewportRenderTarget* Target = View.Viewport.RenderTarget.get();
+
+	if (!ActiveSceneTextures || Text.empty() || WorldSize <= 0.0f)
 	{
 		return;
 	}
@@ -1674,8 +1675,12 @@ void FRenderer::DrawBillboardText(const FSceneView& View, FWStringView Text,
 	// 글자 인스턴스에 월드 변환이 이미 적용되어 있으므로 World는 Identity.
 	Command.Constants.World = FMatrix::Identity;
 
-	ClearLastRenderState();
-	BindRenderTarget(Target->GetRTV(), ActiveSceneTextures->SceneDepthDSV.Get());
+	// RenderSelectedActorUUID는 현재 바인딩된 RT에 그대로 쓰기만 한다.
+	// 따라서 TargetRTV가 아닌 CurrentRTV에 쓴다(SwapPingPong이 필요 없음)
+	BindRenderTarget(GetSceneTextures()->GetCurrentRTV(), ActiveSceneTextures->SceneDepthDSV.Get());
+	
+	//ClearLastRenderState();
+	//BindRenderTarget(Target->GetRTV(), ActiveSceneTextures->SceneDepthDSV.Get());
 	SetViewportPixel(View.ViewportSizePixel);
 	UpdateViewConstants(View.Camera, View.ViewportSizePixel);
 	DrawTextInstanceData(Command, BillboardWorldInstances);
@@ -1744,9 +1749,18 @@ void FRenderer::DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VI
 	ClearLastRenderState();
 }
 
-void FRenderer::RenderFXAA(ID3D11ShaderResourceView* InputSRV, ID3D11RenderTargetView* OutputRTV, UINT Width, UINT Height)
+void FRenderer::RenderFXAA(const FViewport& TargetViewport)
 {
-	if (!InputSRV || !OutputRTV || Width == 0 || Height == 0)
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures || !GetPipeline(FName("#FXAA")))
+	{
+		return;
+	}
+
+	const UINT Width = RenderTarget->GetWidth();
+	const UINT Height = RenderTarget->GetHeight();
+
+	if (Width == 0 || Height == 0)
 	{
 		return;
 	}
@@ -1756,6 +1770,7 @@ void FRenderer::RenderFXAA(ID3D11ShaderResourceView* InputSRV, ID3D11RenderTarge
 
 	FFXAAConstants Constants{};
 	Constants.InvTextureSize = { InvWidth, InvHeight };
+	Constants.Subpixel = 0.5f;
 
 	// 텍스처 가장자리 픽셀의 중심까지 샘플링 허용.
 	Constants.UVMin = { InvWidth * 0.5f, InvHeight * 0.5f };
@@ -1772,33 +1787,9 @@ void FRenderer::RenderFXAA(ID3D11ShaderResourceView* InputSRV, ID3D11RenderTarge
 	Viewport.MinDepth = 0.0f;
 	Viewport.MaxDepth = 1.0f;
 
-	ID3D11ShaderResourceView* SRVs[] = { InputSRV };
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetCurrentSRV() };
 
-	DrawScreenPass(OutputRTV, Viewport, SRVs, 1, FName("#FXAA"));
-}
-
-void FRenderer::RenderViewportFXAA(const FViewport& TargetViewport)
-{
-	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
-	if (!RenderTarget || !ActiveSceneTextures || !GetPipeline(FName("#FXAA")))
-	{
-		return;
-	}
-
-	const UINT Width = RenderTarget->GetWidth();
-	const UINT Height = RenderTarget->GetHeight();
-	if (Width == 0 || Height == 0 ||
-		ActiveSceneTextures->Width != Width || ActiveSceneTextures->Height != Height)
-	{
-		return;
-	}
-
-	// Read the outlined viewport into a separate texture to avoid SRV/RTV aliasing.
-	RenderFXAA(RenderTarget->GetSRV(), ActiveSceneTextures->GetTargetRTV(), Width, Height);
-	ActiveSceneTextures->SwapPingPong();
-
-	// Keep the viewport output used by gizmos and final composition up to date.
-	CopySceneColorToViewport(TargetViewport);
+	DrawScreenPass(ActiveSceneTextures->GetTargetRTV(), Viewport, SRVs, 1, FName("#FXAA"));
 }
 
 
@@ -1830,6 +1821,15 @@ void FRenderer::CopySceneColorToViewport(const FViewport& TargetViewport)
 	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#Composite"));
 }
 
+// ActiveSceneTexture의 PingPong을 Swap
+void FRenderer::SwapPingPong()
+{
+	if (ActiveSceneTextures)
+	{
+		ActiveSceneTextures->SwapPingPong();
+	}
+}
+
 // SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 그린다
 void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
 {
@@ -1845,7 +1845,7 @@ void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
 
 	// t0: SceneColor, t1: Stencil
 	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetCurrentSRV(), ActiveSceneTextures->SceneStencilSRV.Get() };
-	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#SelectionOutline"));
+	DrawScreenPass(ActiveSceneTextures->GetTargetRTV(), TargetD3DViewport, SRVs, 2, FName("#SelectionOutline"));
 }
 
 // Scene Depth를 출력 RT에 그린다
@@ -1862,7 +1862,6 @@ void FRenderer::RenderSceneDepth(const FViewport& TargetViewport)
 	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get() };
 	//DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
 	DrawScreenPass(ActiveSceneTextures->GetTargetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
-	ActiveSceneTextures->SwapPingPong();
 }
 
 // Fog를 SceneColor에 그린다
@@ -1879,7 +1878,7 @@ void FRenderer::RenderFog(const FViewport& TargetViewport)
 	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get(), ActiveSceneTextures->GetCurrentSRV() };
 	// Fog는 마지막 패스가 아니니 SceneColor에 쓴다
 	DrawScreenPass(ActiveSceneTextures->GetTargetRTV(), TargetD3DViewport, SRVs, 2, FName("#Fog"));
-	ActiveSceneTextures->SwapPingPong();
+
 }
 
 // ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Post Process ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
