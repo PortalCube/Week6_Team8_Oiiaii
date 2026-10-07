@@ -4,7 +4,7 @@
 
 [온보딩 문서로 돌아가기](./ONBOARDING.md)
 
-이 문서에서는 Oiiaii 엔진의 개발을 위한 세팅을 설명합니다.
+이 문서에서는 Neko 엔진의 개발을 위한 세팅을 설명합니다.
 
 # 준비물
 
@@ -12,7 +12,7 @@
 
 ## 1. Git Submodule
 
-Oiiaii는 [DirectXTK](https://github.com/microsoft/directxtk)와 같은 라이브러리를 가져오기 위해 Git Submodule을 사용합니다.
+Neko는 [DirectXTK](https://github.com/microsoft/directxtk)와 같은 라이브러리를 가져오기 위해 Git Submodule을 사용합니다.
 
 이제 막 git clone을 하려고 한다면 아래 명령을 사용하여 git clone을 하면 됩니다.
 
@@ -32,7 +32,7 @@ Submodule에 대해 자세히 알아보고 싶으시면 [공식 문서](https://
 
 > Premake5를 이미 여러번 써보았다면, 이 섹션은 건너뛰어도 괜찮습니다.
 
-Oiiaii는 Visual Studio의 프로젝트/솔루션 파일 생성을 위해 [Premake5](https://premake.github.io/)를 사용합니다.
+Neko는 Visual Studio의 프로젝트/솔루션 파일 생성을 위해 [Premake5](https://premake.github.io/)를 사용합니다.
 
 Premake5를 사용하면, 팀원들 사이에서 빌드 세팅을 보다 명확하게 동기화할 수도 있고, 필터 목록이 꼬여서 발생하는 git conflict를 줄일 수 있습니다.
 
@@ -73,7 +73,7 @@ Premake5가 정상적으로 설치되었다면, 프로젝트 루트 디렉토리
 
 ## 3. 빌드 스크립트
 
-Oiiaii 엔진은 빌드 과정에서 아래 작업이 필요합니다.
+Neko 엔진은 빌드 과정에서 아래 작업이 필요합니다.
 
 1. Content 폴더의 png, jpg 파일을 DDS 파일로 변환
 

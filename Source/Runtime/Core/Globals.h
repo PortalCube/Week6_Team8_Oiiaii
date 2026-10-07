@@ -12,8 +12,8 @@ class UPackage;
 namespace Globals
 {
 	// 엔진 이름
-	constexpr FStringView EngineName = "Oiiaii";
-	constexpr FStringView EngineWindowClass = "OiiaiiClass";
+	constexpr FStringView EngineName = "Neko";
+	constexpr FStringView EngineWindowClass = "NekoClass";
 
 	// 초기 윈도우 사이즈
 	constexpr uint32 WindowWidth = 1600;

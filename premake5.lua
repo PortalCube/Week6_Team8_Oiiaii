@@ -1,8 +1,8 @@
-workspace "OiiaiiEngine"
+workspace "NekoEngine"
     architecture "x86_64"
     configurations { "Debug", "Release", "ObjViewer"  }
     platforms { "x86", "x64" }
-    startproject "OiiaiiEngine"
+    startproject "NekoEngine"
     system "windows"
     systemversion "latest"
     location "."
@@ -27,7 +27,7 @@ externalproject "DirectXTK_Desktop_2026"
         ["ObjViewer"] = "Release"
     }
 
-project "OiiaiiEngine"
+project "NekoEngine"
     uuid "05383B45-2B78-451C-9197-8B61474A12BC"
     kind "WindowedApp"
     language "C++"
@@ -170,7 +170,7 @@ project "OiiaiiEngine"
 
     filter {}
 
-project "OiiaiiEngine.Tests"
+project "NekoEngine.Tests"
     uuid "2873B3DD-002B-4CF0-87AF-BE16CE15A1F5"
     kind "ConsoleApp"
     language "C++"

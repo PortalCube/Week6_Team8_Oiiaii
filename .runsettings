@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <Catch2Adapter>
-    <FilenameFilter>^OiiaiiEngine\.Test$</FilenameFilter>
+    <FilenameFilter>^NekoEngine\.Tests$</FilenameFilter>
     <DiscoverCommandLine>--verbosity high --list-tests --reporter xml *</DiscoverCommandLine>
     <Logging>Normal</Logging>
   </Catch2Adapter>

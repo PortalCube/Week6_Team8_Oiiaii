@@ -1,12 +1,12 @@
-## Welcome To Oiiaii
+## Welcome To Neko
 
-Oiiaii에 오신 것을 환영합니다!!
+Neko에 오신 것을 환영합니다!!
 
-이 문서에서는 Oiiaii 엔진에 대한 도움말을 제공합니다.
+이 문서에서는 Neko 엔진에 대한 도움말을 제공합니다.
 
 ## 문서 목록
 
-- [Oiiaii 엔진 살펴보기](./INTRODUCTION.md): Oiiaii 엔진에 대해 짧게 살펴봅니다.
+- [Neko 엔진 살펴보기](./INTRODUCTION.md): Neko 엔진에 대해 짧게 살펴봅니다.
 
 - [첫 개발 환경 세팅하기](./SETTING_ENVIRONMENT.md): 처음으로 개발 환경을 세팅하는 방법에 대해서 다룹니다.
 

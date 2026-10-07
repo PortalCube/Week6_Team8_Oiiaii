@@ -4,13 +4,13 @@
 
 [온보딩 문서로 돌아가기](./ONBOARDING.md)
 
-이 문서에서는 Oiiaii 엔진에서 기능을 테스트하는 방법에 대해 알아봅니다.
+이 문서에서는 Neko 엔진에서 기능을 테스트하는 방법에 대해 알아봅니다.
 
 ## 테스트 실행해보기
 
-OiiaiiEngine은 [언리얼 엔진의 low-level 테스트](https://dev.epicgames.com/documentation/unreal-engine/low-level-tests-in-unreal-engine)에서 사용되는 Catch2 프레임워크를 사용합니다.
+NekoEngine은 [언리얼 엔진의 low-level 테스트](https://dev.epicgames.com/documentation/unreal-engine/low-level-tests-in-unreal-engine)에서 사용되는 Catch2 프레임워크를 사용합니다.
 
-OiiaiiEngine.Test 프로젝트에서 단위 테스트나 통합 테스트 등을 직접 실행해 볼 수 있는데, 여기서는 두가지 방법을 설명합니다.
+NekoEngine.Tests 프로젝트에서 단위 테스트나 통합 테스트 등을 직접 실행해 볼 수 있는데, 여기서는 두가지 방법을 설명합니다.
 
 ### 그냥 실행해보기
 
