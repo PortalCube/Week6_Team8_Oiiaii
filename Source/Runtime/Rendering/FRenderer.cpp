@@ -1794,7 +1794,8 @@ void FRenderer::RenderViewportFXAA(const FViewport& TargetViewport)
 	}
 
 	// Read the outlined viewport into a separate texture to avoid SRV/RTV aliasing.
-	RenderFXAA(RenderTarget->GetSRV(), ActiveSceneTextures->SceneColorRTV.Get(), Width, Height);
+	RenderFXAA(RenderTarget->GetSRV(), ActiveSceneTextures->GetTargetRTV(), Width, Height);
+	ActiveSceneTextures->SwapPingPong();
 
 	// Keep the viewport output used by gizmos and final composition up to date.
 	CopySceneColorToViewport(TargetViewport);

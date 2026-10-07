@@ -731,6 +731,7 @@ void FImguiEditorViewportWindow::DrawViewportHeader(SEditorViewport& InViewport,
 				{ "Billboard Text", EEngineShowFlags::SF_BillboardText },
 				{ "Grid", EEngineShowFlags::SF_Grid },
 				{ "Fog", EEngineShowFlags::SF_Fog },
+				{ "FXAA", EEngineShowFlags::SF_FXAA },
 			};
 
 			ImGui::SeparatorText("SHOW FLAGS");

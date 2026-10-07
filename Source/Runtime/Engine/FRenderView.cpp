@@ -521,6 +521,11 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 
 	// DrawStencilMask에서 쓴 스텐실 대로 아웃라인을 그린다 
 	Renderer.RenderSelectionOutline(View.Viewport);
+
+	if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_FXAA))
+	{
+		Renderer.RenderViewportFXAA(View.Viewport);
+	}
 }
 
 void FRenderView::DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline)
