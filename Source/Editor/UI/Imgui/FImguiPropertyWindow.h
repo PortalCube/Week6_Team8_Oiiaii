@@ -35,10 +35,10 @@ private:
 
 	// 컴포넌트마다 접이식 헤더를 만들고 그 안에 상세 속성을 그린다.
 	void ShowComponentSections(FEditor& Editor, AActor& Actor);
-	void ShowComponentDetails(FEditor& Editor, AActor& Actor, UActorComponent& Comp, bool bIsRoot);
+	void ShowComponentDetails(FEditor& Editor, AActor& Actor, UActorComponent& Comp);
 
 	// 루트는 에디터 기즈모와 동기화되고, 서브는 상대 트랜스폼을 편집한다.
-	void ShowTransform(FEditor& Editor, USceneComponent& Comp, bool bIsRoot) const;
+	void ShowTransform(FEditor& Editor, USceneComponent& Comp) const;
 
 	// 컴포넌트 타입별 속성
 	void ShowTextSettings(UTextComponent& TextComp) const;
@@ -47,7 +47,7 @@ private:
 	void ShowSpotLightSettings(USpotLightComponent& LightComp) const;
 	void ShowFireBallSettings(UFireBallComponent& FireBallComp) const;
 	void ShowHeightFogSettings(UHeightFogComponent& HeightFogComp) const;
-	void ShowStaticMeshSettings(AActor& Actor, UStaticMeshComponent& MeshComp, bool bIsRoot) const;
+	void ShowStaticMeshSettings(AActor& Actor, UStaticMeshComponent& MeshComp) const;
 
 	// 머티리얼의 텍스처 미리보기 겸 드롭 타깃.
 	void ShowMaterialSlot(UStaticMeshComponent& MeshComp, int Slot = 0) const;
@@ -58,7 +58,4 @@ private:
 	void ShowApplyAllMaterialSlot(UStaticMeshComponent& MeshComp) const;
 	void ShowApplyAllPipelineSlot(UStaticMeshComponent& MeshComp) const;
 	void ShowApplyAllTextureSlot(UStaticMeshComponent& MeshComp) const;
-
-	// 창 하단의 기즈모 모드/공간 선택.
-	void ShowGizmoSettings(FEditor& Editor) const;
 };

@@ -16,12 +16,17 @@
 #include "Runtime/Actors/ACatActor.h"
 #include "Runtime/Actors/AHeightFogActor.h"
 
+#include "Runtime/Components/UBillboardComponent.h"
+#include "Runtime/Components/UTextComponent.h"
+#include "Runtime/Components/UFireBallComponent.h"
+#include "Runtime/Components/Mesh/UStaticMeshComponent.h"
+#include "Runtime/Components/UProjectileMovementComponent.h"
+#include "Runtime/Components/URotationMovementComponent.h"
+
 namespace EditorConstant
 {
 
-	/// <summary>
-	/// 에디터에서 스폰 가능한 액터들을 정의합니다.
-	/// </summary>
+	// 에디터에서 스폰 가능한 액터들을 정의
 	inline UClass* const SpawnableActors[]{
 		AActor::StaticClass(),
 		ACatActor::StaticClass(),
@@ -36,6 +41,16 @@ namespace EditorConstant
 		ATextRenderActor::StaticClass(),
 		AFireBallActor::StaticClass(),
 		AHeightFogActor::StaticClass(),
+	};
+	
+	// 에디터에서 스폰 가능한 컴포넌트들을 정의
+	inline UClass* const SpawnableComponents[]{
+		UBillboardComponent::StaticClass(),
+		UTextComponent::StaticClass(),
+		UFireBallComponent::StaticClass(),
+		UStaticMeshComponent::StaticClass(),
+		UProjectileMovementComponent::StaticClass(),
+		URotationMovementComponent::StaticClass(),
 	};
 
 } // namespace EditorConstant

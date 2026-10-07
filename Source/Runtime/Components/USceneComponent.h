@@ -30,8 +30,6 @@ public:
 	// 현재 컴포넌트의 부모 컴포넌트를 분리
 	void DetachFromComponent();
 
-	void SetAttachParent(USceneComponent* NewAttachParent);
-
 
 
 	////////////////////////////////////////////////////////////
@@ -65,6 +63,8 @@ public:
 	const FTransform& GetRelativeTransform() const { return RelativeTransform; }
 	virtual void SetRelativeTransform(const FTransform& RelativeTransform);
 	const FTransform& GetGlobalTransform() const;
+	// 월드 Transform을 부모 기준 상대 Transform으로 변환합니다. 부모 스케일이 0이면 실패합니다.
+	bool SetGlobalTransform(const FTransform& GlobalTransform);
 
 	virtual const FVector& GetRelativeLocation() const;
 	virtual void SetRelativeLocation(const FVector& RelativeLocation);
@@ -94,6 +94,7 @@ private:
 
 	// 현재 컴포넌트가 부착된 부모 USceneComponent
 	USceneComponent* AttachParent = nullptr;
+	TArray<USceneComponent*> Children;
 
 	// 월드 Transform 캐시. 부모의 GlobalVersion이 바뀌면 자식도 자동으로 재계산된다.
 	mutable FTransform CachedGlobal;

@@ -5,23 +5,45 @@
 #include "UPrimitiveComponent.h"
 #include "Runtime/Serialization/FArchive.h"
 #include "Runtime/Engine/ULevel.h"
+#include <algorithm>
+#include <cmath>
 
 IMPLEMENT_UCLASS(USceneComponent, UActorComponent)
 UCLASS_META(USceneComponent, DisplayName, "Scene Component")
 
 void USceneComponent::SetupAttachment(USceneComponent* InParent)
 {
-	if (InParent == this)
+	if (InParent == nullptr)
 	{
 		return;
 	}
 
+	// 순환 참조 찾기
+	USceneComponent* Node = InParent;
+	while (Node != nullptr)
+	{
+		// 순환 참조 return
+		if (Node == this)
+		{
+			return;
+		}
+
+		Node = Node->AttachParent;
+	}
+
 	AttachParent = InParent;
+	InParent->Children.push_back(this);
+
 	bGlobalDirty = true;
 }
 
 bool USceneComponent::AttachToComponent(USceneComponent* InParent)
 {
+	if (AttachParent)
+	{
+		DetachFromComponent();
+	}
+
 	SetupAttachment(InParent);
 	return true;
 }
@@ -33,13 +55,19 @@ void USceneComponent::DetachFromComponent()
 		return;
 	}
 
+	TArray<USceneComponent*>& Children = AttachParent->Children;
+
+	for (auto It = Children.begin(); It < Children.end(); ++It)
+	{
+		if (*It == this)
+		{
+			Children.erase(It);
+			break;
+		}
+	}
+
 	AttachParent = nullptr;
 	bGlobalDirty = true;
-}
-
-void USceneComponent::SetAttachParent(USceneComponent* NewAttachParent)
-{
-	AttachParent = NewAttachParent;
 }
 
 void USceneComponent::Serialize(FArchive& Archive)
@@ -54,12 +82,32 @@ void USceneComponent::Serialize(FArchive& Archive)
 	Archive.Field("Rotation", Rotation);
 	Archive.Field("Scale", Scale);
 
+	USceneComponent* PreviousParent = AttachParent;
 	Archive.Reference("AttachParent", AttachParent);
 
 	Archive.Field("InheritRotation", bInheritRotation);
 
 	if (Archive.IsReading())
 	{
+		// 부모가 변경되었다면, 원래 부모의 자식 배열에서 제거
+		if (PreviousParent && PreviousParent != AttachParent)
+		{
+			std::erase(PreviousParent->Children, this);
+		}
+
+		// 새로운 부모가 생겼다면 Children 배열에 자신을 넣기
+		if (AttachParent)
+		{
+			TArray<USceneComponent*>& ParentChildren = AttachParent->Children;
+
+			auto It = std::find(ParentChildren.begin(), ParentChildren.end(), this);
+
+			if (It == ParentChildren.end())
+			{
+				ParentChildren.push_back(this);
+			}
+		}
+
 		constexpr float RadToDeg = 180.0f / std::numbers::pi_v<float>;
 		RelativeTransform.SetLocation(Location);
 		RelativeTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Rotation * RadToDeg));
@@ -76,6 +124,56 @@ void USceneComponent::SetRelativeTransform(const FTransform& RelativeTransform)
 	}
 	this->RelativeTransform = RelativeTransform;
 	MarkActorTransformDirty();
+}
+
+bool USceneComponent::SetGlobalTransform(const FTransform& GlobalTransform)
+{
+	const USceneComponent* Parent = GetTransformParent();
+
+	if (!Parent)
+	{
+		SetRelativeTransform(GlobalTransform);
+		return true;
+	}
+
+	const FTransform& ParentTransform = Parent->GetGlobalTransform();
+	FTransform NewRelativeTransform = GlobalTransform;
+
+	if (AttachParent || bInheritRotation)
+	{
+		const FVector& ParentScale = ParentTransform.GetScale3D();
+		constexpr float MinScale = 1e-6f;
+		if (std::abs(ParentScale.X) < MinScale ||
+			std::abs(ParentScale.Y) < MinScale ||
+			std::abs(ParentScale.Z) < MinScale)
+		{
+			return false;
+		}
+
+		// GetGlobalTransform의 부모 * 자식 합성을 역순으로 풀어낸다
+		const FQuaternion InverseParentRotation = ParentTransform.GetRotation().Normalized().Conjugate();
+		const FVector LocalLocation = InverseParentRotation.RotateVector(
+			GlobalTransform.GetLocation() - ParentTransform.GetLocation());
+		const FVector& GlobalScale = GlobalTransform.GetScale3D();
+
+		NewRelativeTransform.SetLocation(FVector{
+			LocalLocation.X / ParentScale.X,
+			LocalLocation.Y / ParentScale.Y,
+			LocalLocation.Z / ParentScale.Z });
+		NewRelativeTransform.SetRotation((InverseParentRotation * GlobalTransform.GetRotation()).Normalized());
+		NewRelativeTransform.SetScale3D(FVector{
+			GlobalScale.X / ParentScale.X,
+			GlobalScale.Y / ParentScale.Y,
+			GlobalScale.Z / ParentScale.Z });
+	}
+	else
+	{
+		// 명시적인 부착 없이 루트 회전을 무시하는 경우에는 위치만 되돌린다.
+		NewRelativeTransform.SetLocation(GlobalTransform.GetLocation() - ParentTransform.GetLocation());
+	}
+
+	SetRelativeTransform(NewRelativeTransform);
+	return true;
 }
 
 USceneComponent* USceneComponent::GetTransformParent() const

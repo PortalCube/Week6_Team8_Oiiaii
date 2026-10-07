@@ -50,24 +50,20 @@ void FEditor::Process()
 		bZenMode = !bZenMode;
 	}
 
+	// BVH 갱신
 	if (SelectedActor)
 	{
-		// BVH 갱신
-		if (SelectedActor)
+		USceneComponent* SceneComponent = GetSceneComponent();
+		const bool bChanged = SceneComponent && !(SceneComponent->GetRelativeTransform() == SelectedTransform);
+
+		SceneComponent->SetRelativeTransform(SelectedTransform);
+
+		// Transform이 변경되었을 때만 Refit
+		if (bChanged)
 		{
-			USceneComponent* Root = SelectedActor->GetRootComponent();
-			const bool bChanged = Root && !(Root->GetRelativeTransform() == SelectedTransform);
-
-			SelectedActor->SetTransform(SelectedTransform);
-
-			// Transform이 변경되었을 때만 Refit
-			if (bChanged)
-			{
-				RefitActorInBVH(GetCurrentLevel()->GetSceneBVH(), SelectedActor);
-			}
+			RefitActorInBVH(GetCurrentLevel()->GetSceneBVH(), SelectedActor);
 		}
 	}
-
 
 	// 현재 상태를 State에 저장
 	SaveState();
@@ -195,7 +191,7 @@ void FEditor::ProcessPIERequests()
 
 void FEditor::NewScene()
 {
-	UnSelectActor();
+	UnselectComponent();
 	Globals::Editor->OpenEmptyLevel(EWorldType::Editor);
 	const FEditorState::SplitViewMode SplitMode = State.GetSplitMode();
 	State.ResetToDefaults();
@@ -249,23 +245,36 @@ SEditorViewport* FEditor::GetPerspectiveViewport()
 	return HiddenPerspective ? HiddenPerspective : GetActiveViewport();
 }
 
-bool FEditor::SelectActor(AActor* Actor)
+bool FEditor::SelectComponent(UActorComponent* Component)
 {
-	if (Actor && !Actor->IsSelectable())
+	if (!Component)
 	{
+		UnselectComponent();
 		return false;
 	}
 
-	if (SelectedActor)
+	if (SelectedComponent)
 	{
-		UnSelectActor();
+		UnselectComponent();
 	}
 
-	SelectedActor = Actor;
-	if (SelectedActor)
+	SelectedComponent = Component;
+	SelectedActor = Component->GetOwner();
+
+	USceneComponent* SceneComponent = SelectedComponent->Cast<USceneComponent>();
+	if (SceneComponent)
+	{
+		SelectedTransform = SceneComponent->GetRelativeTransform();
+		SelectedEulerDegDisplay = SelectedTransform.GetRotation().ToEulerXYZDeg();
+		if (Gizmo.Mode == EGizmoMode::None)
+		{
+			Gizmo.Mode = EGizmoMode::Translate;
+		}
+	}
+	else if (SelectedActor)
 	{
 		SelectedTransform = SelectedActor->GetTransform();
-		SelectedEulerDegDisplay = SelectedTransform.GetRotation().GetEulerXYZ();
+		SelectedEulerDegDisplay = SelectedTransform.GetRotation().ToEulerXYZDeg();
 		if (Gizmo.Mode == EGizmoMode::None)
 		{
 			Gizmo.Mode = EGizmoMode::Translate;
@@ -275,15 +284,47 @@ bool FEditor::SelectActor(AActor* Actor)
 	return true;
 }
 
-
-void FEditor::UnSelectActor()
+void FEditor::UnselectComponent()
 {
-	if (SelectedActor)
-	{
-		SelectedActor->SetTransform(SelectedTransform);
-	}
+	Gizmo.EndInteraction();
+
+	//USceneComponent* SceneComponent = SelectedComponent->Cast<USceneComponent>();
+	//if (SceneComponent)
+	//{
+	//	SceneComponent->SetRelativeTransform(SelectedTransform);
+	//}
+	//else if (SelectedActor)
+	//{
+	//	SelectedActor->SetTransform(SelectedTransform);
+	//}
 
 	SelectedActor = nullptr;
+	SelectedComponent = nullptr;
+}
+
+USceneComponent* FEditor::GetSceneComponent() const
+{
+	if (SelectedComponent)
+	{
+		if (USceneComponent* SceneComponent = SelectedComponent->Cast<USceneComponent>())
+		{
+			return SceneComponent;
+		}
+	}
+	if (SelectedActor)
+	{
+		return SelectedActor->GetRootComponent();
+	}
+	return nullptr;
+}
+
+FTransform FEditor::GetSelectedGlobalTransform() const
+{
+	if (USceneComponent* SceneComponent = GetSceneComponent())
+	{
+		return SceneComponent->GetGlobalTransform();
+	}
+	return FTransform{};
 }
 
 const TArray<UPrimitiveComponent*>& FEditor::GetPrimitiveComponents() const
@@ -343,7 +384,7 @@ void FEditor::SpawnActorToCurrentScene(UClass* Type, int Size)
 		NewActor->SetTransform(CurrentTransform);
 
 		// 액터 선택
-		SelectActor(NewActor);
+		SelectComponent(NewActor->GetRootComponent());
 	}
 
 	FSceneBVH& BVH = GetCurrentLevel()->GetSceneBVH();
@@ -402,7 +443,7 @@ FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& EditorView
 		.SelectedPrimitive = nullptr,
 		.Grid = &EditorViewport.GetClient().GetGrid(),
 		.VisualizerRegistry = VisualizerRegistry,
-		.SelectedTransform = SelectedTransform,
+		.SelectedTransform = GetSelectedGlobalTransform(),
 		.Gizmo = ObjectSelected() ? &Gizmo : nullptr,
 		.bIsPIE = EditorViewport.IsPIE(),
 		.bIsObjectSelected = ObjectSelected() ? true : false,

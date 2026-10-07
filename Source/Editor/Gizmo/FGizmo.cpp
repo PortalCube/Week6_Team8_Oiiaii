@@ -161,6 +161,13 @@ void FGizmo::UpdateInteraction(FEditor& Editor, const FVector2& MousePosition)
 		return;
 	}
 
+	USceneComponent* SceneComponent = Editor.GetSceneComponent();
+	if (!SceneComponent)
+	{
+		return;
+	}
+
+	FTransform NewGlobalTransform = InteractionStartTransform;
 	FVector2 MouseDelta = MousePosition - InteractionStartMouse;
 	float ViewportDistance = MouseDelta.Dot(InteractionAxisViewport);
 	float WorldDistance = ViewportDistance * InteractionWorldUnitsPerPixel;
@@ -168,7 +175,7 @@ void FGizmo::UpdateInteraction(FEditor& Editor, const FVector2& MousePosition)
 	switch (Mode)
 	{
 	case EGizmoMode::Translate:
-		Editor.SelectedTransform.SetLocation(InteractionStartTransform.GetLocation() + InteractionAxisWorld * WorldDistance);
+		NewGlobalTransform.SetLocation(InteractionStartTransform.GetLocation() + InteractionAxisWorld * WorldDistance);
 		break;
 
 	case EGizmoMode::Rotate:
@@ -179,23 +186,29 @@ void FGizmo::UpdateInteraction(FEditor& Editor, const FVector2& MousePosition)
 		if (GetSpace() == EGizmoSpace::World)
 		{
 			FQuaternion Delta = FQuaternion::FromAxisAngle(InteractionAxisWorld, Theta);
-			Editor.SelectedTransform.SetRotation(Delta * InteractionStartTransform.GetRotation());
+			NewGlobalTransform.SetRotation(Delta * InteractionStartTransform.GetRotation());
 		}
 		else
 		{
 			FQuaternion Delta = FQuaternion::FromAxisAngle(InteractionAxisLocal, Theta);
-			Editor.SelectedTransform.SetRotation(InteractionStartTransform.GetRotation() * Delta);
+			NewGlobalTransform.SetRotation(InteractionStartTransform.GetRotation() * Delta);
 		}
-		Editor.SelectedEulerDegDisplay = Editor.SelectedTransform.GetRotation().GetEulerXYZ() * 180.0f / std::numbers::pi_v<float>;
 		break;
 	}
 
 	case EGizmoMode::Scale:
-		Editor.SelectedTransform.SetScale3D(InteractionStartTransform.GetScale3D() + InteractionAxisLocal * WorldDistance);
+		NewGlobalTransform.SetScale3D(InteractionStartTransform.GetScale3D() + InteractionAxisLocal * WorldDistance);
 		break;
 
 	case EGizmoMode::None:
 		return;
+	}
+
+	// 기즈모는 월드 좌표로 조작하고, 에디터 편집 값은 상대 좌표로 유지
+	if (SceneComponent->SetGlobalTransform(NewGlobalTransform))
+	{
+		Editor.SelectedTransform = SceneComponent->GetRelativeTransform();
+		Editor.SelectedEulerDegDisplay = Editor.SelectedTransform.GetRotation().ToEulerXYZDeg();
 	}
 }
 

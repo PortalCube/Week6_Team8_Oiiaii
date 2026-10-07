@@ -35,31 +35,19 @@ void FImguiPropertyWindow::Process(FEditor& Editor, float DeltaTime)
 		return;
 	}
 
-	ImGui::Begin("Jungle Property Window");
+	ImGui::Begin("Details");
 
-	if (AActor* SelectedActor = Editor.GetSelectedActor())
+	AActor* SelectedActor = Editor.GetSelectedActor();
+	UActorComponent* SelectedComponent = Editor.GetActorComponent();
+
+	if (SelectedComponent)
 	{
-		ShowActorHeader(*SelectedActor);
-		ImGui::Separator();
-
-		if (SelectedActor->GetRootComponent())
-		{
-			ShowComponentHierarchy(*SelectedActor);
-			ImGui::Separator();
-
-			ShowComponentSections(Editor, *SelectedActor);
-		}
-		else
-		{
-			ImGui::TextDisabled("No RootComponent");
-		}
+		ShowComponentDetails(Editor, *SelectedActor, *SelectedComponent);
 	}
 	else
 	{
 		ImGui::TextDisabled("No selection");
 	}
-
-	ShowGizmoSettings(Editor);
 
 	ImGui::End();
 }
@@ -120,7 +108,7 @@ void FImguiPropertyWindow::ShowComponentSections(FEditor& Editor, AActor& Actor)
 
 		// 컴포넌트마다 위젯 ID 를 분리해야 같은 라벨끼리 충돌하지 않는다.
 		ImGui::PushID(Comp);
-		ShowComponentDetails(Editor, Actor, *Comp, bIsRoot);
+		ShowComponentDetails(Editor, Actor, *Comp);
 		ImGui::PopID();
 
 		ImGui::Spacing();
@@ -128,11 +116,11 @@ void FImguiPropertyWindow::ShowComponentSections(FEditor& Editor, AActor& Actor)
 }
 
 void FImguiPropertyWindow::ShowComponentDetails(FEditor& Editor, AActor& Actor,
-    UActorComponent& Comp, bool bIsRoot)
+    UActorComponent& Comp)
 {
 	if (Comp.IsA<USceneComponent>())
 	{
-		ShowTransform(Editor, static_cast<USceneComponent&>(Comp), bIsRoot);
+		ShowTransform(Editor, static_cast<USceneComponent&>(Comp));
 	}
 
 	if (Comp.IsA<UTextComponent>())
@@ -163,63 +151,29 @@ void FImguiPropertyWindow::ShowComponentDetails(FEditor& Editor, AActor& Actor,
 	}
 	else if (Comp.IsA<UStaticMeshComponent>())
 	{
-		ShowStaticMeshSettings(Actor, static_cast<UStaticMeshComponent&>(Comp), bIsRoot);
+		ShowStaticMeshSettings(Actor, static_cast<UStaticMeshComponent&>(Comp));
 	}
 }
 
-void FImguiPropertyWindow::ShowTransform(FEditor& Editor, USceneComponent& Comp, bool bIsRoot) const
+void FImguiPropertyWindow::ShowTransform(FEditor& Editor, USceneComponent& Comp) const
 {
 	ImGui::TextDisabled("Transform");
 
-	if (bIsRoot)
+	// 루트 컴포넌트 트랜스폼은 에디터 기즈모와 동기화
+	FVector Location = Editor.SelectedTransform.GetLocation();
+	if (ImGui::DragFloat3("Translation", &Location.X, 0.01f))
 	{
-		// 루트 컴포넌트 트랜스폼은 에디터 기즈모와 동기화
-		FVector Location = Editor.SelectedTransform.GetLocation();
-		if (ImGui::DragFloat3("Translation", &Location.X, 0.01f))
-		{
-			//Editor.SelectedTransform.SetLocation(Location);
-		}
-		if (ImGui::DragFloat3("Rotation (deg)", &Editor.SelectedEulerDegDisplay.X, 0.5f))
-		{
-			//Editor.SelectedTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Editor.SelectedEulerDegDisplay));
-		}
-		FVector Scale = Editor.SelectedTransform.GetScale3D();
-		if (ImGui::DragFloat3("Scale", &Scale.X, 0.01f))
-		{
-			//Editor.SelectedTransform.SetScale3D(Scale);
-		}
-		return;
+		Editor.SelectedTransform.SetLocation(Location);
 	}
-
-	// 서브 컴포넌트 상대 트랜스폼 편집
-	FTransform RelTransform = Comp.GetRelativeTransform();
-	FVector RelLocation = RelTransform.GetLocation();
-	bool bTransformChanged = false;
-	if (ImGui::DragFloat3("Rel Location", &RelLocation.X, 0.01f))
+	if (ImGui::DragFloat3("Rotation (deg)", &Editor.SelectedEulerDegDisplay.X, 0.5f))
 	{
-		bTransformChanged = true;
-		RelTransform.SetLocation(RelLocation);
+		Editor.SelectedTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Editor.SelectedEulerDegDisplay));
 	}
-
-	FVector RelEuler = RelTransform.GetRotation().ToEulerXYZDeg();
-	if (ImGui::DragFloat3("Rel Rotation (deg)", &RelEuler.X, 0.5f))
+	FVector Scale = Editor.SelectedTransform.GetScale3D();
+	if (ImGui::DragFloat3("Scale", &Scale.X, 0.01f))
 	{
-		bTransformChanged = true;
-		RelTransform.SetRotation(FQuaternion::FromEulerXYZDeg(RelEuler));
+		Editor.SelectedTransform.SetScale3D(Scale);
 	}
-	FVector RelScale = RelTransform.GetScale3D();
-	if (ImGui::DragFloat3("Rel Scale", &RelScale.X, 0.01f))
-	{
-		bTransformChanged = true;
-		RelTransform.SetScale3D(RelScale);
-	}
-
-	if (bTransformChanged)
-	{
-		Comp.MarkActorTransformDirty();
-	}
-
-	Comp.SetRelativeTransform(RelTransform);
 }
 
 void FImguiPropertyWindow::ShowTextSettings(UTextComponent& TextComp) const
@@ -504,7 +458,7 @@ void FImguiPropertyWindow::ShowHeightFogSettings(UHeightFogComponent& HeightFogC
 	}
 }
 
-void FImguiPropertyWindow::ShowStaticMeshSettings(AActor& Actor, UStaticMeshComponent& MeshComp, bool bIsRoot) const
+void FImguiPropertyWindow::ShowStaticMeshSettings(AActor& Actor, UStaticMeshComponent& MeshComp) const
 {
 	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Static Mesh Settings");
@@ -705,7 +659,15 @@ void FImguiPropertyWindow::ShowStaticMeshSlot(UStaticMeshComponent& MeshComp) co
 
 	// 슬롯 만들기
 	float FullWidth = ImGui::GetContentRegionAvail().x;
-	ImGui::Button(StaticMesh->GetIDString().c_str(), ImVec2(FullWidth, SlotSize));
+
+	if (StaticMesh)
+	{
+		ImGui::Button(StaticMesh->GetIDString().c_str(), ImVec2(FullWidth, SlotSize));
+	}
+	else
+	{
+		ImGui::Button("No StaticMesh", ImVec2(FullWidth, SlotSize));
+	}
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
 	if (!ImGui::BeginDragDropTarget())
@@ -837,33 +799,4 @@ void FImguiPropertyWindow::ShowApplyAllTextureSlot(UStaticMeshComponent& MeshCom
 	}
 
 	ImGui::EndDragDropTarget();
-}
-
-void FImguiPropertyWindow::ShowGizmoSettings(FEditor& Editor) const
-{
-	static const char* GizmoModes[4] = { "None", "Translation", "Rotation", "Scale" };
-	int SelectedItem = static_cast<int>(Editor.GetGizmo().Mode);
-	if (ImGui::Combo("Gizmo Mode", &SelectedItem, GizmoModes, 4))
-	{
-		Editor.GetGizmo().Mode = static_cast<EGizmoMode>(SelectedItem);
-	}
-
-	if (SelectedItem == 3) // Scale
-	{
-		static const char* GizmoSpaces[] = { "Local" };
-		SelectedItem = static_cast<int>(Editor.GetGizmo().GetSpace()) - 1;
-		if (ImGui::Combo("Gizmo Space", &SelectedItem, GizmoSpaces, 1))
-		{
-			Editor.GetGizmo().SetGizmoSpace(static_cast<EGizmoSpace>(SelectedItem - 1));
-		}
-	}
-	else if (SelectedItem != 0) // Translation, Rotation
-	{
-		static const char* GizmoSpaces[] = { "World", "Local" };
-		SelectedItem = static_cast<int>(Editor.GetGizmo().GetSpace());
-		if (ImGui::Combo("Gizmo Space", &SelectedItem, GizmoSpaces, 2))
-		{
-			Editor.GetGizmo().SetGizmoSpace(static_cast<EGizmoSpace>(SelectedItem));
-		}
-	}
 }

@@ -56,10 +56,6 @@ bool FRayCastingManager::RayIntersectsMeshes(
 			continue;
 		}
 		const AActor* Owner = Component->GetOwner();
-		if (!Owner || !Owner->IsSelectable())
-		{
-			continue;
-		}
 
 		const UStaticMesh* MeshAsset = Component->GetRenderData(Camera).Mesh;
 		const FMesh* Mesh = MeshAsset ? MeshAsset->Get() : nullptr;
@@ -107,10 +103,6 @@ bool FRayCastingManager::RayIntersectsScene(
 
 		UPrimitiveComponent* Component = Candidate.Component;
 		const AActor* Owner = Component ? Component->GetOwner() : nullptr;
-		if (!Owner || !Owner->IsSelectable())
-		{
-			continue;
-		}
 
 		const UStaticMesh* Asset = Component->GetMeshAsset();
 		const FMesh* Mesh = Asset ? Asset->Get() : nullptr;

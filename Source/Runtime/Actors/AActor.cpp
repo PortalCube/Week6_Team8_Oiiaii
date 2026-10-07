@@ -19,6 +19,8 @@ void AActor::Initialize()
 
 void AActor::Release()
 {
+	Unregister();
+
 	for (auto Component : OwnedComponents)
 	{
 		DestroyObject(Component);
@@ -38,22 +40,51 @@ void AActor::Serialize(FArchive& Archive)
 	for (auto* Component : OwnedComponents)
 	{
 		if (Component && !Component->IsEditorOnly())
+		{
 			Components.push_back(Component);
+		}
 	}
+
 	if (Archive.IsReading())
 	{
-		if (RootComponent && std::find(OwnedComponents.begin(), OwnedComponents.end(), RootComponent) == OwnedComponents.end())
-			OwnedComponents.push_back(RootComponent);
+		if (RootComponent)
+		{
+			auto It = std::find(OwnedComponents.begin(), OwnedComponents.end(), RootComponent);
+
+			if (It == OwnedComponents.end())
+			{
+				OwnedComponents.push_back(RootComponent);
+			}
+		}
 	}
 
 	int32 Count = Archive.BeginArray("OwnedComponents");
-	if (Archive.IsWriting()) Count = static_cast<int32>(Components.size());
-	for (int32 Index = 0; Index < Count; ++Index)
 	{
-		UActorComponent* Component = Index < Components.size() ? Components[Index] : nullptr;
-		Archive.Reference("", Component);
-		if (Archive.IsReading() && Component && std::find(OwnedComponents.begin(), OwnedComponents.end(), Component) == OwnedComponents.end())
-			OwnedComponents.push_back(Component);
+		if (Archive.IsWriting())
+		{
+			Count = static_cast<int32>(Components.size());
+		}
+
+		for (int32 Index = 0; Index < Count; ++Index)
+		{
+			UActorComponent* Component = Index < Components.size() ? Components[Index] : nullptr;
+			Archive.Reference("", Component);
+
+			if (Archive.IsReading())
+			{
+				if (!Component)
+				{
+					continue;
+				}
+
+				auto It = std::find(OwnedComponents.begin(), OwnedComponents.end(), Component);
+
+				if (It == OwnedComponents.end())
+				{
+					OwnedComponents.push_back(Component);
+				}
+			}
+		}
 	}
 	Archive.EndArray();
 }
@@ -75,17 +106,92 @@ bool AActor::IsEditorOnly() const
 
 void AActor::SetRootComponent(USceneComponent* Component)
 {
-	if (RootComponent)
-	{
-		// 지금은 SetRootComponent를 두번 실행하면 오류로 처리
-		// 이런 기능이 필요하면 그때 처리 로직 추가
-		throw EngineUtil::CreateError("[AActor::SetRootComponent] 이미 Root 컴포넌트가 있습니다.");
-	}
-
 	RootComponent = Component;
 
 	// TODO: 이것저것
 
+}
+
+UActorComponent* AActor::AddComponent(UClass* Class)
+{
+	UActorComponent* Component = NewObject<UActorComponent>(this, Class);
+
+	// 컴포넌트 등록
+	OwnedComponents.push_back(Component);
+
+	Component->Initialize();
+	Component->Register();
+	if (bHasBegunPlay)
+	{
+		Component->BeginPlay();
+	}
+
+	return Component;
+}
+
+void AActor::RemoveComponent(UActorComponent* Component)
+{
+	if (!Component)
+	{
+		return;
+	}
+
+	// 루트 컴포넌트는 삭제 불가
+	if (Component == RootComponent)
+	{
+		return;
+	}
+
+	USceneComponent* SceneComponent = Component->Cast<USceneComponent>();
+	if (SceneComponent)
+	{
+		// 자식 트리구조 정리
+		TArray<USceneComponent*> Children = SceneComponent->Children;
+
+		// 부모
+		USceneComponent* Parent = SceneComponent->AttachParent;
+
+		// TODO: 부모가 없는 경우는 일단 삭제 취소
+		if (!Parent)
+		{
+			return;
+		}
+
+		FTransform& CurrentTransform = SceneComponent->RelativeTransform;
+
+		for (auto Item : Children)
+		{
+			// Transform 수정
+			FTransform NewTransform = Item->GetRelativeTransform();
+			NewTransform = CurrentTransform * NewTransform;
+			Item->SetRelativeTransform(NewTransform);
+
+			// 새로운 부모로 이동
+			Item->AttachToComponent(Parent);
+		}
+
+		SceneComponent->DetachFromComponent();
+	}
+
+	// 컴포넌트 삭제
+	Component->EndPlay();
+	Component->Unregister();
+	std::erase(OwnedComponents, Component);
+	DestroyObject(Component);
+
+}
+
+FTransform AActor::GetTransform() const
+{
+	return RootComponent ? RootComponent->GetRelativeTransform() : FTransform{};
+}
+
+void AActor::SetTransform(const FTransform& NewTransform)
+{
+	if (RootComponent)
+	{
+		RootComponent->SetRelativeTransform(NewTransform);
+	}
 }
 
 void AActor::MarkComponentsTransformDirty()
@@ -100,76 +206,52 @@ void AActor::MarkComponentsTransformDirty()
 	}
 }
 
-void AActor::RegisterAllComponents()
+void AActor::Register()
 {
+	if (bRegistered)
+	{
+		return;
+	}
+
+	if (!RootComponent)
+	{
+		SetRootComponent(CreateDefaultSubobject<USceneComponent>());
+	}
+
+	bRegistered = true;
+
 	for (auto Component : OwnedComponents)
 	{
 		if (Component)
 		{
-			Component->OnRegister();
+			Component->Register();
 		}
 	}
 }
 
-void AActor::UnregisterAllComponents()
+void AActor::Unregister()
 {
+	EndPlay();
+
+	if (!bRegistered)
+	{
+		return;
+	}
+
+	bRegistered = false;
+
 	for (auto Component : OwnedComponents)
 	{
 		if (Component)
 		{
-			Component->OnUnregister();
+			Component->Unregister();
 		}
 	}
 }
-
-void AActor::InitializeComponents()
-{
-	PreInitializeComponents();
-
-	// 소유하는 모든 컴포넌트 초기화
-	for (auto Component : OwnedComponents)
-	{
-		if (Component)
-		{
-			Component->InitializeComponent();
-		}
-	}
-
-	PostInitializeComponents();
-}
-
-void AActor::UninitializeComponents()
-{
-	// 소유하는 모든 컴포넌트 초기화 해제
-	for (auto Component : OwnedComponents)
-	{
-		if (Component)
-		{
-			Component->UninitializeComponent();
-		}
-	}
-}
-
-void AActor::PostSpawnInitialize()
-{
-	// 액터를 월드에 등록
-	RegisterAllComponents();
-
-	// 액터 생성 후 이벤트를 실행
-	PostActorCreated();
-
-	// 액터의 컴포넌트 초기화
-	InitializeComponents();
-
-	// FinishSpawning -> PostActorConstruction -> DispatchBeginPlay -> BeginPlay
-	// 액터를 시작
-	BeginPlay();
-}
-
 
 void AActor::BeginPlay()
 {
-	if (bHasBegunPlay)
+	if (!bRegistered || bHasBegunPlay)
 	{
 		return;
 	}
@@ -187,7 +269,7 @@ void AActor::BeginPlay()
 
 void AActor::Tick(float DeltaTime)
 {
-	if (!bTickEnabled || !bHasBegunPlay)
+	if (!GetTickEnabled())
 	{
 		return;
 	}
@@ -222,7 +304,7 @@ void AActor::EndPlay()
 bool AActor::GetTickEnabled() const
 {
 	// 틱 비활성화
-	if (!bTickEnabled)
+	if (!bRegistered || !bTickEnabled)
 	{
 		return false;
 	}
@@ -233,7 +315,7 @@ bool AActor::GetTickEnabled() const
 		return false;
 	}
 
-	return true;
+	return bHasBegunPlay || GetWorld()->GetWorldType() == EWorldType::Editor;
 }
 
 void AActor::Destroy()

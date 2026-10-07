@@ -445,7 +445,7 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 		if (Gizmo.HoveredHandle != EGizmoHandle::None)
 		{
 			Gizmo.BeginInteraction(
-			    Editor.SelectedTransform,
+			    Editor.GetSelectedGlobalTransform(),
 			    Gizmo.HoveredHandle,
 			    LocalMousePixels,
 			    EditorViewport.GetClient().GetViewportCamera(),
@@ -498,12 +498,12 @@ void FImguiEditorViewportWindow::HandlePicking(FEditor& Editor,
 	// 피킹은 액터 단위로 선택한다. 소유 액터가 없으면 선택할 수 없다.
 	if (!bHit || !HitComponent || !HitComponent->GetOwner())
 	{
-		Editor.UnSelectActor();
+		Editor.UnselectComponent();
 		return;
 	}
 
 	AActor* OwnerActor = HitComponent->GetOwner();
-	Editor.SelectActor(OwnerActor);
+	Editor.SelectComponent(HitComponent);
 
 	const char* ActorClass =
 	    OwnerActor->GetClass() ? OwnerActor->GetClass()->GetDisplayName().c_str() : "Unknown";
@@ -523,7 +523,7 @@ void FImguiEditorViewportWindow::UpdateGizmoHover(FEditor& Editor,
 	    EditorViewport.GetClient().GetViewportCamera(), LocalMousePixels, ViewportSizePixels);
 
 	FGizmo& Gizmo = Editor.GetGizmo();
-	Gizmo.HoveredHandle = Gizmo.HitTest(Editor.SelectedTransform, Ray, EditorViewport.GetClient().GetViewportCamera());
+	Gizmo.HoveredHandle = Gizmo.HitTest(Editor.GetSelectedGlobalTransform(), Ray, EditorViewport.GetClient().GetViewportCamera());
 }
 
 void FImguiEditorViewportWindow::ShowViewportVerticalSplitter(SSplitter& Splitter)

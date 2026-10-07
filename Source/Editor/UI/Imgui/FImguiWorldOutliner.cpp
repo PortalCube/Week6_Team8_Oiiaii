@@ -5,6 +5,7 @@
 #include "Runtime/Engine/ULevel.h"
 #include "Runtime/Input/FInputManager.h"
 #include "Editor/Core/FEditor.h"
+#include "Editor/Core/EditorConstant.h"
 #include "ThirdParty/Imgui/imgui.h"
 #include <string>
 #include <algorithm>
@@ -16,7 +17,7 @@ void FImguiWorldOutliner::Process(FEditor& Editor, float DeltaTime)
 		return;
 	}
 
-	ImGui::Begin("World Outliner");
+	ImGui::Begin("Outliner");
 
 	ULevel* Scene = Editor.GetCurrentLevel();
 	if (!Scene)
@@ -25,14 +26,6 @@ void FImguiWorldOutliner::Process(FEditor& Editor, float DeltaTime)
 		ImGui::End();
 		return;
 	}
-
-	ImGui::Checkbox("아웃라이너 최적화 적용", &bUseOptimized);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("체크: 캐쉬된 라벨 및 화면에 보이는 일부 노드만 랜더\n"
-		                  "해제: 매 프레임 동적 생성 및 전체 순회");
-	}
-	ImGui::Separator();
 
 	// 검색 필터 버퍼
 	const bool bFilterChanged = ShowSearchBar();
@@ -96,11 +89,66 @@ void FImguiWorldOutliner::Process(FEditor& Editor, float DeltaTime)
 	{
 		if (ImGui::Button("Delete") || FInputManager::Get().IsKeyPressed(VK_DELETE))
 		{
-			AActor* Target = SelectedActor;
-			Editor.UnSelectActor();
-			Target->Destroy();
+			UActorComponent* Component = Editor.GetActorComponent();
+			AActor* Actor = SelectedActor;
+
+			if (Component == Actor->GetRootComponent())
+			{
+				SelectedActor->Destroy();
+			}
+			else
+			{
+				SelectedActor->RemoveComponent(Component);
+			}
+
+			bCacheDirty = true;
+			Editor.UnselectComponent();
+		}
+
+		ImGui::SameLine();
+
+		static UClass* SelectedComponentClass = EditorConstant::SpawnableComponents[0];
+		const char* PreviewValue = SelectedComponentClass->GetName().c_str();
+
+		if (ImGui::BeginCombo("##Component", PreviewValue))
+		{
+			for (const auto Item : EditorConstant::SpawnableComponents)
+			{
+				const bool bIsSelected = SelectedComponentClass == Item;
+				const char* ItemDisplayName = Item->GetName().c_str();
+				if (ImGui::Selectable(ItemDisplayName, bIsSelected))
+				{
+					SelectedComponentClass = Item;
+				}
+
+				if (bIsSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Create"))
+		{
+
+			AActor* SelectedActor = Editor.GetSelectedActor();
+			UActorComponent* Component = SelectedActor->AddComponent(SelectedComponentClass);
+
+			USceneComponent* Parent = Editor.GetSceneComponent();
+
+			USceneComponent* SceneComponent = Component->Cast<USceneComponent>();
+
+			if (SceneComponent && Parent)
+			{
+				SceneComponent->AttachToComponent(Parent);
+			}
+
 			bCacheDirty = true;
 		}
+
 	}
 	else
 	{
@@ -198,7 +246,7 @@ void FImguiWorldOutliner::ShowActorNode(FEditor& Editor, AActor* Actor, const st
 	// 클릭 시 액터 선택
 	if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 	{
-		Editor.SelectActor(Actor);
+		Editor.SelectComponent(Actor->GetRootComponent());
 	}
 
 	// 자식 컴포넌트 목록 전개
@@ -211,7 +259,7 @@ void FImguiWorldOutliner::ShowActorNode(FEditor& Editor, AActor* Actor, const st
 				return;
 			}
 
-			ShowComponentNode(*Comp);
+			ShowComponentNode(Editor, *Comp);
 		}
 
 		ImGui::TreePop();
@@ -249,7 +297,7 @@ void FImguiWorldOutliner::ShowActorNode_Cached(FEditor& Editor, const FOutlinerI
 
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 		{
-			Editor.SelectActor(Actor);
+			Editor.SelectComponent(Actor->GetRootComponent());
 		}
 
 		if (!Components.empty())
@@ -275,18 +323,44 @@ void FImguiWorldOutliner::ShowActorNode_Cached(FEditor& Editor, const FOutlinerI
 	}
 	else
 	{
-		ImGuiTreeNodeFlags CompFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanAvailWidth;
-		ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(Item.UUID)), CompFlags, "%s", Item.DisplayLabel.c_str());
+		ImGuiTreeNodeFlags CompFlags =
+			ImGuiTreeNodeFlags_Leaf |
+			ImGuiTreeNodeFlags_NoTreePushOnOpen |
+			ImGuiTreeNodeFlags_SpanAvailWidth;
+
+		if (Item.Component == Editor.GetActorComponent())
+		{
+			CompFlags |= ImGuiTreeNodeFlags_Selected;
+		}
+
+
+		ImGui::TreeNodeEx(
+			reinterpret_cast<void*>(static_cast<uintptr_t>(Item.UUID)),
+			CompFlags, "%s", Item.DisplayLabel.c_str());
+
+		if (ImGui::IsItemClicked() && Item.Component)
+		{
+			Editor.SelectComponent(Item.Component);
+		}
+
 		ImGui::Unindent(16.0f);
 	}
 }
 
-void FImguiWorldOutliner::ShowComponentNode(UActorComponent& Comp) const
+void FImguiWorldOutliner::ShowComponentNode(FEditor& Editor, UActorComponent& Comp) const
 {
 	const char* CompClassName = Comp.GetClass() ? Comp.GetClass()->GetDisplayName().c_str() : "Component";
 
-	ImGuiTreeNodeFlags CompFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanAvailWidth;
-	ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(Comp.GetUUID())), CompFlags, "%s (ID: %u)", CompClassName, Comp.GetUUID());
+	ImGuiTreeNodeFlags CompFlags =
+		ImGuiTreeNodeFlags_Leaf |
+		ImGuiTreeNodeFlags_NoTreePushOnOpen |
+	    ImGuiTreeNodeFlags_Selected | 
+		ImGuiTreeNodeFlags_SpanAvailWidth;
+
+	ImGui::TreeNodeEx(
+		reinterpret_cast<void*>(static_cast<uintptr_t>(Comp.GetUUID())),
+		CompFlags, "%s (ID: %u)", CompClassName, Comp.GetUUID());
+
 }
 
 bool FImguiWorldOutliner::ShowSearchBar()

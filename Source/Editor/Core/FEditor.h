@@ -77,11 +77,19 @@ public:
 	SEditorViewport* GetPerspectiveViewport();
 
 	// Actor
-	bool SelectActor(AActor* Actor);
-	void UnSelectActor();
+
+	bool SelectComponent(UActorComponent* Component);
+	void UnselectComponent();
+
 	AActor* GetSelectedActor() const { return SelectedActor.Get(); }
+	USceneComponent* GetSceneComponent() const;
+	FTransform GetSelectedGlobalTransform() const;
+	UActorComponent* GetActorComponent() const { return SelectedComponent.Get(); }
+
 	bool ActorSelected() const { return SelectedActor.IsValid(); }
 	bool ObjectSelected() const { return SelectedActor.IsValid(); }
+	bool ComponentSelected() const { return SelectedComponent.IsValid(); }
+
 	UWorld* GetCurrentWorld() const;
 	ULevel* GetCurrentLevel() const;
 	void SpawnActorToCurrentScene(UClass* Type, int Count = 1);
@@ -119,6 +127,7 @@ private:
 	UEditorEngine* EditorEngine = nullptr;
 	FGizmo Gizmo;
 	TWeakObjectPtr<AActor> SelectedActor;
+	TWeakObjectPtr<UActorComponent> SelectedComponent;
 
 	// Viewport
 	FEditorViewportLayout ViewportLayout;

@@ -56,15 +56,18 @@ void FImguiManager::NewFrame()
 
 		ImGuiID RightID = ImGui::DockBuilderSplitNode(MainID, ImGuiDir_Right, 0.33f, nullptr, &MainID);
 		ImGuiID RightRemaining = RightID;
-		ImGuiID PropertyWindowID = ImGui::DockBuilderSplitNode(RightRemaining, ImGuiDir_Up, 0.4f, nullptr, &RightRemaining);
+
+		// 오른쪽 패널을 Outliner, Property, Control Panel 순서로 배치합니다.
+		ImGuiID OutlinerWindowID = ImGui::DockBuilderSplitNode(RightRemaining, ImGuiDir_Up, 1.0f / 3.0f, nullptr, &RightRemaining);
+		ImGuiID PropertyWindowID = ImGui::DockBuilderSplitNode(RightRemaining, ImGuiDir_Up, 0.5f, nullptr, &RightRemaining);
 		ImGuiID ControlPanelID = RightRemaining;
 
 		ImGuiID ConsoleID = ImGui::DockBuilderSplitNode(MainID, ImGuiDir_Down, 0.35f, nullptr, &MainID);
 
 		ImGui::DockBuilderDockWindow("Viewport", MainID);
-		ImGui::DockBuilderDockWindow("World Outliner", PropertyWindowID);
-		ImGui::DockBuilderDockWindow("Jungle Property Window", PropertyWindowID);
-		ImGui::DockBuilderDockWindow("Jungle Control Panel", ControlPanelID);
+		ImGui::DockBuilderDockWindow("Outliner", OutlinerWindowID);
+		ImGui::DockBuilderDockWindow("Details", PropertyWindowID);
+		ImGui::DockBuilderDockWindow("Controls", ControlPanelID);
 		ImGui::DockBuilderDockWindow("Content Drawer", ConsoleID);
 		ImGui::DockBuilderDockWindow("Console Window", ConsoleID);
 

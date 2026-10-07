@@ -414,27 +414,17 @@ bool UEditorEngine::StartPIESession(const FRequestPlaySessionParams& Params)
 
 	Editor.GetViewportLayout().SetActiveViewport(&TargetViewport);
 
-	PIEWorldContext->World = GetEditorWorld()->DuplicateWorld(EWorldType::PIE);
+	UWorld* PlayWorld = GetEditorWorld()->DuplicateWorld(EWorldType::PIE);
+	PIEWorldContext->World = PlayWorld;
 
-	// 월드 초기화 (Subsystem 및 물리 등록)
-	PIEWorldContext->World->InitWorld();
-
-	UWorld* PlayWorld = PIEWorldContext->World;
-
-	// Subsystem에 모든 월드 액터/컴포넌트를 등록
-	PIEWorldContext->World->UpdateWorldComponents();
-
-	// 액터/컴포넌트들의 상호 초기화 단계
-	PIEWorldContext->World->InitializeActorsForPlay();
-
-	// BeginPlay
-	PIEWorldContext->World->BeginPlay();
+	// 월드 초기화 및 BeginPlay
+	PlayWorld->InitWorld();
 
 	ULevel* Level = PlayWorld->GetCurrentLevel();
 	Level->UpdateDirtyBounds();
 	Level->GetSceneBVH().Build(Level->GetRenderComponents());
 
-	Editor.UnSelectActor();
+	Editor.UnselectComponent();
 	Editor.GetGizmo().EndInteraction();
 
 	OnWorldLoaded(*PIEWorldContext);

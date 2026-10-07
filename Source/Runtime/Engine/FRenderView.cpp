@@ -409,13 +409,13 @@ void FRenderView::FlushLinePass(const FCamera& Camera)
 	FlushLineBatch(Camera.GetViewProjectionMatrix());
 }
 
-void FRenderView::RenderSelectedActorUUID(const FSceneView& View, const AActor* SelectedActor)
+void FRenderView::RenderSelectedActorUUID(const FSceneView& View, const USceneComponent* SelectedComponent)
 {
-	if (!SelectedActor || !(View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
+	if (!SelectedComponent || !(View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)))
 	{
 		return;
 	}
-	const USceneComponent* Root = SelectedActor->GetRootComponent();
+	const USceneComponent* Root = SelectedComponent;
 	if (!Root)
 	{
 		return;
@@ -430,7 +430,7 @@ void FRenderView::RenderSelectedActorUUID(const FSceneView& View, const AActor* 
 		}
 	}
 	Position.Z += 0.25f;
-	const FWString Text = L"UUID : " + std::to_wstring(SelectedActor->GetUUID());
+	const FWString Text = L"UUID : " + std::to_wstring(SelectedComponent->GetUUID());
 	Renderer.DrawBillboardText(View, Text, Position, 0.2f);
 }
 

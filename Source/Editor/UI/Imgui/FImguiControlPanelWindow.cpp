@@ -32,7 +32,7 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 
 	const uint64 Count = UObject::GetTotalAllocationCount();
 	const uint64 Bytes = UObject::GetTotalAllocationBytes();
-	ImGui::Begin("Jungle Control Panel");
+	ImGui::Begin("Controls");
 
 	ImGui::Separator();
 
