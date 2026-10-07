@@ -44,10 +44,11 @@ public:
 
 	bool bHasBegunPlay = false;
 	bool bTickEnabled = false;
+	bool bTickInEditor = false;
 	bool bRegistered = false;
 
 	bool HasBegunPlay() const { return bHasBegunPlay; }
-	bool IsTickEnabled() const { return bTickEnabled; }
+	bool IsTickEnabled() const;
 
 	virtual void MarkAsEditorOnlySubobject() override;
 

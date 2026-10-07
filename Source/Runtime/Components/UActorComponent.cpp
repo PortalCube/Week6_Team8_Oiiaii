@@ -5,6 +5,7 @@
 #include "UActorComponent.h"
 #include "UPrimitiveComponent.h"
 #include "Runtime/Serialization/FArchive.h"
+#include "Runtime/Engine/UWorld.h"
 #include "Runtime/Engine/ULevel.h"
 
 IMPLEMENT_UCLASS(UActorComponent, UObject)
@@ -68,6 +69,23 @@ void UActorComponent::OnUnregister()
 	}
 
 	bRegistered = false;
+}
+
+bool UActorComponent::IsTickEnabled() const
+{
+	// 틱 비활성화
+	if (!bTickEnabled)
+	{
+		return false;
+	}
+
+	// 에디터 틱 비활성화
+	if (GetWorld()->GetWorldType() == EWorldType::Editor && !bTickInEditor)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void UActorComponent::MarkAsEditorOnlySubobject()

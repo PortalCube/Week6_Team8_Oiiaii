@@ -22,8 +22,8 @@ protected:
 	USceneComponent* RootComponent = nullptr;
 	
 	bool bTickEnabled = false;
+	bool bTickInEditor = false;
 	bool bHasBegunPlay = false;
-
 	bool bIsEditorOnlyActor = false;
 
 	virtual void Serialize(FArchive& Archive) override;
@@ -121,7 +121,7 @@ public:
 	////////////////////////////////////////////////////////////
 
 	bool HasBegunPlay() const { return bHasBegunPlay; }
-	bool GetTickEnabled() const { return bTickEnabled; }
+	bool GetTickEnabled() const;
 
 
 

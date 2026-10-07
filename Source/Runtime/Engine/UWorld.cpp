@@ -234,6 +234,11 @@ UWorld* UWorld::DuplicateWorld(EWorldType InWorldType)
 	return Copy;
 }
 
+EWorldType UWorld::GetWorldType() const
+{
+	return WorldType;
+}
+
 UWorld* UWorld::GetWorld() const
 {
 	// It's me!
