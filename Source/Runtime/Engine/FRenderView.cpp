@@ -270,9 +270,6 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	}
 	Renderer.ClearLastRenderState();
 
-	// 그리드 패스
-	DrawGrid(View, EditorCtx.Grid);
-
 	// 비주얼라이져 패스
 	DrawVisualizer(View, EditorCtx);
 
@@ -283,6 +280,9 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	// Post Process 패스
 	RenderPostProcessPass(View, EditorCtx.SelectedActor);
 	Renderer.ClearLastRenderState();
+
+	// 그리드 패스
+	DrawGrid(View, EditorCtx.Grid);
 }
 
 // 뷰포트 렌더 시작시 실행하는 것들
@@ -362,6 +362,16 @@ void FRenderView::DrawGrid(const FSceneView& View, FGrid* Grid)
 	Constants.CameraPosition = View.Camera.GetPosition();
 	Constants.FadeStartDistance = 3.0f;
 	Constants.FadeEndDistance = 75.0f;
+
+	const FViewportRenderTarget* RenderTarget = View.Viewport.RenderTarget.get();
+	FSceneTextures* SceneTextures = Renderer.GetSceneTextures();
+
+	// 둘 중 하나라도 없으면 그리지 않는다
+	if (!RenderTarget || !SceneTextures) 
+	{
+		return;
+	}
+	Renderer.BindRenderTarget(RenderTarget->GetRTV(), SceneTextures->SceneDepthDSV.Get());
 	Renderer.FlushLineBatch(Constants, FName("Grid"));
 }
 
