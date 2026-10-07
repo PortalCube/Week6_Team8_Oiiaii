@@ -196,7 +196,7 @@ void FImguiControlPanelWindow::RunPickBenchmark(FEditor& Editor, int Iterations)
 	ULevel* Scene = Editor.GetCurrentLevel();
 	SEditorViewport* Viewport = Editor.GetActiveViewport();
 	const bool bUseBVH = Editor.bUseBVHPicking && Scene;
-	if (!bUseBVH && !Viewport)
+	if (!Viewport)
 	{
 		return;
 	}
@@ -214,7 +214,9 @@ void FImguiControlPanelWindow::RunPickBenchmark(FEditor& Editor, int Iterations)
 		FScopeCycleCounter Counter;
 		if (bUseBVH)
 		{
-			Scene->GetSceneBVH().QueryRay(Ray, HitComponent, ImpactPoint);
+			FRayCastingManager::RayIntersectsScene(
+			    Ray, Viewport->GetClient().GetViewportCamera(),
+			    Scene->GetSceneBVH(), HitComponent, ImpactPoint);
 		}
 		else
 		{

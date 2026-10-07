@@ -11,13 +11,11 @@ class FJsonDataWriter : public FArchive
 public:
 
 	FJsonDataWriter();
-	// 출력 JSON과 쓰기 위치, 참조 상태를 초기화합니다.
-	void Clear();
-	FJsonDataWriter(const FJsonDataWriter&) = delete;
-	FJsonDataWriter& operator=(const FJsonDataWriter&) = delete;
-	using FArchive::Reference;
+
 	nlohmann::json& GetJSON();
 	nlohmann::json CloneJSON() const;
+
+	void Clear();
 
 	virtual void Serialize(UObject* Object) override;
 
@@ -25,26 +23,27 @@ public:
 	// Field
 	////////////////////////////////////////////////////////////
 
-	virtual void Reference(FStringView Key, UObject*& Value);
+	using FArchive::Reference;
+	virtual void Reference(FStringView Key, UObject*& Value) override;
 
-	virtual void Field(FStringView Key, UObject*& Value);
+	virtual void Field(FStringView Key, UObject*& Value) override;
 
-	virtual void Field(FStringView Key, int32& Value);
-	virtual void Field(FStringView Key, int64& Value);
+	virtual void Field(FStringView Key, int32& Value) override;
+	virtual void Field(FStringView Key, int64& Value) override;
 
-	virtual void Field(FStringView Key, uint32& Value);
-	virtual void Field(FStringView Key, uint64& Value);
+	virtual void Field(FStringView Key, uint32& Value) override;
+	virtual void Field(FStringView Key, uint64& Value) override;
 
-	virtual void Field(FStringView Key, float& Value);
-	virtual void Field(FStringView Key, double& Value);
-	virtual void Field(FStringView Key, bool& Value);
+	virtual void Field(FStringView Key, float& Value) override;
+	virtual void Field(FStringView Key, double& Value) override;
+	virtual void Field(FStringView Key, bool& Value) override;
 
-	virtual void Field(FStringView Key, FString& Value);
-	virtual void Field(FStringView Key, FWString& Value);
+	virtual void Field(FStringView Key, FString& Value) override;
+	virtual void Field(FStringView Key, FWString& Value) override;
 
-	virtual void Field(FStringView Key, FVector& Value);
-	virtual void Field(FStringView Key, FVector2& Value);
-	virtual void Field(FStringView Key, FVector4& Value);
+	virtual void Field(FStringView Key, FVector& Value) override;
+	virtual void Field(FStringView Key, FVector2& Value) override;
+	virtual void Field(FStringView Key, FVector4& Value) override;
 
 	virtual void Field(FStringView Key, FLinearColor& Value);
 
@@ -57,8 +56,8 @@ public:
 	// Section
 	////////////////////////////////////////////////////////////
 
-	virtual void BeginSection(FStringView Key);
-	virtual void EndSection();
+	virtual void BeginSection(FStringView Key) override;
+	virtual void EndSection() override;
 
 
 
@@ -66,8 +65,8 @@ public:
 	// Array
 	////////////////////////////////////////////////////////////
 
-	virtual int32 BeginArray(FStringView Key);
-	virtual void EndArray();
+	virtual int32 BeginArray(FStringView Key) override;
+	virtual void EndArray() override;
 
 private:
 

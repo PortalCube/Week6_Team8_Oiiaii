@@ -121,8 +121,8 @@ void FSceneBVH::Build(const TArray<UPrimitiveComponent*>& Components)
 			continue;
 		}
 
-		const FMatrix World = C->GetGlobalTransformMatrix();
-		FAxisAlignedBoundingBox WorldBox(Local, World);
+		C->UpdateWorldBounds();
+		const FAxisAlignedBoundingBox WorldBox = C->GetWorldBounds();
 
 		//{AABB, 중심점, 컴포넌트}
 		Prims.push_back({ WorldBox, (WorldBox.Min + WorldBox.Max) * 0.5f, C });
@@ -277,7 +277,8 @@ void FSceneBVH::RefitObject(UPrimitiveComponent* Moved)
 	}
 
 	// 변경된 Transform으로 AABB 다시 넣기
-	ObjectBounds[ObjectIndex] = FAxisAlignedBoundingBox(Local, Moved->GetGlobalTransformMatrix());
+	Moved->UpdateWorldBounds();
+	ObjectBounds[ObjectIndex] = Moved->GetWorldBounds();
 
 	RefitFromLeaf(LeafOfObject[ObjectIndex]);
 }
@@ -386,7 +387,8 @@ bool FSceneBVH::QueryFrustum(const FFrustum& Frustum, float MinScreenPixels, TAr
 			continue;
 		}
 
-		const FAxisAlignedBoundingBox World(Local, C->GetGlobalTransformMatrix());
+		C->UpdateWorldBounds();
+		const FAxisAlignedBoundingBox World = C->GetWorldBounds();
 
 		if (FrustumUtils::IsVisible(Frustum, AbsNormals, World))
 		{
@@ -397,10 +399,9 @@ bool FSceneBVH::QueryFrustum(const FFrustum& Frustum, float MinScreenPixels, TAr
 	return !OutVisible.empty();
 }
 
-bool FSceneBVH::QueryRay(const FRay& Ray, UPrimitiveComponent*& OutHit, FVector& OutImpact) const
+bool FSceneBVH::QueryRay(const FRay& Ray, TArray<FRayCandidate>& OutCandidates) const
 {
-	OutImpact = FVector{};
-	float Closest = (std::numeric_limits<float>::max)();
+	OutCandidates.clear();
 
 	// 광선 방향은 순회 내내 같으므로 역수를 한 번만 구한다
 	const FVector InvDir = FRayCastingManager::MakeInvDir(Ray.Direction);
@@ -408,7 +409,7 @@ bool FSceneBVH::QueryRay(const FRay& Ray, UPrimitiveComponent*& OutHit, FVector&
 	// 1) 트리 순회
 	if (!Nodes.empty())
 	{
-		TraverseRay(0, Ray, InvDir, Closest, OutHit, OutImpact);
+		TraverseRay(0, Ray, InvDir, OutCandidates);
 	}
 
 	// 2) 아직 트리에 흡수되지 않은 대기열. 빠뜨리면 최근 스폰분이 조용히 누락된다
@@ -426,17 +427,19 @@ bool FSceneBVH::QueryRay(const FRay& Ray, UPrimitiveComponent*& OutHit, FVector&
 		}
 
 		// 대기열은 바운드 캐시가 없으므로 즉석 계산
-		const FAxisAlignedBoundingBox World(Local, C->GetGlobalTransformMatrix());
-		TestObjectRay(C, World, Ray, InvDir, Closest, OutHit, OutImpact);
+		C->UpdateWorldBounds();
+		const FAxisAlignedBoundingBox World = C->GetWorldBounds();
+		TestObjectRay(C, World, Ray, InvDir, OutCandidates);
 	}
 
-	return OutHit != nullptr;
+	std::sort(OutCandidates.begin(), OutCandidates.end(),
+	    [](const FRayCandidate& A, const FRayCandidate& B) { return A.TNear < B.TNear; });
+	return !OutCandidates.empty();
 }
 
-void FSceneBVH::TraverseRay(uint32 RootIdx, const FRay& Ray, const FVector& InvDir, float& Closest, UPrimitiveComponent*& OutHit, FVector& OutImpact) const
+void FSceneBVH::TraverseRay(uint32 RootIdx, const FRay& Ray, const FVector& InvDir, TArray<FRayCandidate>& OutCandidates) const
 {
-	// 재귀 대신 고정 크기 스택으로 순회한다. 노드와 진입 거리를 함께 쌓아,
-	// 꺼낼 때 그사이 줄어든 Closest로 다시 가지친다.
+	// 재귀 대신 고정 크기 스택으로 모든 AABB 후보를 수집한다.
 	// 중앙값 분할로 빌드해 깊이가 log2(개수) 이하이므로 64칸이면 넘치지 않는다.
 	struct FStackEntry
 	{
@@ -458,10 +461,6 @@ void FSceneBVH::TraverseRay(uint32 RootIdx, const FRay& Ray, const FVector& InvD
 	while (Sp > 0)
 	{
 		const FStackEntry Entry = Stack[--Sp];
-		if (Entry.TNear >= Closest)
-		{
-			continue;
-		}
 
 		const FSceneBVHNode& N = Nodes[Entry.Node];
 
@@ -473,7 +472,7 @@ void FSceneBVH::TraverseRay(uint32 RootIdx, const FRay& Ray, const FVector& InvD
 
 		if (N.bLeafNode)
 		{
-			TestLeafRay(N, Ray, InvDir, Closest, OutHit, OutImpact);
+			TestLeafRay(N, Ray, InvDir, OutCandidates);
 			continue;
 		}
 
@@ -507,7 +506,7 @@ void FSceneBVH::TraverseRay(uint32 RootIdx, const FRay& Ray, const FVector& InvD
 		const FMathSSE::VectorRegister4Float tmaxZ = FMathSSE::VectorMax(t0z, t1z);
 
 		const FMathSSE::VectorRegister4Float tNear = FMathSSE::VectorMax(FMathSSE::VectorMax(tminX, tminY), FMathSSE::VectorMax(tminZ, FMathSSE::VectorZero()));
-		const FMathSSE::VectorRegister4Float tFar = FMathSSE::VectorMin(FMathSSE::VectorMin(tmaxX, tmaxY), FMathSSE::VectorMin(tmaxZ, FMathSSE::VectorSetFloat1(Closest)));
+		const FMathSSE::VectorRegister4Float tFar = FMathSSE::VectorMin(FMathSSE::VectorMin(tmaxX, tmaxY), FMathSSE::VectorMin(tmaxZ, FMathSSE::VectorSetFloat1((std::numeric_limits<float>::max)())));
 
 		const FMathSSE::VectorRegister4Float hitMask = FMathSSE::VectorCompareLE(tNear, tFar);
 		int mask = FMathSSE::VectorMaskBits(hitMask) & ((1 << N.ChildCount) - 1);
@@ -555,63 +554,11 @@ void FSceneBVH::TraverseRay(uint32 RootIdx, const FRay& Ray, const FVector& InvD
 	}
 }
 
-void FSceneBVH::TestLeafRay(const FSceneBVHNode& N, const FRay& Ray, const FVector& InvDir, float& Closest, UPrimitiveComponent*& OutHit, FVector& OutImpact) const
+void FSceneBVH::TestLeafRay(const FSceneBVHNode& N, const FRay& Ray, const FVector& InvDir, TArray<FRayCandidate>& OutCandidates) const
 {
-	// 박스에 맞은 오브젝트만 진입 거리(tNear) 순으로 모은 뒤 가까운 것부터 메시를 검사한다.
-	// 인덱스 순서로 검사하면 뒤쪽 오브젝트의 메시를 먼저 끝까지 도는 낭비가 생긴다.
-	struct FCandidate
-	{
-		float TNear;
-		uint32 Index;
-	};
-	constexpr uint32 MaxCandidates = 64;
-	FCandidate Cands[MaxCandidates];
-	uint32 NumCands = 0;
-
 	for (uint32 i = N.ObjStart; i < N.ObjStart + N.ObjCount; ++i)
 	{
-		// FSceneBVH::RemoveObject에서 삭제된 UPrimComp는 nullptr로 되어있다
-		// Buil되기 전에는 빈 공간을 남아있으므로 Ray 검사중엔 건너뛴다.
-		if (!Objects[i])
-		{
-			continue;
-		}
-
-		float tNear = 0.0f;
-		if (!FRayCastingManager::RayIntersectsBoundsInv(Ray.Origin, InvDir, ObjectBounds[i].Min, ObjectBounds[i].Max, tNear))
-		{
-			continue;
-		}
-		if (tNear >= Closest)
-		{
-			continue;
-		}
-
-		// 후보가 넘치면(퇴화 리프 등) 정렬 없이 바로 검사한다
-		if (NumCands == MaxCandidates)
-		{
-			TestObjectMesh(Objects[i], Ray, Closest, OutHit, OutImpact);
-			continue;
-		}
-
-		// 삽입 정렬: 후보는 보통 1~3개라 std::sort보다 직접 넣는 쪽이 싸다
-		uint32 Pos = NumCands++;
-		while (Pos > 0 && Cands[Pos - 1].TNear > tNear)
-		{
-			Cands[Pos] = Cands[Pos - 1];
-			--Pos;
-		}
-		Cands[Pos] = { tNear, i };
-	}
-
-	for (uint32 c = 0; c < NumCands; ++c)
-	{
-		// 정렬돼 있으므로 이 후보가 이미 찾은 교차보다 멀면 나머지도 전부 멀다
-		if (Cands[c].TNear >= Closest)
-		{
-			break;
-		}
-		TestObjectMesh(Objects[Cands[c].Index], Ray, Closest, OutHit, OutImpact);
+		TestObjectRay(Objects[i], ObjectBounds[i], Ray, InvDir, OutCandidates);
 	}
 }
 
@@ -660,52 +607,17 @@ void FSceneBVH::TraverseFrustum(uint32 NodeIdx, const FFrustum& Frustum, const F
 	}
 }
 
-// AABB -> 뮐러 트럼보어
-void FSceneBVH::TestObjectRay(UPrimitiveComponent* C, const FAxisAlignedBoundingBox& WorldBox, const FRay& Ray, const FVector& InvDir, float& Closest, UPrimitiveComponent*& OutHit, FVector& OutImpact) const
+// 리프와 대기열에서 동일한 AABB 후보 판정을 사용한다.
+void FSceneBVH::TestObjectRay(UPrimitiveComponent* C, const FAxisAlignedBoundingBox& WorldBox, const FRay& Ray, const FVector& InvDir, TArray<FRayCandidate>& OutCandidates) const
 {
-	float tNear = 0.0f;
-	if (!FRayCastingManager::RayIntersectsBoundsInv(Ray.Origin, InvDir, WorldBox.Min, WorldBox.Max, tNear))
+	if (!C || !WorldBox.IsValid())
 	{
 		return;
 	}
-	if (tNear >= Closest)
+	float TNear = 0.0f;
+	if (FRayCastingManager::RayIntersectsBoundsInv(Ray.Origin, InvDir, WorldBox.Min, WorldBox.Max, TNear))
 	{
-		return;
-	} // 이미 더 가까운 히트가 있으면 삼각형 검사 생략
-
-	TestObjectMesh(C, Ray, Closest, OutHit, OutImpact);
-}
-
-// 월드 AABB를 통과한 오브젝트의 메시(삼각형)를 검사한다
-void FSceneBVH::TestObjectMesh(UPrimitiveComponent* C, const FRay& Ray, float& Closest, UPrimitiveComponent*& OutHit, FVector& OutImpact) const
-{
-	const AActor* Owner = C ? C->GetOwner() : nullptr;
-	if (!Owner || !Owner->IsSelectable())
-	{
-		return;
-	}
-
-	const UStaticMesh* Asset = C->GetMeshAsset();
-	const FMesh* Mesh = Asset ? Asset->Get() : nullptr;
-	if (!Mesh)
-	{
-		return;
-	}
-
-	float Dist = 0.0f;
-	FVector Impact{};
-
-	// 역행렬이 없으면(스케일 0 등) 로컬 공간으로 옮길 수 없으니 맞지 않은 것으로 본다
-	const FMatrix* InvWorld = C->GetGlobalInverseMatrix();
-	if (!InvWorld)
-	{
-		return;
-	}
-
-	if (FRayCastingManager::RayIntersectsMeshWithInversedModel(Ray, *Mesh, *InvWorld, Dist, Impact, Closest, true))
-	{
-		OutHit = C;
-		OutImpact = Impact;
+		OutCandidates.push_back({ C, TNear });
 	}
 }
 

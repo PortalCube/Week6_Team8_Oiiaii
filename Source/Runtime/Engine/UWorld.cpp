@@ -222,7 +222,9 @@ UWorld* UWorld::DuplicateWorld(EWorldType InWorldType)
 
 	auto Data = Writer.CloneJSON();
 	for (auto& Record : Data)
+	{
 		Record.erase("UUID");
+	}
 
 	UWorld* Copy = CreateWorldWithEmptyLevel(InWorldType);
 
@@ -230,6 +232,11 @@ UWorld* UWorld::DuplicateWorld(EWorldType InWorldType)
 	Reader.Serialize(Copy->PersistentLevel);
 
 	return Copy;
+}
+
+EWorldType UWorld::GetWorldType() const
+{
+	return WorldType;
 }
 
 UWorld* UWorld::GetWorld() const

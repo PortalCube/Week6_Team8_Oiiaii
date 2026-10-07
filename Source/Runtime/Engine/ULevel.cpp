@@ -207,6 +207,7 @@ void ULevel::AddRenderComponent(UPrimitiveComponent* prim)
 
 		// 처음엔 일단 그리자
 		CullDataList.push_back(MakeAlwaysVisibleCullData());
+
 		// 오클루전 대상에도 추가
 		OcclusionTargetFlags.push_back(0);
 		MarkBoundsDirty(prim);
@@ -261,9 +262,12 @@ void ULevel::UpdateDirtyBounds()
 	{
 		Prim->SetBoundDirtyQueued(false);
 		Prim->UpdateWorldBounds();
+
 		int32 Index = static_cast<size_t>(Prim->GetSceneIndex());
+
 		CullDataList[Index] = Prim->GetWorldBounds();
 		OcclusionTargetFlags[Index] = Prim->IsOcclusionTarget() ? 1 : 0;
+		SceneBVH.RefitObject(Prim);
 	}
 	DirtyBoundsList.clear();
 }

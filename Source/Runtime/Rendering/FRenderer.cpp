@@ -1,3 +1,4 @@
+#include "Runtime/Rendering/FBillboardRendering.h"
 #include "FRenderer.h"
 #include "FTextRendering.h"
 #include "Runtime/Asset/FAssetRegistry.h"
@@ -1634,7 +1635,7 @@ void FRenderer::DrawBillboardText(const FSceneView& View, FWStringView Text,
 	FTransform Transform;
 	Transform.SetLocation(WorldPosition);
 	Transform.SetScale3D(FVector{WorldSize, WorldSize, WorldSize});
-	const FMatrix Billboard = TextRendering::MakeBillboardMatrix(Transform, View.Camera);
+	const FMatrix Billboard = BillboardRendering::MakeBillboardMatrix(Transform, View.Camera);
 	BillboardWorldInstances.clear();
 	BillboardWorldInstances.reserve(CachedBillboardGlyphs.size());
 	for (const FInstanceData& Glyph : CachedBillboardGlyphs)

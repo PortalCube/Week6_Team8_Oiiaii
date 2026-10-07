@@ -177,16 +177,16 @@ void FImguiPropertyWindow::ShowTransform(FEditor& Editor, USceneComponent& Comp,
 		FVector Location = Editor.SelectedTransform.GetLocation();
 		if (ImGui::DragFloat3("Translation", &Location.X, 0.01f))
 		{
-			Editor.SelectedTransform.SetLocation(Location);
+			//Editor.SelectedTransform.SetLocation(Location);
 		}
 		if (ImGui::DragFloat3("Rotation (deg)", &Editor.SelectedEulerDegDisplay.X, 0.5f))
 		{
-			Editor.SelectedTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Editor.SelectedEulerDegDisplay));
+			//Editor.SelectedTransform.SetRotation(FQuaternion::FromEulerXYZDeg(Editor.SelectedEulerDegDisplay));
 		}
 		FVector Scale = Editor.SelectedTransform.GetScale3D();
 		if (ImGui::DragFloat3("Scale", &Scale.X, 0.01f))
 		{
-			Editor.SelectedTransform.SetScale3D(Scale);
+			//Editor.SelectedTransform.SetScale3D(Scale);
 		}
 		return;
 	}

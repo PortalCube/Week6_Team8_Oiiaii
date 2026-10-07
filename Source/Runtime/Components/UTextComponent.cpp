@@ -1,3 +1,4 @@
+#include "Runtime/Rendering/FBillboardRendering.h"
 #include "UTextComponent.h"
 #include "Runtime/Rendering/FTextRendering.h"
 #include "Runtime/Asset/UFont.h"
@@ -86,36 +87,38 @@ void UTextComponent::RebuildTextMesh()
 	{
 		TextRendering::BuildGlyphInstances(Text, *Font, TextColor, Instances, Width, Height);
 	}
+	MarkBoundDirty();
 }
 FMatrix UTextComponent::GetRenderMatrix(const FCamera& Camera) const
 {
 	FTransform Transform = GetGlobalTransform();
 
 	FMatrix ScaleTransform = FMatrix::MakeScale({ 1.0f, Width, Height });
-	FMatrix ModelMatrix = TextRendering::MakeBillboardMatrix(Transform, Camera);
 
-	return ScaleTransform * ModelMatrix;
+	return ScaleTransform * Transform.GetMatrix();
 }
 
 const FRenderData& UTextComponent::GetRenderData(const FCamera& Camera) const
 {
-
 	TArray<FInstanceData> Built;
-
-	FTransform Transform = GetGlobalTransform();
-	FMatrix ModelMatrix = TextRendering::MakeBillboardMatrix(Transform, Camera);
 
 	// 글자별 FInstanceData에 빌보드 월드 행렬 적용
 	for (const FInstanceData& Inst : Instances)
 	{
 		FInstanceData WorldInst = Inst;
-		WorldInst.World *= ModelMatrix;
+		WorldInst.World *= GetGlobalTransformMatrix();
 		Built.push_back(WorldInst);
 	}
 
 	RenderData.Instances = std::move(Built);
 
 	return RenderData;
+}
+
+void UTextComponent::UpdateWorldBounds()
+{
+	FMatrix ScaleTransform = FMatrix::MakeScale({ 1.0f, Width, Height });
+	WorldBounds = { GetLocalBounds(), ScaleTransform * GetGlobalTransformMatrix() };
 }
 
 void UTextComponent::Serialize(FArchive& Archive)

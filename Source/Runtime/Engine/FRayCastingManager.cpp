@@ -1,4 +1,5 @@
 #include "FRayCastingManager.h"
+#include "Runtime/Engine/FSceneBVH.h"
 #include "Runtime/Math/FMatrix.h"
 #include "Runtime/Rendering/FMesh.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
@@ -82,6 +83,55 @@ bool FRayCastingManager::RayIntersectsMeshes(
 	OutImpactPoint = ClosestImpactPoint;
 
 	return ClosestComponent != nullptr;
+}
+
+bool FRayCastingManager::RayIntersectsScene(
+    const FRay& Ray, const FCamera& Camera, const FSceneBVH& SceneBVH,
+    UPrimitiveComponent*& HitComponent, FVector& OutImpactPoint)
+{
+	HitComponent = nullptr;
+	OutImpactPoint = FVector{};
+
+	// BVH 실행으로 후보군 선정
+	TArray<FSceneBVH::FRayCandidate> Candidates;
+	SceneBVH.QueryRay(Ray, Candidates);
+
+	float ClosestHit = (std::numeric_limits<float>::max)();
+
+	for (const FSceneBVH::FRayCandidate& Candidate : Candidates)
+	{
+		if (Candidate.TNear >= ClosestHit)
+		{
+			break;
+		}
+
+		UPrimitiveComponent* Component = Candidate.Component;
+		const AActor* Owner = Component ? Component->GetOwner() : nullptr;
+		if (!Owner || !Owner->IsSelectable())
+		{
+			continue;
+		}
+
+		const UStaticMesh* Asset = Component->GetMeshAsset();
+		const FMesh* Mesh = Asset ? Asset->Get() : nullptr;
+		if (!Mesh)
+		{
+			continue;
+		}
+
+		float Distance = 0.0f;
+		FVector Impact{};
+		// 내부에서 역행렬로 Ray를 로컬 공간에 옮기고 MeshBVH를 검사한다.
+		// 방향을 정규화하지 않아 AABB의 TNear와 동일한 t를 유지한다.
+		if (RayIntersectsMesh(Ray, *Mesh, Component->GetRenderMatrix(Camera),
+		        Distance, Impact, ClosestHit, true))
+		{
+			HitComponent = Component;
+			OutImpactPoint = Impact;
+		}
+	}
+
+	return HitComponent != nullptr;
 }
 
 bool FRayCastingManager::RayIntersectsAABB(const FRay& Ray, const FAxisAlignedBoundingBox& AABB, float& OutTNear)

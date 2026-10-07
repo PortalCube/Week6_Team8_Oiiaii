@@ -51,6 +51,10 @@ private:
 	void BeginWindow() const;
 	void EndWindow() const;
 
+	// 커서 이동 제한
+	bool bCursorClipped = false;
+	void ReleaseCursorClip();
+
 	// 창 전체를 덮는 클릭 판정용 아이템을 만들고 입력 상태를 모은다.
 	FViewportInput GatherInput(const FVector2& ViewportSizePixels,
 	    const FVector2& ViewportLeftTopPixels) const;

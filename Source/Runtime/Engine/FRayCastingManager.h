@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Runtime/Math/FVector.h"
 #include "Runtime/Core/TArray.h"
@@ -7,6 +7,7 @@
 
 class UPrimitiveComponent;
 class FMesh;
+class FSceneBVH;
 struct FAxisAlignedBoundingBox;
 
 struct FRay
@@ -32,6 +33,9 @@ namespace FRayCastingManager
 
 	// BVH 없이 모든 컴포넌트를 선형 검사해 가장 가까운 컴포넌트와 교차점을 찾는다. (비교용 선형 경로)
 	bool RayIntersectsMeshes(const FRay& Ray, const FCamera& Camera, const TArray<UPrimitiveComponent*>& Components, UPrimitiveComponent*& HitComponent, FVector& OutImpactPoint);
+
+	// 씬 BVH 후보를 렌더 행렬로 변환한 로컬 Ray로 정밀 검사한다.
+	bool RayIntersectsScene(const FRay& Ray, const FCamera& Camera, const FSceneBVH& SceneBVH, UPrimitiveComponent*& HitComponent, FVector& OutImpactPoint);
 
 	// 광선과 AABB의 교차 검사(나눗셈 방식). 맞으면 박스 진입 거리를 OutTNear에 담는다.
 	bool RayIntersectsAABB(const FRay& Ray, const FAxisAlignedBoundingBox& AABB, float& OutTNear);

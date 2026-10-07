@@ -1,0 +1,6 @@
+{
+  "Version": 1,
+  "Name": "hachiware",
+  "AssetType": "StaticMesh",
+  "MeshFilePath": "./StaticMesh/Hachiware_OBJ/hachiware.obj"
+}

@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include "catch_amalgamated.hpp"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Engine/FJson.h"
 #include "Runtime/Rendering/FTextRendering.h"
 
 TEST_CASE("Shared text layout preserves centering, spacing and empty text", "[text]")

@@ -8,6 +8,7 @@
 #include "Runtime/Engine/UWorld.h"
 
 IMPLEMENT_UCLASS(AActor, UObject)
+UCLASS_META(AActor, DisplayName, "Actor")
 
 void AActor::Initialize()
 {
@@ -216,6 +217,23 @@ void AActor::EndPlay()
 	}
 
 	bHasBegunPlay = false;
+}
+
+bool AActor::GetTickEnabled() const
+{
+	// 틱 비활성화
+	if (!bTickEnabled)
+	{
+		return false;
+	}
+
+	// 에디터 틱 비활성화
+	if (GetWorld()->GetWorldType() == EWorldType::Editor && !bTickInEditor)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void AActor::Destroy()

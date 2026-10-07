@@ -111,6 +111,8 @@ public:
 
 	UWorld* DuplicateWorld(EWorldType InWorldType);
 
+	EWorldType GetWorldType() const;
+
 
 	////////////////////////////////////////////////////////////
 	// Time

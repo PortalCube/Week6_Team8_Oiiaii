@@ -36,6 +36,7 @@ public:
 	// Object -> World 변환 행렬 생성
 	virtual FMatrix GetRenderMatrix(const FCamera& Camera) const override;
 	virtual const FRenderData& GetRenderData(const FCamera& Camera) const override;
+	virtual void UpdateWorldBounds() override;
 
 	virtual EEngineShowFlags GetShowFlag() const
 	{
@@ -47,6 +48,9 @@ public:
 
 	float GetWidth() const { return Width; }
 	float GetHeight() const { return Height; }
+
+protected:
+	const TArray<FInstanceData>& GetLocalTextInstances() const { return Instances; }
 
 private:
 	TSharedPtr<FFont> Font;
