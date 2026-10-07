@@ -289,9 +289,9 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	DrawGrid(View, EditorCtx.Grid);
 
 	// 기즈모 그리기(PIE 모드가 아닐때만)
-	if (!EditorCtx.bIsPIE && EditorCtx.bIsObjectSelected)
+	if (!EditorCtx.bIsPIE && EditorCtx.bIsObjectSelected && EditorCtx.Gizmo)
 	{
-		RenderSelectedActorUUID(View, EditorCtx.SelectedActor);
+		RenderSelectedActorUUID(View, EditorCtx.SelectedSceneComponent);
 		RenderGizmo(View, EditorCtx.SelectedTransform, *EditorCtx.Gizmo);
 	}
 

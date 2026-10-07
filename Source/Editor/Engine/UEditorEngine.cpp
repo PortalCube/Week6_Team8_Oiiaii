@@ -203,14 +203,13 @@ void UEditorEngine::Tick(float DeltaTime)
 			}
 
 			// 에디터 렌더링 컨텍스트 구성
-			// FEditorRenderContext EditorRenderContext = Editor.GetEditorRenderContext(EditorViewport, &VisualizerRegistry);
-
 			FEditorRenderContext EditorRenderContext{};
+			EditorRenderContext.bIsPIE = EditorViewport.IsPIE();
 
 			// PIE 모드가 아닐때에만 
 			if (!EditorViewport.IsPIE())
 			{
-				EditorRenderContext = Editor.GetEditorRenderContext( EditorViewport, &VisualizerRegistry);
+				EditorRenderContext = Editor.GetEditorRenderContext(EditorViewport, &VisualizerRegistry);
 			}
 
 			FWorldContext* Context = EditorViewport.GetRenderWorldContext();

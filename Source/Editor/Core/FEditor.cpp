@@ -440,13 +440,14 @@ FEditorRenderContext FEditor::GetEditorRenderContext(SEditorViewport& EditorView
 {
 	FEditorRenderContext EditorRenderContext{
 		.SelectedActor = SelectedActor,
+		.SelectedSceneComponent = GetSceneComponent(),
 		.SelectedPrimitive = nullptr,
 		.Grid = &EditorViewport.GetClient().GetGrid(),
 		.VisualizerRegistry = VisualizerRegistry,
 		.SelectedTransform = GetSelectedGlobalTransform(),
 		.Gizmo = ObjectSelected() ? &Gizmo : nullptr,
 		.bIsPIE = EditorViewport.IsPIE(),
-		.bIsObjectSelected = ObjectSelected() ? true : false,
+		.bIsObjectSelected = ObjectSelected(),
 	};
 
 	if (SelectedActor)

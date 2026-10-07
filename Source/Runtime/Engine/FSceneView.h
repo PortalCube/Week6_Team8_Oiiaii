@@ -13,6 +13,7 @@ class FGizmo;
 class FGrid;
 class FVisualizerRegistry;
 class UPrimitiveComponent;
+class USceneComponent;
 
 // 뷰포트 렌더링 명세
 struct FSceneView
@@ -30,6 +31,7 @@ struct FSceneView
 struct FEditorRenderContext
 {
 	const AActor* SelectedActor = nullptr;
+	const USceneComponent* SelectedSceneComponent = nullptr;
 	UPrimitiveComponent* SelectedPrimitive = nullptr;
 	FGrid* Grid = nullptr;
 	FVisualizerRegistry* VisualizerRegistry = nullptr;
