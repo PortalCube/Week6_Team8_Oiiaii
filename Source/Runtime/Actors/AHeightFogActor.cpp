@@ -13,7 +13,7 @@ void AHeightFogActor::Initialize()
 	Super::Initialize();
 	bTickEnabled = false;
 
-	HeightFogComponent = CreateDefaultSubobject<UHeightFogComponent>();
+	UHeightFogComponent* HeightFogComponent = CreateDefaultSubobject<UHeightFogComponent>();
 
 	SetRootComponent(HeightFogComponent);
 
@@ -26,14 +26,4 @@ void AHeightFogActor::Initialize()
 	HeightFogComponent->SetFogMaxOpacity(Info.FogMaxOpacity);
 	HeightFogComponent->SetFogInscatteringColor(Info.FogInscatteringColor);
 
-}
-
-void AHeightFogActor::Serialize(FArchive& Archive)
-{
-	Super::Serialize(Archive);
-
-	if (HeightFogComponent)
-	{
-		Archive.Reference("HeightFogComponent", HeightFogComponent);
-	}
 }
