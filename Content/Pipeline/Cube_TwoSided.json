@@ -2,7 +2,7 @@
     "Version": 1,
     "Name": "Cube_TwoSided",
     "AssetType": "Pipeline",
-    "VertexShaderFilePath": "Shader/UVScrollVS.cso",
+    "VertexShaderFilePath": "Shader/BasePassVS.cso",
     "PixelShaderFilePath": "Shader/TexturedPS.cso",
     "Rasterizer": {
         "FillMode": "Solid",
