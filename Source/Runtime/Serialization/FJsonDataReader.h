@@ -11,11 +11,8 @@ public:
 
 	FJsonDataReader(const nlohmann::json& InJSON);
 	void SetJSON(const nlohmann::json& InJSON);
-	// 입력 JSON은 유지하고 읽기 위치와 참조 상태를 초기화합니다.
+
 	void Clear();
-	FJsonDataReader(const FJsonDataReader&) = delete;
-	FJsonDataReader& operator=(const FJsonDataReader&) = delete;
-	using FArchive::Reference;
 
 	virtual void Serialize(UObject* Object) override;
 
@@ -23,6 +20,7 @@ public:
 	// Field
 	////////////////////////////////////////////////////////////
 
+	using FArchive::Reference;
 	virtual void Reference(FStringView Key, UObject*& Value) override;
 
 	virtual void Field(FStringView Key, UObject*& Value) override;
@@ -74,7 +72,6 @@ private:
 
 	FArchiveSection* CurrentSection();
 	nlohmann::json* GetCurrentNode(FStringView Key);
-	UObject* CurrentObject();
 
 	nlohmann::json JSON;
 
@@ -90,5 +87,9 @@ template <typename T>
 inline void FJsonDataReader::FieldInternal(FStringView Key, T& Value)
 {
 	const nlohmann::json* Node = GetCurrentNode(Key);
-	if (Node && !Node->is_null()) Value = Node->get<T>();
+
+	if (Node && !Node->is_null())
+	{
+		Value = Node->get<T>();
+	}
 }

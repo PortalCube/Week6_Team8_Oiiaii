@@ -10,13 +10,11 @@ class FJsonDataWriter : public FArchive
 public:
 
 	FJsonDataWriter();
-	// 출력 JSON과 쓰기 위치, 참조 상태를 초기화합니다.
-	void Clear();
-	FJsonDataWriter(const FJsonDataWriter&) = delete;
-	FJsonDataWriter& operator=(const FJsonDataWriter&) = delete;
-	using FArchive::Reference;
+
 	nlohmann::json& GetJSON();
 	nlohmann::json CloneJSON() const;
+
+	void Clear();
 
 	virtual void Serialize(UObject* Object) override;
 
@@ -24,6 +22,7 @@ public:
 	// Field
 	////////////////////////////////////////////////////////////
 
+	using FArchive::Reference;
 	virtual void Reference(FStringView Key, UObject*& Value) override;
 
 	virtual void Field(FStringView Key, UObject*& Value) override;

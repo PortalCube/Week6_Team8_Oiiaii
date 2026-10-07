@@ -26,8 +26,8 @@ void FJsonDataReader::Clear()
 void FJsonDataReader::Serialize(UObject* Object)
 {
 	Clear();
-
-	// 새로 등록해야할 객체. 객체를 큐에 집어넣고 정보 등록
+	
+	// 새로 복원해야할 객체.
 	ReferenceTable[0] = Object;
 	NextQueue.push(0);
 
@@ -288,16 +288,4 @@ nlohmann::json* FJsonDataReader::GetCurrentNode(FStringView Key)
 	}
 
 	return &Node[Key];
-}
-
-UObject* FJsonDataReader::CurrentObject()
-{
-	if (NextQueue.empty())
-	{
-		return nullptr;
-	}
-	else
-	{
-		return ReferenceTable[NextQueue.front()];
-	}
 }
