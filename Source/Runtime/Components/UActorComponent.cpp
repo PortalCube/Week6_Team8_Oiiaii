@@ -9,6 +9,7 @@
 #include "Runtime/Engine/ULevel.h"
 
 IMPLEMENT_UCLASS(UActorComponent, UObject)
+UCLASS_META(UActorComponent, DisplayName, "Actor Component")
 
 void UActorComponent::Initialize()
 {
@@ -17,25 +18,16 @@ void UActorComponent::Initialize()
 
 void UActorComponent::Release()
 {
+	Unregister();
+
 	Super::Release();
 }
 
-void UActorComponent::RegisterComponent()
-{
-	OnRegister();
-	// RegisterComponentTickFunction();
-}
-
-void UActorComponent::UnregisterComponent()
-{
-	OnUnregister();
-}
-
-void UActorComponent::OnRegister()
+void UActorComponent::Register()
 {
 	if (bRegistered)
 	{
-		throw EngineUtil::CreateError("[UActorComponent::OnRegister] 컴포넌트가 이미 등록되었습니다.");
+		return;
 	}
 
 	bRegistered = true;
@@ -43,9 +35,9 @@ void UActorComponent::OnRegister()
 
 void UActorComponent::BeginPlay()
 {
-	if (bHasBegunPlay)
+	if (!bRegistered || bHasBegunPlay)
 	{
-		throw EngineUtil::CreateError("[UActorComponent::BeginPlay] 이미 BeginPlay()가 실행되었습니다.");
+		return;
 	}
 
 	bHasBegunPlay = true;
@@ -55,17 +47,19 @@ void UActorComponent::EndPlay()
 {
 	if (!bHasBegunPlay)
 	{
-		throw EngineUtil::CreateError("[UActorComponent::EndPlay] 이미 EndPlay()가 실행되었습니다.");
+		return;
 	}
 
 	bHasBegunPlay = false;
 }
 
-void UActorComponent::OnUnregister()
+void UActorComponent::Unregister()
 {
+	EndPlay();
+
 	if (!bRegistered)
 	{
-		throw EngineUtil::CreateError("[UActorComponent::OnUnregister] 컴포넌트가 이미 등록 해제되었습니다.");
+		return;
 	}
 
 	bRegistered = false;
@@ -74,7 +68,7 @@ void UActorComponent::OnUnregister()
 bool UActorComponent::IsTickEnabled() const
 {
 	// 틱 비활성화
-	if (!bTickEnabled)
+	if (!bRegistered || !bTickEnabled)
 	{
 		return false;
 	}
@@ -85,7 +79,7 @@ bool UActorComponent::IsTickEnabled() const
 		return false;
 	}
 
-	return true;
+	return bHasBegunPlay || GetWorld()->GetWorldType() == EWorldType::Editor;
 }
 
 void UActorComponent::MarkAsEditorOnlySubobject()

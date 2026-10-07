@@ -29,14 +29,13 @@ public:
 	void Initialize() override;
 	void Release() override;
 
-	void UpdateLevelComponents();
-	void ClearLevelComponents();
+	void Register();
+	void Unregister();
 
 	void BeginPlay();
 	void Tick(float DeltaTime);
 	void EndPlay();
 
-	void RouteActorInitialize();
 	void CleanupLevel();
 
 	bool HasBegunPlay() const { return bHasBegunPlay; }

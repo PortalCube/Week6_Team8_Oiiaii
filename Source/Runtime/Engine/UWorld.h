@@ -52,7 +52,6 @@ public:
 	void UpdateWorldComponents();
 	void ClearWorldComponents();
 
-	void InitializeActorsForPlay();
 
 
 

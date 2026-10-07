@@ -23,10 +23,26 @@ void UWorld::InitWorld()
 	// PersistentLevel 등록
 	Levels.push_back(PersistentLevel);
 
+	for (auto Level : Levels)
+	{
+		if (Level)
+		{
+			Level->Register();
+		}
+	}
+	
+	BeginPlay();
 }
 
 void UWorld::BeginPlay()
 {
+	if (bBegunPlay || (WorldType != EWorldType::Game && WorldType != EWorldType::PIE))
+	{
+		return;
+	}
+
+	bBegunPlay = true;
+
 	// TODO: 모든 WorldSubsystem::BeginPlay 실행
 
 	// TODO: GameModeBase::StartPlay 실행
@@ -57,6 +73,8 @@ void UWorld::Tick(float DeltaSeconds)
 
 void UWorld::EndPlay()
 {
+	bBegunPlay = false;
+
 	// 모든 액터 순회하면서 EndPlay() 실행
 	for (auto Level : Levels)
 	{
@@ -69,6 +87,7 @@ void UWorld::EndPlay()
 
 void UWorld::CleanupWorld()
 {
+	EndPlay();
 	ClearWorldComponents();
 
 	for (auto Level : Levels)
@@ -99,7 +118,7 @@ void UWorld::UpdateWorldComponents()
 	{
 		if (Level)
 		{
-			Level->UpdateLevelComponents();
+			Level->Register();
 		}
 	}
 }
@@ -108,16 +127,7 @@ void UWorld::ClearWorldComponents()
 {
 	for (ULevel* Level : Levels)
 	{
-		Level->ClearLevelComponents();
-	}
-}
-
-void UWorld::InitializeActorsForPlay()
-{
-	// 모든 액터, 컴포넌트의 BeginPlay 이전 초기화
-	for (ULevel* Level : Levels)
-	{
-		Level->RouteActorInitialize();
+		Level->Unregister();
 	}
 }
 
@@ -181,17 +191,22 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* Transform)
 	// 새로운 액터 생성
 	AActor* Actor = NewObject<AActor>(CurrentLevel, Class);
 
+	Actor->Initialize();
+
+	// 현재 레벨에 추가
+	CurrentLevel->Actors.push_back(Actor);
+
+	Actor->Register();
+
 	if (Transform)
 	{
 		Actor->SetTransform(*Transform);
 	}
 
-	// 생명주기 실행
-	Actor->Initialize();
-	Actor->PostSpawnInitialize();
-
-	// 현재 레벨에 추가
-	CurrentLevel->Actors.push_back(Actor);
+	if (bBegunPlay)
+	{
+		Actor->BeginPlay();
+	}
 
 	return Actor;
 }
@@ -260,9 +275,7 @@ bool UWorld::DestroyActor(AActor* Actor)
 
 	// 액터의 종료
 	Actor->EndPlay();
-	Actor->UnregisterAllComponents();
-	Actor->UninitializeComponents();
-
+	Actor->Unregister();
 	DestroyObject(Actor);
 
 	return true;

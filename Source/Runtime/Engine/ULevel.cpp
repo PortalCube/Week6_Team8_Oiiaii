@@ -72,7 +72,7 @@ void ULevel::BeginPlay()
 
 void ULevel::Tick(float DeltaTime)
 {
-	if (!bHasBegunPlay)
+	if (!bHasBegunPlay && OwningWorld->GetWorldType() != EWorldType::Editor)
 	{
 		return;
 	}
@@ -104,35 +104,24 @@ void ULevel::EndPlay()
 	}
 }
 
-void ULevel::UpdateLevelComponents()
+void ULevel::Register()
 {
 	for (auto Actor : Actors)
 	{
 		if (Actor)
 		{
-			Actor->RegisterAllComponents();
+			Actor->Register();
 		}
 	}
 }
 
-void ULevel::ClearLevelComponents()
+void ULevel::Unregister()
 {
 	for (auto Actor : Actors)
 	{
 		if (Actor)
 		{
-			Actor->UnregisterAllComponents();
-		}
-	}
-}
-
-void ULevel::RouteActorInitialize()
-{
-	for (auto Actor : Actors)
-	{
-		if (Actor)
-		{
-			Actor->InitializeComponents();
+			Actor->Unregister();
 		}
 	}
 }
@@ -143,8 +132,6 @@ void ULevel::CleanupLevel()
 	{
 		if (Actors[i])
 		{
-			Actors[i]->UninitializeComponents();
-
 			DestroyObject(Actors[i]);
 
 			Actors[i] = nullptr;

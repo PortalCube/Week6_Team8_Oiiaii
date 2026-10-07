@@ -179,9 +179,6 @@ void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 	// Subsystem에 모든 월드 액터/컴포넌트를 등록
 	Context.World->UpdateWorldComponents();
 
-	// 액터/컴포넌트들의 상호 초기화 단계
-	Context.World->InitializeActorsForPlay();
-
 	// BeginPlay
 	Context.World->BeginPlay();
 	

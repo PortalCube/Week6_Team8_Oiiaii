@@ -23,14 +23,8 @@ public:
 	virtual void Initialize() override;
 	virtual void Release() override;
 
-	virtual void OnRegister();
-	virtual void OnUnregister();
-
-	virtual void InitializeComponent() {}
-	virtual void UninitializeComponent() {}
-
-	virtual void RegisterComponent();
-	virtual void UnregisterComponent();
+	virtual void Register();
+	virtual void Unregister();
 
 	virtual void BeginPlay();
 	virtual void TickComponent(float DeltaTime) {}
