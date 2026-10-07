@@ -1,0 +1,6 @@
+{
+  "Version": 1,
+  "Name": "McCat",
+  "AssetType": "StaticMesh",
+  "MeshFilePath": "./StaticMesh/McCat_OBJ/McCat.obj"
+}

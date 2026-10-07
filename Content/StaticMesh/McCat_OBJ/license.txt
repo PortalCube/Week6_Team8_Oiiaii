@@ -1,0 +1,11 @@
+Model Information:
+* title:	MacDonald
+* source:	https://sketchfab.com/3d-models/macdonald-55641025cc30468e953eebbbd5ba80be
+* author:	Kasugay𓅂 (https://sketchfab.com/Kasugay)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "MacDonald" (https://sketchfab.com/3d-models/macdonald-55641025cc30468e953eebbbd5ba80be) by Kasugay𓅂 (https://sketchfab.com/Kasugay) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
