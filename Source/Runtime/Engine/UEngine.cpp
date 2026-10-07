@@ -119,6 +119,17 @@ void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 	// 파일 경로에서 Archive 생성
 	FJson Archive;
 
+	// 레벨 로드에 실패했을 때 아직 World가 없다면 빈 레벨로 대체한다.
+	// (World가 nullptr로 남으면 이후 Tick에서 null 역참조로 크래시)
+	auto FallbackToEmptyWorld = [this, &Context]()
+	{
+		if (!Context.World)
+		{
+			UE_LOG("[OpenLevel] 빈 Level로 World를 생성합니다.");
+			LoadMap(Context, "");
+		}
+	};
+
 	if (!Path.empty())
 	{
 
@@ -129,6 +140,7 @@ void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 		catch (...)
 		{
 			UE_LOG("[OpenLevel] 파일에서 Level을 불러오는데 실패했습니다.");
+			FallbackToEmptyWorld();
 			return;
 		}
 
@@ -137,6 +149,7 @@ void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 		if (Version != 2)
 		{
 			UE_LOG("[OpenLevel] 로드하려는 파일의 Level Schema 버전이 다릅니다. 파일의 버전: %d, 지원하는 버전: %d", Version, 2);
+			FallbackToEmptyWorld();
 			return;
 		}
 
@@ -149,6 +162,7 @@ void UEngine::LoadMap(FWorldContext& Context, const FString& Path)
 		if (Archive.IsNull("Level"))
 		{
 			UE_LOG("[OpenLevel] 로드하려는 파일에서 Level 항목이 없습니다. 파일 형식이 올바르지 않습니다.");
+			FallbackToEmptyWorld();
 			return;
 		}
 	}

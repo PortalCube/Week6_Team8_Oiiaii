@@ -1,5 +1,6 @@
 #include "FResourceLoader.h"
 #include "Runtime/Utility/EngineUtil.h"
+#include "Runtime/Utility/WindowsUtil.h"
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Core/Log.h"
 #include "Runtime/Serialization/FJson.h"
@@ -202,7 +203,7 @@ void FResourceLoader::LoadAssets()
 		std::ifstream File{ Entry.path() };
 		if (!File.is_open())
 		{
-			UE_LOG("[FResourceLoader::LoadAssets] 파일을 여는데 실패했습니다. %s", Entry.path().c_str());
+			UE_LOG("[FResourceLoader::LoadAssets] 파일을 여는데 실패했습니다. %s", WindowsUtil::ToString(Entry.path().wstring()).c_str());
 			continue;
 		}
 
@@ -214,7 +215,7 @@ void FResourceLoader::LoadAssets()
 		}
 		catch (const json::parse_error&)
 		{
-			UE_LOG("[FResourceLoader::LoadAssets] JSON 파일을 파싱하는데 실패했습니다. %s", Entry.path().c_str());
+			UE_LOG("[FResourceLoader::LoadAssets] JSON 파일을 파싱하는데 실패했습니다. %s", WindowsUtil::ToString(Entry.path().wstring()).c_str());
 			continue;
 		}
 
@@ -226,7 +227,7 @@ void FResourceLoader::LoadAssets()
 
 		if (Version != CurrentSchemaVersion)
 		{
-			UE_LOG("[FResourceLoader::LoadAssets] 파일의 버전이 불일치합니다. %s", Entry.path().c_str());
+			UE_LOG("[FResourceLoader::LoadAssets] 파일의 버전이 불일치합니다. %s", WindowsUtil::ToString(Entry.path().wstring()).c_str());
 			continue;
 		}
 

@@ -46,7 +46,9 @@ FString FileUtil::GetContentPath(FStringView Path)
 
 FString FileUtil::ReadTextFile(FStringView Path)
 {
-	std::ifstream File(Path.data());
+	// FString 경로는 UTF-8이므로 u8path로 변환해서 연다.
+	// const char*를 그대로 넘기면 시스템 코드페이지(CP949)로 해석되어 한글 경로에서 실패한다.
+	std::ifstream File(fs::u8path(Path.begin(), Path.end()));
 	if (!File)
 	{
 		throw EngineUtil::CreateError("[FileUtil::ReadTextFile] 파일을 읽는데 실패했습니다.");
@@ -60,7 +62,8 @@ FString FileUtil::ReadTextFile(FStringView Path)
 
 void FileUtil::WriteTextFile(FStringView Path, const FString& Text)
 {
-	fs::path FilePath(Path);
+	// FString 경로는 UTF-8이므로 u8path로 변환
+	fs::path FilePath = fs::u8path(Path.begin(), Path.end());
 	fs::path Directory = FilePath.parent_path();
 
 	// 디렉토리가 없으면 만듦

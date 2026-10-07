@@ -47,7 +47,7 @@ void FEditorState::ReadFromFile(FStringView FilePath)
 	// 파일을 불러오는데 실패하면 기본값 유지
 	if (!File.read(Structure))
 	{
-		UE_LOG("[FEditorState::ReadFromFile] \"%s\" 파일을 불러오는데 실패했습니다.", FilePath);
+		UE_LOG("[FEditorState::ReadFromFile] \"%s\" 파일을 불러오는데 실패했습니다.", FString(FilePath).c_str());
 		return;
 	}
 

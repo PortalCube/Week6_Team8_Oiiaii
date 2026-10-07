@@ -3,6 +3,7 @@
 #include "Editor/Core/FEditor.h"
 #include "FImguiEditorViewportWindow.h"
 #include "Runtime/Resource/FResourceLoader.h"
+#include "Runtime/Utility/WindowsUtil.h"
 // "표시명\0패턴\0" 이중 널 종료 필요
 constexpr wchar_t SceneFilter[] = L"Scene Files (*.Scene)\0*.Scene\0All Files (*.*)\0*.*\0";
 constexpr wchar_t ObjFilter[] = L"Scene Files (*.obj)\0*.obj\0All Files (*.*)\0*.*\0";
@@ -49,7 +50,8 @@ bool FImguiToolbar::PickSceneFile(FString& OutPath, bool bSave)
 	if (!(bSave ? GetSaveFileNameW(&Desc) : GetOpenFileNameW(&Desc)))
 		return false;
 
-	OutPath = std::filesystem::path(Buffer).string();
+	// 씬 경로는 FileUtil(UTF-8 경로 규약)로 읽고 쓰므로 UTF-8로 변환
+	OutPath = WindowsUtil::ToString(Buffer);
 	return true;
 }
 
