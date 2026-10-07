@@ -19,6 +19,7 @@
 #include "Editor/Core/EditorConstant.h"
 #include "Runtime/Math/FVector.h"
 #include "Runtime/Rendering/FPostProcess.h"
+#include "Runtime/Rendering/FRenderer.h"
 #include <Windows.h>
 #include <ShlObj.h>
 #include <filesystem>
@@ -593,4 +594,8 @@ void FImguiControlPanelWindow::FogSetting(FEditor& Editor)
 
 	ImGui::SetNextItemWidth(180.0f);
 	ImGui::ColorEdit3("Inscattering Color", &Fog.FogInscatteringColor.X);
+
+	// 배경(Clear) 색상
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::ColorEdit3("##ClearColor", ClearColor);
 }

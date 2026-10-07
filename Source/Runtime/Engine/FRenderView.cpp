@@ -354,6 +354,11 @@ void FRenderView::DrawGrid(const FSceneView& View, FGrid* Grid)
 	{
 		return;
 	}
+	// SceneDepth에서는 그리드를 그리지 않음
+	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
+	{
+		return;
+	}
 
 	Grid->DrawLine(Renderer, View.Camera);
 
