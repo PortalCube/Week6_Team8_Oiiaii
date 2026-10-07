@@ -94,23 +94,19 @@ FMatrix UTextComponent::GetRenderMatrix(const FCamera& Camera) const
 	FTransform Transform = GetGlobalTransform();
 
 	FMatrix ScaleTransform = FMatrix::MakeScale({ 1.0f, Width, Height });
-	FMatrix ModelMatrix = BillboardRendering::MakeBillboardMatrix(Transform, Camera);
 
-	return ScaleTransform * ModelMatrix;
+	return ScaleTransform * Transform.GetMatrix();
 }
 
 const FRenderData& UTextComponent::GetRenderData(const FCamera& Camera) const
 {
 	TArray<FInstanceData> Built;
 
-	FTransform Transform = GetGlobalTransform();
-	FMatrix ModelMatrix = BillboardRendering::MakeBillboardMatrix(Transform, Camera);
-
 	// 글자별 FInstanceData에 빌보드 월드 행렬 적용
 	for (const FInstanceData& Inst : Instances)
 	{
 		FInstanceData WorldInst = Inst;
-		WorldInst.World *= ModelMatrix;
+		WorldInst.World *= GetGlobalTransformMatrix();
 		Built.push_back(WorldInst);
 	}
 
@@ -121,17 +117,8 @@ const FRenderData& UTextComponent::GetRenderData(const FCamera& Camera) const
 
 void UTextComponent::UpdateWorldBounds()
 {
-	// 1. 사각형에 Transform 적용
 	FMatrix ScaleTransform = FMatrix::MakeScale({ 1.0f, Width, Height });
 	WorldBounds = { GetLocalBounds(), ScaleTransform * GetGlobalTransformMatrix() };
-
-	// 2. 외접구 반지름
-	float Radius = WorldBounds.Extent.Size();
-
-	// 3. AABB 계산 후 적용
-	FVector Center = WorldBounds.Center;
-	FVector Extent{ Radius, Radius, Radius };
-	WorldBounds = { Center, Extent };
 }
 
 void UTextComponent::Serialize(FArchive& Archive)

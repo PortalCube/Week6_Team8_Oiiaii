@@ -49,6 +49,9 @@ public:
 	float GetWidth() const { return Width; }
 	float GetHeight() const { return Height; }
 
+protected:
+	const TArray<FInstanceData>& GetLocalTextInstances() const { return Instances; }
+
 private:
 	TSharedPtr<FFont> Font;
 	UFont* FontAsset = nullptr;
