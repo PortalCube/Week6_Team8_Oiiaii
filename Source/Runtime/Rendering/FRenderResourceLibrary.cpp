@@ -74,6 +74,18 @@ bool FRenderResourceLibrary::CreateSelectionOutlinePipeline(FRenderer& Renderer)
 	return CreateCustomPipline(Renderer, L"ScreenQuadVS.cso", L"SelectionOutlinePS.cso", "#SelectionOutline");
 }
 
+bool FRenderResourceLibrary::CreateFXAAPipeline(FRenderer& Renderer)
+{
+	return CreateCustomPipline(Renderer, L"ScreenQuadVS.cso", L"FXAAPS.cso", "#FXAA", false,
+		D3D11_STENCIL_OP_KEEP,
+	    D3D11_COMPARISON_ALWAYS,
+	    D3D11_COLOR_WRITE_ENABLE_ALL,
+	    D3D11_FILTER_MIN_MAG_MIP_LINEAR, // 선형 샘플링
+	    D3D11_TEXTURE_ADDRESS_CLAMP,
+	    D3D11_TEXTURE_ADDRESS_CLAMP,
+	    D3D11_TEXTURE_ADDRESS_CLAMP);
+}
+
 // Composite 파이프라인
 bool FRenderResourceLibrary::CreateCompositePipeline(FRenderer& Renderer)
 {
@@ -222,6 +234,7 @@ bool FRenderResourceLibrary::InitializePipelines(FRenderer& Renderer)
 	return CreateWireframePipeline(Renderer) &&
 	       CreateSelectionStencilPipeline(Renderer) &&
 	       CreateSelectionOutlinePipeline(Renderer) &&
+	       CreateFXAAPipeline(Renderer) &&
 	       CreateCompositePipeline(Renderer) &&
 		   CreateSceneDepthPipeline(Renderer);
 }

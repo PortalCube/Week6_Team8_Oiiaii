@@ -270,11 +270,11 @@ bool FEditor::SelectActor(AActor* Actor)
 		{
 			Gizmo.Mode = EGizmoMode::Translate;
 		}
-
 	}
 
 	return true;
 }
+
 
 void FEditor::UnSelectActor()
 {

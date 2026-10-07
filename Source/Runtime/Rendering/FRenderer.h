@@ -41,6 +41,7 @@ struct FFrameResource
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ViewConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> PostProcessConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> FXAAConstantBuffer;
 };
 
 constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
@@ -96,6 +97,7 @@ public:
 	void UpdateFrameConstants(const FFrameConstants& Constants);
 	void UpdateViewConstants(const FViewConstants& Constants);
 	void UpdatePostProcessConstants(const FPostProcessConstants& Constants);
+	void UpdateFXAAConstants(const FFXAAConstants& Constants);
 
 	// Object Constant Buffer를 갱신한다.
 	template <typename TConstants>
@@ -199,6 +201,8 @@ public:
 	void RenderSelectionOutline(const FViewport& TargetViewport);
 	void CopySceneColorToViewport(const FViewport& TargetViewport);
 	void DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VIEWPORT& TargetD3DViewport, ID3D11ShaderResourceView* const* SRVs, UINT NumSRVs, const FName& PipelineId);
+	void RenderFXAA(ID3D11ShaderResourceView* InputSRV, ID3D11RenderTargetView* OutputRTV, UINT Width, UINT Height);
+	void RenderViewportFXAA(const FViewport& TargetViewport);
 
 	// 디버그
 	void QueryVisibility(const TArray<const FDrawCommand*>& Commands, TArray<uint64>& OutSamples);
@@ -232,6 +236,7 @@ private:
 	void EvictUnusedSceneTextures();
 
 	bool InitializePointLightBuffers();
+
 
 private:
 	// 모든 ConstantBuffer의 최대 크기

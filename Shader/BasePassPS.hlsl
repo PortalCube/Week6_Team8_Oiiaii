@@ -34,6 +34,8 @@ float4 MainPS(PS_INPUT Input) : SV_Target
     float3 Ambient = LightColor * AmbientIntensity;
 
     float3 FinalColor = BaseColor * (Ambient + Diffuse);
+
+	// Point Light 계산
     for (uint i = 0; i < PointLightCount; ++i)
     {
         FinalColor += EvaluatePointLight(PointLights[i], Input.WorldPosition, N, BaseColor);

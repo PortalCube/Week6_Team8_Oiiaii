@@ -74,11 +74,13 @@ void FRenderer::Shutdown()
 		FrameResources[i].FrameConstantBuffer.Reset();
 		FrameResources[i].ObjectConstantBuffer.Reset();
 		FrameResources[i].ViewConstantBuffer.Reset();
+		FrameResources[i].FXAAConstantBuffer.Reset();
 	}
 	LightConstantBuffer.Reset();
 	PointLightSRV.Reset();
 	PointLightBuffer.Reset();
 	PointLightCountBuffer.Reset();
+
 
 	BackBufferTexture.Reset();
 	BackBufferRTV.Reset();
@@ -1152,6 +1154,18 @@ bool FRenderer::InitializeConstantBuffers()
 		{
 			return false;
 		}
+
+		D3D11_BUFFER_DESC FXAABufferDesc = {
+			.ByteWidth = sizeof(FFXAAConstants),
+			.Usage = D3D11_USAGE_DEFAULT,
+			.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
+		};
+		Result = Device->CreateBuffer(&FXAABufferDesc, nullptr, &FrameResources[i].FXAAConstantBuffer);
+
+		if (FAILED(Result))
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -1254,6 +1268,15 @@ void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLig
 	FPointLightCountConstants CountData{};
 	CountData.PointLightCount = Count;
 	Context->UpdateSubresource(PointLightCountBuffer.Get(), 0, nullptr, &CountData, 0, 0);
+}
+
+void FRenderer::UpdateFXAAConstants(const FFXAAConstants& Constants)
+{
+	ID3D11Buffer* Buffer = GetCurrentFrameResource()->FXAAConstantBuffer.Get();
+
+	Context->UpdateSubresource(Buffer, 0, nullptr, &Constants, 0, 0);
+
+	Context->PSSetConstantBuffers(6, 1, &Buffer);
 }
 
 // ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Constants Buffer ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
@@ -1697,6 +1720,64 @@ void FRenderer::DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VI
 	// 캐시 무효화
 	ClearLastRenderState();
 }
+
+void FRenderer::RenderFXAA(ID3D11ShaderResourceView* InputSRV, ID3D11RenderTargetView* OutputRTV, UINT Width, UINT Height)
+{
+	if (!InputSRV || !OutputRTV || Width == 0 || Height == 0)
+	{
+		return;
+	}
+
+	const float InvWidth = 1.0f / static_cast<float>(Width);
+	const float InvHeight = 1.0f / static_cast<float>(Height);
+
+	FFXAAConstants Constants{};
+	Constants.InvTextureSize = { InvWidth, InvHeight };
+
+	// 텍스처 가장자리 픽셀의 중심까지 샘플링 허용.
+	Constants.UVMin = { InvWidth * 0.5f, InvHeight * 0.5f };
+	Constants.UVMax = {
+		1.0f - InvWidth * 0.5f,
+		1.0f - InvHeight * 0.5f
+	};
+
+	UpdateFXAAConstants(Constants);
+
+	D3D11_VIEWPORT Viewport{};
+	Viewport.Width = static_cast<float>(Width);
+	Viewport.Height = static_cast<float>(Height);
+	Viewport.MinDepth = 0.0f;
+	Viewport.MaxDepth = 1.0f;
+
+	ID3D11ShaderResourceView* SRVs[] = { InputSRV };
+
+	DrawScreenPass(OutputRTV, Viewport, SRVs, 1, FName("#FXAA"));
+}
+
+void FRenderer::RenderViewportFXAA(const FViewport& TargetViewport)
+{
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures || !GetPipeline(FName("#FXAA")))
+	{
+		return;
+	}
+
+	const UINT Width = RenderTarget->GetWidth();
+	const UINT Height = RenderTarget->GetHeight();
+	if (Width == 0 || Height == 0 ||
+		ActiveSceneTextures->Width != Width || ActiveSceneTextures->Height != Height)
+	{
+		return;
+	}
+
+	// Read the outlined viewport into a separate texture to avoid SRV/RTV aliasing.
+	RenderFXAA(RenderTarget->GetSRV(), ActiveSceneTextures->SceneColorRTV.Get(), Width, Height);
+
+	// Keep the viewport output used by gizmos and final composition up to date.
+	CopySceneColorToViewport(TargetViewport);
+}
+
+
 
 // ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Draw ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
 // =====================================================================

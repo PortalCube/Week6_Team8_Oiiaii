@@ -10,7 +10,6 @@ struct PS_INPUT
 
 float4 MainPS(PS_INPUT Input) : SV_Target
 {
-    // UV.y: apex=0, base=1
     float T = saturate(Input.UV.y);
 
     // 거리 감쇠 - apex에서 밝고 base로 갈수록 어두워짐

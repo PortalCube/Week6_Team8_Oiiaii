@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "presentation": {
+    "id": "123iRp8gHf_24qqfu0U09EMWY6DT4QQoo1oQ0nvfjITc",
+    "title": "Week6 발표 초안 — World 복사 · PIE · Fog · Forward Light · FXAA",
+    "revisionId": "s07vfG9hpTa4QA",
+    "slideCount": 8
+  },
+  "snapshotSha256": "4f77d41408f36f71b087d8e550e2c4b5988956272196b97d4b28ed839b14833b",
+  "summary": {
+    "totalIssues": 0,
+    "reportedIssues": 0,
+    "truncated": false,
+    "bySeverity": {},
+    "byCode": {}
+  },
+  "issues": []
+}

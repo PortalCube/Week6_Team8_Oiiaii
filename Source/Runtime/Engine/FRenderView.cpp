@@ -491,6 +491,7 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 		// 아웃라인을 Post Process에서 그림 (SceneColor + 외곽선 → 출력 RT)
 		DrawStencilMask(View.Camera, SelectedActor);
 		Renderer.RenderSelectionOutline(View.Viewport);
+		Renderer.RenderViewportFXAA(View.Viewport);
 	}
 }
 

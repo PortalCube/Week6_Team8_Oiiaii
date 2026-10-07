@@ -44,6 +44,7 @@ void SearchEdge(
     endDelta = Luma(ReadColor(endUV).rgb) - edgeLuma;
     found = false;
 
+	// 최대 탐색 픽셀 제한
     const int MaxSearchSteps = 12;
     [loop]
     for (int step = 1; step <= MaxSearchSteps; ++step)

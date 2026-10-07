@@ -10,3 +10,15 @@ void UProjectileMovementComponent::Initialize()
 	Super::Initialize();
 	bTickEnabled = true;
 }
+
+void UProjectileMovementComponent::TickComponent(float DeltaTime)
+{
+	Super::TickComponent(DeltaTime);
+	USceneComponent* Component = GetUpdatedComponent();
+	if (!Component || DeltaTime <= 0.0f)
+	{
+		return;
+	}
+
+	Component->SetRelativeLocation(Component->GetRelativeLocation() + Velocity * DeltaTime);
+}

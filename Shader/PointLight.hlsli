@@ -14,11 +14,7 @@ struct FPointLightConstants
 };
 
 
-float3 EvaluatePointLight(
-    FPointLightConstants Light,
-    float3 PositionWS,
-    float3 NormalWS,
-    float3 BaseColor)
+float3 EvaluatePointLight(FPointLightConstants Light, float3 PositionWS, float3 NormalWS, float3 BaseColor)
 {
 	float3 ToLight = Light.PositionWS - PositionWS;
 	float Distance = length(ToLight);

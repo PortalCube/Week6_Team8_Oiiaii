@@ -2,6 +2,7 @@
 #include "Runtime/Components/Mesh/UStaticMeshComponent.h"
 #include "Runtime/Components/UFireBallComponent.h"
 #include "Runtime/Components/UProjectileMovementComponent.h"
+#include "Runtime/Components/URotationMovementComponent.h"
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Asset/FAssetRegistry.h"
@@ -35,6 +36,12 @@ void AFireBallActor::Initialize()
 		FireBallComponent->SetRadiusFalloff(2.0f);
 
 		ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>();
+		ProjectileMovementComponent->SetUpdatedComponent(Component);
+		ProjectileMovementComponent->SetVelocity(FVector{ 0.0f, 0.0f, 0.0f });
+
+		RotationMovementComponent = CreateDefaultSubobject<URotationMovementComponent>();
+		RotationMovementComponent->SetUpdatedComponent(Component);
+		RotationMovementComponent->SetRotationRate(FVector{ 0.0f, 180.0f, 0.0f });
 	}
 }
 

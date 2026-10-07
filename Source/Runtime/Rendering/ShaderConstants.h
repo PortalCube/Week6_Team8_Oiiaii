@@ -105,3 +105,16 @@ struct FLightConstants
 	float AmbientIntensity = 0.05f;
 };
 static_assert(sizeof(FLightConstants) % 16 == 0);
+
+
+
+// Register = b6
+struct FFXAAConstants
+{
+	FVector2 InvTextureSize;
+	FVector2 UVMin;
+	FVector2 UVMax;
+	float Subpixel = 0.75f;
+	float Padding = 0.0f;
+};
+static_assert(sizeof(FFXAAConstants) == 32);
