@@ -523,7 +523,7 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 
 	// PostProcess 상수버퍼
 	FPostProcessConstants PostProcessConstants = {
-		.VisMax = 10.f,
+		.VisMax = 25.f,
 		.VisMinOrtho = 0.1f,
 		.VisMaxOrtho = 10.f,
 	};
