@@ -19,18 +19,5 @@ void ACubeActor::Initialize()
 		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
 		Component->SetMesh(Registry.Get<UStaticMesh>("#Cube"));
 	    Component->SetMaterial(Registry.Get<UMaterial>("Material/Cube_TwoSided.json"));
-
-		// 테스트
-		auto Component2 = CreateDefaultSubobject<UStaticMeshComponent>();
-		if (Component2)
-		{
-			Component2->SetupAttachment(Component);
-
-			FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-			Component2->SetMesh(Registry.Get<UStaticMesh>("#Cube"));
-			Component2->SetMaterial(Registry.Get<UMaterial>("Material/Cube_TwoSided.json"));
-
-			// 테스트
-		}
 	}
 }

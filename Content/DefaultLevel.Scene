@@ -1,0 +1,12 @@
+{
+    "Level": [
+        {
+            "Actors": [],
+            "Outer": null,
+            "Type": "ULevel",
+            "UUID": 103
+        }
+    ],
+    "NextUUID": 104,
+    "Version": 2
+}

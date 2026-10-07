@@ -175,7 +175,8 @@ void FRenderView::CollectScenePrimitives(const ULevel& Scene, const FSceneView& 
 		{
 			DrawCommand.Constants.WorldInverseTranspose = FMatrix::Identity;
 		}
-		DrawCommand.Constants.DisableShading = View.ViewMode == EViewModeIndex::VMI_Unlit ? 1.0f : 0.0f;
+		DrawCommand.Constants.DisableShading =
+		    DrawCommand.Constants.DisableShading == 1.0f || View.ViewMode == EViewModeIndex::VMI_Unlit ? 1.0f : 0.0f;
 
 		AActor* Owner = PrimitiveComponent->GetOwner();
 		AFireBallActor* FireBallActor = Owner ? Owner->Cast<AFireBallActor>() : nullptr;

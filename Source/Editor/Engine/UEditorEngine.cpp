@@ -84,7 +84,8 @@ void UEditorEngine::Init(FEngineLoop* InEngineLoop)
 	Editor.LoadState();
 
 	// 새로운 Level으로 World 불러오기
-	LoadMap(*EditorWorldContext, "");
+	FString Path = FileUtil::GetContentPath("DefaultLevel.Scene");
+	LoadMap(*EditorWorldContext, Path);
 }
 
 void UEditorEngine::Tick(float DeltaTime)
