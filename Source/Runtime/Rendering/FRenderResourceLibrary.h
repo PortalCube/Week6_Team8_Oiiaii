@@ -14,11 +14,6 @@
 
 class FRenderer;
 class FTexture;
-struct FTextVertex
-{
-	FVector Pos;
-	float u, v;
-};
 
 class FRenderResourceLibrary final
 {

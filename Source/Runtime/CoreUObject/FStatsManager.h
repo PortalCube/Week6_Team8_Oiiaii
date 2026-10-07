@@ -1,4 +1,6 @@
 #pragma once
+#include <d3d11.h>
+#include <wrl/client.h>
 
 #include "Runtime/Core/TArray.h"
 #include "Runtime/Core/TMap.h"

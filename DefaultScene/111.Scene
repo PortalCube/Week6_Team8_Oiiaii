@@ -100,10 +100,44 @@
                 "UUID": 90
             },
             {
+                "FireBallComponent": {
+                    "EmissiveColor": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "EmissiveIntensity": 0.5,
+                    "FireColor": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Intensity": 1.0,
+                    "Location": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Radius": 10.0,
+                    "RadiusFalloff": 2.0,
+                    "Rotation": [
+                        -0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Type": "UFireBallComponent",
+                    "UUID": 202
+                },
                 "RootComponent": {
                     "Location": [
-                        4.054899215698242,
-                        -17.028013229370117,
+                        5.580114841461182,
+                        -21.391714096069336,
                         6.215450286865234
                     ],
                     "Materials": [
@@ -149,10 +183,44 @@
                 "UUID": 92
             },
             {
+                "FireBallComponent": {
+                    "EmissiveColor": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "EmissiveIntensity": 0.20000000298023224,
+                    "FireColor": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Intensity": 1.0,
+                    "Location": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Radius": 10.0,
+                    "RadiusFalloff": 2.0,
+                    "Rotation": [
+                        -0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Type": "UFireBallComponent",
+                    "UUID": 206
+                },
                 "RootComponent": {
                     "Location": [
-                        2.0072717666625977,
-                        -22.82483673095703,
+                        1.5748238563537598,
+                        -19.667255401611328,
                         6.256460189819336
                     ],
                     "Materials": [
@@ -187,9 +255,9 @@
                         0.0
                     ],
                     "Scale": [
-                        0.5,
-                        0.5,
-                        0.5
+                        5.0,
+                        5.0,
+                        5.0
                     ],
                     "Type": "UStaticMeshComponent",
                     "UUID": 97
@@ -198,11 +266,45 @@
                 "UUID": 96
             },
             {
+                "FireBallComponent": {
+                    "EmissiveColor": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "EmissiveIntensity": 0.44999998807907104,
+                    "FireColor": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Intensity": 3.1500000953674316,
+                    "Location": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Radius": 10.0,
+                    "RadiusFalloff": 2.0,
+                    "Rotation": [
+                        -0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "Type": "UFireBallComponent",
+                    "UUID": 210
+                },
                 "RootComponent": {
                     "Location": [
-                        -1.3649847507476807,
-                        -19.99306869506836,
-                        6.544116973876953
+                        -5.231772422790527,
+                        -22.27129364013672,
+                        7.675034523010254
                     ],
                     "Materials": [
                         {
@@ -250,6 +352,6 @@
         "Type": "ULevel",
         "UUID": 85
     },
-    "NextUUID": 194,
+    "NextUUID": 212,
     "Version": 1
 }

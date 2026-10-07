@@ -3,7 +3,6 @@
 #include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Geometry/FTransform.h"
 #include "Runtime/Math/FVector2.h"
-#include "Runtime/Components/UTextComponent.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Rendering/FRenderQueue.h"
 #include "Runtime/Engine/FSceneView.h"
@@ -51,10 +50,10 @@ public:
 	void FlushBasePass(const FSceneView& View);
 	void FlushLinePass(const FCamera& Camera);
 	void RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor);
-	void RenderOverlayPass(const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp);
 
 	// 개별 렌더 및 디버그 라인
 	void RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo);
+	void RenderSelectedActorUUID(const FSceneView& View, const AActor* SelectedActor);
 
 	void RenderLine(const FVector& Start, const FVector& End, const FVector4& Color);
 	void RenderBoxCenterExtent(const FVector& Center, const FVector& Extent, const FVector4& Color);

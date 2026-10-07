@@ -24,6 +24,9 @@ class UFireBallComponent : public UPrimitiveComponent
 	GENERATED_BODY()
 
 public:
+	void Serialize(FArchive& Archive) const override;
+	void Deserialize(const FArchive& Archive) override;
+
 	FPointLightConstants GetPointLightData() const;
 
 	float GetIntensity() const { return Intensity; }

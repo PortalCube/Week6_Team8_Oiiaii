@@ -13,7 +13,6 @@ class FGizmo;
 class FGrid;
 class FVisualizerRegistry;
 class UPrimitiveComponent;
-class UTextComponent;
 
 // 뷰포트 렌더링 명세
 struct FSceneView
@@ -36,5 +35,4 @@ struct FEditorRenderContext
 	FVisualizerRegistry* VisualizerRegistry = nullptr;
 	FTransform SelectedTransform;
 	const FGizmo* Gizmo = nullptr;
-	UTextComponent* TextComp = nullptr;
 };

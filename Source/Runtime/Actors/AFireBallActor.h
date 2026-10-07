@@ -14,6 +14,8 @@ class AFireBallActor : public AActor
 
 public:
 	void Initialize() override;
+	void Serialize(FArchive& Archive) const override;
+	void Deserialize(const FArchive& Archive) override;
 
 	UStaticMeshComponent* GetSphereComponent() const;
 	UFireBallComponent* GetFireBallComponent() const { return FireBallComponent; }

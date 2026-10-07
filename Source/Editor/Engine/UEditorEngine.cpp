@@ -166,10 +166,10 @@ void UEditorEngine::Tick(float DeltaTime)
 			// 뷰포트 렌더링 일괄 수행
 			RenderView.RenderView(View, *EditorViewport.GetClient().GetWorldContext()->World->GetCurrentLevel(), EditorRenderContext);
 
-			// 기즈모 그리기
+			// 선택 UUID와 기즈모 그리기
 			if (Editor.ObjectSelected())
 			{
-				RenderView.RenderOverlayPass(View, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
+				RenderView.RenderSelectedActorUUID(View, Editor.GetSelectedActor());
 				RenderView.RenderGizmo(View, Editor.SelectedTransform, Editor.GetGizmo());
 			}
 

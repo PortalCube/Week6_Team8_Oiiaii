@@ -31,4 +31,6 @@ struct FFrustum
 
 	// ViewProj 행렬에서 Frustum을 추출합니다.
 	static FFrustum FromViewProjection(const FMatrix& ViewProj);
+
+	bool IntersectsSphere(const FVector& Center, float Radius) const;
 };

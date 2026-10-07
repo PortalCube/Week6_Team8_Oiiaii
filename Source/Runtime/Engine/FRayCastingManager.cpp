@@ -2,6 +2,7 @@
 #include "Runtime/Math/FMatrix.h"
 #include "Runtime/Rendering/FMesh.h"
 #include "Runtime/Components/UPrimitiveComponent.h"
+#include "Runtime/Actors/AActor.h"
 #include <limits>
 #include <cmath>
 #include <algorithm>
@@ -50,6 +51,11 @@ bool FRayCastingManager::RayIntersectsMeshes(
 	for (UPrimitiveComponent* Component : Components)
 	{
 		if (!Component)
+		{
+			continue;
+		}
+		const AActor* Owner = Component->GetOwner();
+		if (!Owner || !Owner->IsSelectable())
 		{
 			continue;
 		}

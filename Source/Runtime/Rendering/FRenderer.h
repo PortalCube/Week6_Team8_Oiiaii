@@ -25,14 +25,15 @@
 #include <d3d11_1.h>
 #include <wrl/client.h>
 #include <span>
+#include <type_traits>
 #include <utility>
 
 class FTexture;
 struct FTextureDesc;
 class FCamera;
-class UTextComponent;
 struct FDrawCommand;
 struct FPointLightConstants;
+struct FSceneView;
 
 struct FFrameResource
 {
@@ -47,6 +48,8 @@ constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 class FRenderer final
 {
 public:
+	void DrawBillboardText(const FSceneView& View, FWStringView Text,
+	    const FVector& WorldPosition, float WorldSize);
 	// 생명주기
 	bool Initialize(HWND Window);
 	void Shutdown();
@@ -102,8 +105,12 @@ public:
 		static_assert(sizeof(TConstants) % 16 == 0);
 
 		// 언리얼 Clip -> D3D Clip 좌표 변환.
-		// MVP, VP를 가진 상수 타입에만 적용한다(없는 타입은 그대로 통과).
+		// Object MVP는 현재 뷰와 World로 계산하고, 그리드 MVP는 전달된 값을 사용한다.
 		TConstants ShaderConstants = Constants;
+		if constexpr (std::is_same_v<TConstants, FObjectConstants>)
+		{
+			ShaderConstants.MVP = ShaderConstants.World * ViewProjection;
+		}
 		if constexpr (requires { ShaderConstants.MVP; })
 		{
 			ShaderConstants.MVP = ShaderConstants.MVP.ToD3DMatrix();
@@ -198,6 +205,7 @@ public:
 
 private:
 	// 초기화
+	void DrawTextInstanceData(const FDrawCommand& Command, std::span<const FInstanceData> InstanceData);
 	bool InitializeDeviceAndSwapChain(HWND Window);
 	bool InitializeBackBuffer();
 	bool InitializeConstantBuffers();
@@ -232,6 +240,7 @@ private:
 	static constexpr uint32 NumFrameResourceCount = 4;
 
 	FLineBatcher LineBatcher;
+	FMatrix ViewProjection = FMatrix::Identity;
 
 	// 디바이스
 	Microsoft::WRL::ComPtr<ID3D11Device> Device;
@@ -270,6 +279,10 @@ private:
 	// 텍스트 인스턴싱 버퍼
 	Microsoft::WRL::ComPtr<ID3D11Buffer> InstanceBuffer;
 	UINT TextInstanceBufferSize = 0;
+	FWString CachedBillboardText;
+	const FFont* CachedBillboardFont = nullptr;
+	TArray<FInstanceData> CachedBillboardGlyphs;
+	TArray<FInstanceData> BillboardWorldInstances;
 
 	// GPU 타이머
 	struct FGPUTimerQuery

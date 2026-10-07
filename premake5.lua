@@ -197,6 +197,11 @@ project "OiiaiiEngine.Tests"
         "Source/Editor/Core/FConfigArchive.cpp",
         "Source/Editor/Core/FEditorState.cpp",
         "Source/Runtime/Mesh/MeshLODBuilder.cpp",
+        "Source/Runtime/Rendering/FFont.cpp",
+        "Source/Runtime/Core/FPoolAllocator.cpp",
+        "Source/Runtime/Core/FName.cpp",
+        "Source/Runtime/Core/FNamePool.cpp",
+        "Source/Runtime/CoreUObject/FStatsManager.cpp",
         "Source/ThirdParty/meshoptimizer/src/*.cpp",
     }
 

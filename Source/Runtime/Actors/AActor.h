@@ -74,12 +74,17 @@ public:
 	virtual class UWorld* GetWorld() const;
 
 	virtual bool IsEditorOnly() const override;
+	virtual bool IsSelectable() const { return true; }
 
 
 
 	////////////////////////////////////////////////////////////
 	// Component
 	////////////////////////////////////////////////////////////
+
+
+
+
 
 	void SetRootComponent(USceneComponent* Component);
 	USceneComponent* GetRootComponent() const { return RootComponent; }
