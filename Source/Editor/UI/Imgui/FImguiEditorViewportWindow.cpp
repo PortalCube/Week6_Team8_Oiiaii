@@ -34,6 +34,10 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 	const ImGuiViewport* MainViewport = ImGui::GetMainViewport();
 	const FVector2 ClientSize{ MainViewport->Size.x, MainViewport->Size.y };
 
+	const HWND WindowHandle = static_cast<HWND>(MainViewport->PlatformHandleRaw);
+
+	const bool bAppFocused =  WindowHandle != nullptr && GetForegroundWindow() == WindowHandle;
+
 	BeginWindow();
 
 	// 부모 창의 콘텐츠 영역
@@ -43,6 +47,7 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 
 	if (ClientSize.X <= 0.0f || ClientSize.Y <= 0.0f || ContentSize.x <= 0.0f || ContentSize.y <= 0.0f)
 	{
+		ReleaseCursorClip();
 		EndWindow();
 		return;
 	}
@@ -167,10 +172,85 @@ void FImguiEditorViewportWindow::Process(FEditor& Editor, float DeltaTime)
 	{
 		//ActiveViewport->GetClient().UpdateFocusedAndHovered(ActiveInput.bFocused, ActiveInput.bHovered);
 		ActiveViewport->UpdateFocusedAndHovered(ActiveInput.bFocused, ActiveInput.bHovered);
+
+		FGameViewportClient& GameClient = ActiveViewport->GetGameClient();
+
+		if (!bAppFocused || !ActiveViewport->IsPIE() || !ActiveInput.bFocused)
+		{
+			// PIE가 끝났거나 다른 ImGui 창으로 포커스가 이동한 경우
+			GameClient.SetCursorHidden(false);
+		}
+		else if (ActiveInput.bPickRequested)
+		{
+			// PIE의 실제 3D 영역을 왼쪽 클릭한 경우
+			GameClient.SetCursorHidden(true);
+		}
+
+		if (GameClient.IsCursorHidden())
+		{
+			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+		}
+
 		UpdateSelection(Editor, *ActiveViewport, ActiveInput);
 		UpdateGizmo(Editor, ActiveInput);
 		UpdateCamera(Editor, *ActiveViewport, ActiveInput, DeltaTime);
 	}
+
+	const bool bShouldClip =
+	    bAppFocused &&
+	    ActiveViewport != nullptr &&
+	    bHasActiveInput &&
+	    ActiveViewport->IsPIE() &&
+	    ActiveInput.bFocused &&
+	    ActiveViewport->GetGameClient().IsCursorHidden();
+
+	if (bShouldClip)
+	{
+		const FVector2 Position = ActiveViewport->GetViewport().GetLeftTop();
+
+		const FVector2 Size = ActiveViewport->GetViewport().GetViewportSize();
+
+		POINT TopLeft{
+			static_cast<LONG>(Position.X),
+			static_cast<LONG>(Position.Y)
+		};
+
+		POINT BottomRight{
+			static_cast<LONG>(Position.X + Size.X),
+			static_cast<LONG>(Position.Y + Size.Y)
+		};
+
+		if (Size.X > 0.0f && Size.Y > 0.0f &&
+		    ClientToScreen(WindowHandle, &TopLeft) &&
+		    ClientToScreen(WindowHandle, &BottomRight))
+		{
+			const RECT ScreenRect{
+				TopLeft.x,
+				TopLeft.y,
+				BottomRight.x,
+				BottomRight.y
+			};
+
+			if (ClipCursor(&ScreenRect))
+			{
+				bCursorClipped = true;
+			}
+			else
+			{
+				ReleaseCursorClip();
+			}
+		}
+		else
+		{
+			ReleaseCursorClip();
+		}
+	}
+	else
+	{
+		ReleaseCursorClip();
+	}
+
+
 	// 현재 ImGui 창은 다시 부모 창
 	ClampWindowToWorkArea();
 	EndWindow();
@@ -207,6 +287,15 @@ void FImguiEditorViewportWindow::BeginWindow() const
 void FImguiEditorViewportWindow::EndWindow() const
 {
 	ImGui::End();
+}
+
+void FImguiEditorViewportWindow::ReleaseCursorClip()
+{
+	if (bCursorClipped)
+	{
+		ClipCursor(nullptr);
+		bCursorClipped = false;
+	}
 }
 
 FImguiEditorViewportWindow::FViewportInput FImguiEditorViewportWindow::GatherInput(const FVector2& ViewportSizePixels, const FVector2& ViewportLeftTopPixels) const

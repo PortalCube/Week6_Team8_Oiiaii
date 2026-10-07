@@ -117,6 +117,17 @@ void UEditorEngine::Tick(float DeltaTime)
 		Editor.RequestEndPIE();
 	}
 
+	if (bCanEndPIE && FInputManager::Get().IsKeyPressed(VK_SHIFT) &&  FInputManager::Get().IsKeyDown(VK_F1))
+	{
+		for (SEditorViewport& Viewport : Editor.GetViewportLayout().Viewports)
+		{
+			if (Viewport.IsPIE())
+			{
+				Viewport.GetGameClient().SetCursorHidden(false);
+			}
+		}
+	}
+
 	Editor.ProcessPIERequests();
 	{
 		SCOPE_CYCLE_COUNTER("Game");

@@ -55,9 +55,21 @@ public:
 	// Rendering
 	FSceneView GetSceneView(const FLightConstants& InLightConstants);
 
+	// cursor
+	void SetCursorHidden(bool bHidden)
+	{
+		bCursorHidden = bHidden;
+	}
+
+	bool IsCursorHidden() const
+	{
+		return bCursorHidden;
+	}
+
 private:
 	bool bFocused = false;
 	bool bHovered = false;
+	bool bCursorHidden = false;
 
 	FViewport* Viewport = nullptr;
 
