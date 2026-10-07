@@ -1,0 +1,2281 @@
+{
+    "Level": [
+        {
+            "Actors": [
+                {
+                    "$REF": 1
+                },
+                {
+                    "$REF": 2
+                },
+                {
+                    "$REF": 3
+                },
+                {
+                    "$REF": 4
+                },
+                {
+                    "$REF": 5
+                },
+                {
+                    "$REF": 6
+                },
+                {
+                    "$REF": 7
+                },
+                {
+                    "$REF": 8
+                },
+                {
+                    "$REF": 9
+                },
+                {
+                    "$REF": 10
+                },
+                {
+                    "$REF": 11
+                },
+                {
+                    "$REF": 12
+                },
+                {
+                    "$REF": 13
+                },
+                {
+                    "$REF": 14
+                },
+                {
+                    "$REF": 15
+                },
+                {
+                    "$REF": 16
+                },
+                {
+                    "$REF": 17
+                },
+                {
+                    "$REF": 18
+                },
+                {
+                    "$REF": 19
+                },
+                {
+                    "$REF": 20
+                },
+                {
+                    "$REF": 21
+                },
+                {
+                    "$REF": 22
+                },
+                {
+                    "$REF": 23
+                },
+                {
+                    "$REF": 24
+                },
+                {
+                    "$REF": 25
+                },
+                {
+                    "$REF": 26
+                },
+                {
+                    "$REF": 27
+                }
+            ],
+            "Outer": null,
+            "Type": "ULevel",
+            "UUID": 85
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 28
+                }
+            ],
+            "RootComponent": {
+                "$REF": 28
+            },
+            "Type": "ACatActor",
+            "UUID": 86
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 29
+                }
+            ],
+            "RootComponent": {
+                "$REF": 29
+            },
+            "Type": "ACatActor",
+            "UUID": 88
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 30
+                }
+            ],
+            "RootComponent": {
+                "$REF": 30
+            },
+            "Type": "ACatActor",
+            "UUID": 90
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 31
+                }
+            ],
+            "RootComponent": {
+                "$REF": 31
+            },
+            "Type": "ACatActor",
+            "UUID": 92
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 32
+                }
+            ],
+            "RootComponent": {
+                "$REF": 32
+            },
+            "Type": "ACatActor",
+            "UUID": 94
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 33
+                }
+            ],
+            "RootComponent": {
+                "$REF": 33
+            },
+            "Type": "ACatActor",
+            "UUID": 96
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 34
+                }
+            ],
+            "RootComponent": {
+                "$REF": 34
+            },
+            "Type": "ACatActor",
+            "UUID": 98
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 35
+                }
+            ],
+            "RootComponent": {
+                "$REF": 35
+            },
+            "Type": "ACatActor",
+            "UUID": 100
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 36
+                }
+            ],
+            "RootComponent": {
+                "$REF": 36
+            },
+            "Type": "ACatActor",
+            "UUID": 102
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 37
+                }
+            ],
+            "RootComponent": {
+                "$REF": 37
+            },
+            "Type": "ACatActor",
+            "UUID": 104
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 38
+                }
+            ],
+            "RootComponent": {
+                "$REF": 38
+            },
+            "Type": "ACatActor",
+            "UUID": 106
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 39
+                }
+            ],
+            "RootComponent": {
+                "$REF": 39
+            },
+            "Type": "ACatActor",
+            "UUID": 108
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 40
+                }
+            ],
+            "RootComponent": {
+                "$REF": 40
+            },
+            "Type": "ACatActor",
+            "UUID": 110
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 41
+                }
+            ],
+            "RootComponent": {
+                "$REF": 41
+            },
+            "Type": "ACatActor",
+            "UUID": 112
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 42
+                }
+            ],
+            "RootComponent": {
+                "$REF": 42
+            },
+            "Type": "ACatActor",
+            "UUID": 114
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 43
+                }
+            ],
+            "RootComponent": {
+                "$REF": 43
+            },
+            "Type": "ACatActor",
+            "UUID": 116
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 44
+                }
+            ],
+            "RootComponent": {
+                "$REF": 44
+            },
+            "Type": "ACatActor",
+            "UUID": 118
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 45
+                }
+            ],
+            "RootComponent": {
+                "$REF": 45
+            },
+            "Type": "ACatActor",
+            "UUID": 120
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 46
+                }
+            ],
+            "RootComponent": {
+                "$REF": 46
+            },
+            "Type": "ACatActor",
+            "UUID": 122
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 47
+                }
+            ],
+            "RootComponent": {
+                "$REF": 47
+            },
+            "Type": "ACatActor",
+            "UUID": 124
+        },
+        {
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 48
+                }
+            ],
+            "RootComponent": {
+                "$REF": 48
+            },
+            "Type": "ACatActor",
+            "UUID": 126
+        },
+        {
+            "FireBallComponent": {
+                "$REF": 50
+            },
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 49
+                },
+                {
+                    "$REF": 50
+                },
+                {
+                    "$REF": 51
+                }
+            ],
+            "RootComponent": {
+                "$REF": 49
+            },
+            "Type": "AFireBallActor",
+            "UUID": 172
+        },
+        {
+            "FireBallComponent": {
+                "$REF": 53
+            },
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 52
+                },
+                {
+                    "$REF": 53
+                },
+                {
+                    "$REF": 54
+                }
+            ],
+            "RootComponent": {
+                "$REF": 52
+            },
+            "Type": "AFireBallActor",
+            "UUID": 176
+        },
+        {
+            "FireBallComponent": {
+                "$REF": 56
+            },
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 55
+                },
+                {
+                    "$REF": 56
+                },
+                {
+                    "$REF": 57
+                }
+            ],
+            "RootComponent": {
+                "$REF": 55
+            },
+            "Type": "AFireBallActor",
+            "UUID": 180
+        },
+        {
+            "FireBallComponent": {
+                "$REF": 59
+            },
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 58
+                },
+                {
+                    "$REF": 59
+                },
+                {
+                    "$REF": 60
+                }
+            ],
+            "RootComponent": {
+                "$REF": 58
+            },
+            "Type": "AFireBallActor",
+            "UUID": 184
+        },
+        {
+            "FireBallComponent": {
+                "$REF": 62
+            },
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 61
+                },
+                {
+                    "$REF": 62
+                },
+                {
+                    "$REF": 63
+                }
+            ],
+            "RootComponent": {
+                "$REF": 61
+            },
+            "Type": "AFireBallActor",
+            "UUID": 188
+        },
+        {
+            "FireBallComponent": {
+                "$REF": 65
+            },
+            "Outer": {
+                "$REF": 0
+            },
+            "OwnedComponents": [
+                {
+                    "$REF": 64
+                },
+                {
+                    "$REF": 65
+                },
+                {
+                    "$REF": 66
+                }
+            ],
+            "RootComponent": {
+                "$REF": 64
+            },
+            "Type": "AFireBallActor",
+            "UUID": 192
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -2.2100000381469727,
+                -0.6600000262260437,
+                1.350000023841858
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 1
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -2.95040225982666
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 87
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.2800000011920929,
+                -0.3400000035762787,
+                -0.28999999165534973
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 2
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                1.6820878982543945
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 89
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -0.27000001072883606,
+                0.14000000059604645,
+                -0.6800000071525574
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 3
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -2.014129877090454
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 91
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -2.259999990463257,
+                0.7400000095367432,
+                -1.090000033378601
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 4
+            },
+            "Rotation": [
+                -0.0,
+                -0.0,
+                -0.17788562178611755
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 93
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -1.5700000524520874,
+                -2.859999895095825,
+                -2.700000047683716
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 5
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                1.0192170143127441
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 95
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -1.6299999952316284,
+                0.03999999910593033,
+                0.30000001192092896
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 6
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                2.3926799297332764
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 97
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                2.8499999046325684,
+                -1.7999999523162842,
+                0.0
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 7
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -1.594416856765747
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 99
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.44999998807907104,
+                2.359999895095825,
+                0.5099999904632568
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 8
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.1855350285768509
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 101
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -0.8500000238418579,
+                -0.9200000166893005,
+                2.930000066757202
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 9
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                2.792173147201538
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 103
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -1.2599999904632568,
+                -0.47999998927116394,
+                -1.3899999856948853
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 10
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -1.582175374031067
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 105
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -1.9299999475479126,
+                -2.5299999713897705,
+                0.7699999809265137
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 11
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                2.3231475353240967
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 107
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.949999988079071,
+                0.7900000214576721,
+                1.8700000047683716
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 12
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -2.7313432693481445
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 109
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -0.3199999928474426,
+                2.0799999237060547,
+                -2.0799999237060547
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 13
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -0.4491490423679352
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 111
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -0.4699999988079071,
+                -0.44999998807907104,
+                1.4700000286102295
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 14
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                1.1580692529678345
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 113
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -1.4800000190734863,
+                2.309999942779541,
+                -1.9199999570846558
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 15
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                2.8721938133239746
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 115
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -2.6500000953674316,
+                -2.4200000762939453,
+                -2.4600000381469727
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 16
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -1.4473661184310913
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 117
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                2.0899999141693115,
+                -2.740000009536743,
+                -2.4200000762939453
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 17
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                1.0736464262008667
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 119
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                2.5999999046325684,
+                -0.029999999329447746,
+                -1.8899999856948853
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 18
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -2.6883931159973145
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 121
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                2.9200000762939453,
+                1.0800000429153442,
+                -0.07999999821186066
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 19
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -2.729703903198242
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 123
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -1.409999966621399,
+                -0.30000001192092896,
+                -2.880000114440918
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 20
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                -2.7153265476226807
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 125
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                2.490000009536743,
+                -0.2800000011920929,
+                2.190000057220459
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        0.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "StaticMesh/oiia/Muchkin2",
+                    "OverridePipelineAsset": "Pipeline/Textured.json",
+                    "OverrideTextureAsset": "StaticMesh/oiia/Muchkin2_baseColor.png",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "StaticMesh/oiia/oiia.json",
+            "Outer": {
+                "$REF": 21
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                2.85184645652771
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 127
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -1.2999999523162842,
+                -2.4800000190734863,
+                2.7200000286102295
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "Material/Simple.json",
+                    "OverridePipelineAsset": "Pipeline/Simple_Solid.json",
+                    "OverrideTextureAsset": "",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "#Sphere",
+            "Outer": {
+                "$REF": 22
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 173
+        },
+        {
+            "AttachParent": null,
+            "EmissiveColor": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "EmissiveIntensity": 1.0,
+            "FireColor": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "InheritRotation": true,
+            "Intensity": 1.0,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 22
+            },
+            "Radius": 10.0,
+            "RadiusFalloff": 2.0,
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UFireBallComponent",
+            "UUID": 174
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 22
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UProjectileMovementComponent",
+            "UUID": 175
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -2.5999999046325684,
+                1.4600000381469727,
+                -2.2300000190734863
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "Material/Simple.json",
+                    "OverridePipelineAsset": "Pipeline/Simple_Solid.json",
+                    "OverrideTextureAsset": "",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "#Sphere",
+            "Outer": {
+                "$REF": 23
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 177
+        },
+        {
+            "AttachParent": null,
+            "EmissiveColor": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "EmissiveIntensity": 1.0,
+            "FireColor": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "InheritRotation": true,
+            "Intensity": 1.0,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 23
+            },
+            "Radius": 10.0,
+            "RadiusFalloff": 2.0,
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UFireBallComponent",
+            "UUID": 178
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 23
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UProjectileMovementComponent",
+            "UUID": 179
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -0.25999999046325684,
+                -2.8499999046325684,
+                -0.7599999904632568
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "Material/Simple.json",
+                    "OverridePipelineAsset": "Pipeline/Simple_Solid.json",
+                    "OverrideTextureAsset": "",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "#Sphere",
+            "Outer": {
+                "$REF": 24
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 181
+        },
+        {
+            "AttachParent": null,
+            "EmissiveColor": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "EmissiveIntensity": 1.0,
+            "FireColor": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "InheritRotation": true,
+            "Intensity": 1.0,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 24
+            },
+            "Radius": 10.0,
+            "RadiusFalloff": 2.0,
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UFireBallComponent",
+            "UUID": 182
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 24
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UProjectileMovementComponent",
+            "UUID": 183
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                2.930000066757202,
+                2.4200000762939453,
+                -2.0199999809265137
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "Material/Simple.json",
+                    "OverridePipelineAsset": "Pipeline/Simple_Solid.json",
+                    "OverrideTextureAsset": "",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "#Sphere",
+            "Outer": {
+                "$REF": 25
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 185
+        },
+        {
+            "AttachParent": null,
+            "EmissiveColor": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "EmissiveIntensity": 1.0,
+            "FireColor": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "InheritRotation": true,
+            "Intensity": 1.0,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 25
+            },
+            "Radius": 10.0,
+            "RadiusFalloff": 2.0,
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UFireBallComponent",
+            "UUID": 186
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 25
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UProjectileMovementComponent",
+            "UUID": 187
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -1.5099999904632568,
+                -2.819999933242798,
+                -2.4000000953674316
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "Material/Simple.json",
+                    "OverridePipelineAsset": "Pipeline/Simple_Solid.json",
+                    "OverrideTextureAsset": "",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "#Sphere",
+            "Outer": {
+                "$REF": 26
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 189
+        },
+        {
+            "AttachParent": null,
+            "EmissiveColor": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "EmissiveIntensity": 1.0,
+            "FireColor": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "InheritRotation": true,
+            "Intensity": 1.0,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 26
+            },
+            "Radius": 10.0,
+            "RadiusFalloff": 2.0,
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UFireBallComponent",
+            "UUID": 190
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 26
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UProjectileMovementComponent",
+            "UUID": 191
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                -2.700000047683716,
+                -2.6500000953674316,
+                1.9199999570846558
+            ],
+            "Materials": [
+                {
+                    "Albedo": 1.0,
+                    "Color": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "Diffuse": 1.0,
+                    "DisableShading": false,
+                    "MaterialAsset": "Material/Simple.json",
+                    "OverridePipelineAsset": "Pipeline/Simple_Solid.json",
+                    "OverrideTextureAsset": "",
+                    "Specular": 1.0,
+                    "UVOffset": [
+                        0.0,
+                        0.0
+                    ],
+                    "UVScale": [
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "MeshAsset": "#Sphere",
+            "Outer": {
+                "$REF": 27
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                0.5,
+                7.861297130584717,
+                3.0880041122436523
+            ],
+            "Type": "UStaticMeshComponent",
+            "UUID": 193
+        },
+        {
+            "AttachParent": null,
+            "EmissiveColor": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "EmissiveIntensity": 1.0,
+            "FireColor": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "InheritRotation": true,
+            "Intensity": 1.0,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 27
+            },
+            "Radius": 10.0,
+            "RadiusFalloff": 2.0,
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UFireBallComponent",
+            "UUID": 194
+        },
+        {
+            "AttachParent": null,
+            "InheritRotation": true,
+            "Location": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Outer": {
+                "$REF": 27
+            },
+            "Rotation": [
+                -0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Type": "UProjectileMovementComponent",
+            "UUID": 195
+        }
+    ],
+    "NextUUID": 196,
+    "Version": 2
+}

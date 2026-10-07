@@ -5,7 +5,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Asset/FAssetRegistry.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 
 IMPLEMENT_UCLASS(AFireBallActor, AActor)
 UCLASS_META(AFireBallActor, DisplayName, "FireBall Actor")
@@ -38,24 +38,13 @@ void AFireBallActor::Initialize()
 	}
 }
 
-void AFireBallActor::Serialize(FArchive& Archive) const
+void AFireBallActor::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
+
 	if (FireBallComponent)
 	{
-		FArchive ComponentArchive;
-		FireBallComponent->Serialize(ComponentArchive);
-		Archive.SetArchive("FireBallComponent", ComponentArchive);
-	}
-}
-
-void AFireBallActor::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
-	if (FireBallComponent && !Archive.IsNull("FireBallComponent"))
-	{
-		const FArchive ComponentArchive = Archive.GetArchive("FireBallComponent");
-		FireBallComponent->Deserialize(ComponentArchive);
+		Archive.Reference("FireBallComponent", FireBallComponent);
 	}
 }
 
