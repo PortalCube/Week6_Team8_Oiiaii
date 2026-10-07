@@ -21,7 +21,7 @@ void ASelectedTextActor::Initialize()
 		TextComponent->SetInheritRotation(false);
 
 		FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-		TextComponent->SetFont(Registry.Get<UFont>("Font/BazziOTF.json"));
+		TextComponent->SetFont(Registry.Get<UFont>("Font/NanumGothic.json"));
 		TextComponent->SetText(L"");
 	}
 }
