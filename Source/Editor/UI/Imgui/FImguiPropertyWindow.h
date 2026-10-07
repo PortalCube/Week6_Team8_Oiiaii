@@ -10,6 +10,7 @@ class UFireBallComponent;
 class UTextComponent;
 class UBillboardComponent;
 class UAnimatedBillboardComp;
+class UHeightFogComponent;
 
 // 선택된 액터의 컴포넌트 속성을 편집하는 창.
 class FImguiPropertyWindow final : public IEditorWindow
@@ -45,6 +46,7 @@ private:
 	void ShowAnimatedBillboardSettings(UAnimatedBillboardComp& BillboardComp) const;
 	void ShowSpotLightSettings(USpotLightComponent& LightComp) const;
 	void ShowFireBallSettings(UFireBallComponent& FireBallComp) const;
+	void ShowHeightFogSettings(UHeightFogComponent& HeightFogComp) const;
 	void ShowStaticMeshSettings(AActor& Actor, UStaticMeshComponent& MeshComp, bool bIsRoot) const;
 
 	// 머티리얼의 텍스처 미리보기 겸 드롭 타깃.

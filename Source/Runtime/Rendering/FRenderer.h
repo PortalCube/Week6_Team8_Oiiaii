@@ -41,6 +41,7 @@ struct FFrameResource
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ViewConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ObjectConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> PostProcessConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> HeightFogConstantBuffer;
 };
 
 inline float ClearColor[4] = { 0.6f, 0.75f, 1.0f, 1.0f };
@@ -98,6 +99,7 @@ public:
 	// 카메라로부터 ViewConstants를 만들어 갱신한다 (Projection은 D3D Clip 기준)
 	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
 	void UpdatePostProcessConstants(const FPostProcessConstants& Constants);
+	void UpdateHeightFogConstants(const FHeightFogConstants& Constants);
 
 	// Object Constant Buffer를 갱신한다.
 	template <typename TConstants>
@@ -240,7 +242,7 @@ private:
 	// 모든 ConstantBuffer의 최대 크기
 	static constexpr UINT ConstantBufferSize = 256u;
 	static constexpr uint32 GPUTimerFrameCount = 3u;
-	static constexpr uint32 NumFrameResourceCount = 4;
+	static constexpr uint32 NumFrameResourceCount = 5;
 
 	FLineBatcher LineBatcher;
 	FMatrix ViewProjection = FMatrix::Identity;

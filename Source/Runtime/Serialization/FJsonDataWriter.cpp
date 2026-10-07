@@ -160,6 +160,18 @@ void FJsonDataWriter::Field(FStringView Key, FVector4& Value)
 	FieldInternal(Key, Array);
 }
 
+void FJsonDataWriter::Field(FStringView Key, FLinearColor& Value)
+{
+	TArray<float> Array;
+
+	Array.push_back(Value.R);
+	Array.push_back(Value.G);
+	Array.push_back(Value.B);
+	Array.push_back(Value.A);
+
+	FieldInternal(Key, Array);
+}
+
 void FJsonDataWriter::BeginSection(FStringView Key)
 {
 	nlohmann::json& Section = *GetCurrentNode(Key);

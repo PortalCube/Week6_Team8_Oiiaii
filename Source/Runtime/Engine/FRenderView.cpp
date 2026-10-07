@@ -21,6 +21,8 @@
 #include "Runtime/Engine/FTimeManager.h"
 #include "Runtime/Core/Globals.h"
 #include "Runtime/CoreUObject/FStatsManager.h"
+#include "Runtime/Components/UHeightFogComponent.h"
+#include "Runtime/Actors/AHeightFogActor.h"
 
 #include <fstream>
 
@@ -259,6 +261,8 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	Renderer.UploadPointLights(PointLights);
 	Renderer.BindPointLights();
 
+	UHeightFogComponent* HeightFogComp = GetHeightFogComp(Scene);
+
 	// 기본 씬 오브젝트 패스
 	FlushBasePass(View);
 
@@ -270,15 +274,15 @@ void FRenderView::RenderView(const FSceneView& View, const ULevel& Scene, const 
 	}
 	Renderer.ClearLastRenderState();
 
+	// Post Process 패스
+	RenderPostProcessPass(View, EditorCtx.SelectedActor, HeightFogComp);
+	Renderer.ClearLastRenderState();
+
 	// 비주얼라이져 패스
 	DrawVisualizer(View, EditorCtx);
 
 	// Line Batch 패스
 	FlushLinePass(View.Camera);
-	Renderer.ClearLastRenderState();
-
-	// Post Process 패스
-	RenderPostProcessPass(View, EditorCtx.SelectedActor);
 	Renderer.ClearLastRenderState();
 
 	// 그리드 패스
@@ -479,26 +483,18 @@ void FRenderView::DrawStencilMask(const FCamera& Camera, const AActor* SelectedA
 
 // Post Process Pass에서 렌더할 것들
 // 어느 분기든 마지막 패스는 반드시 뷰포트 출력 RT 전체를 써야한다
-void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor)
+void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor, const UHeightFogComponent* HeightFogComp)
 {
 	// 스텐실 마스크는 이전에 바인딩 된 DSV에 스텐실을 써야하기 때문에 첫번째로 실행
 	DrawStencilMask(View.Camera, SelectedActor);
 
-	FFogSettings FogSettings = GFogSettings; // ImGui에서 조절한 값
-
 	// PostProcess 상수버퍼
-	FPostProcessConstants Constants = {
+	FPostProcessConstants PostProcessConstants = {
 		.VisMax = 10.f,
 		.VisMinOrtho = 0.1f,
 		.VisMaxOrtho = 10.f,
-		.FogHeightFalloff = FogSettings.FogHeightFalloff,
-		.CameraHeightDensity = FogSettings.GetCameraHeightDensity(View.Camera.GetPosition().Z, FogSettings.FogHeight),
-		.StartDistance = FogSettings.StartDistance,
-		.FogCutoffDistance = FogSettings.FogCutoffDistance,
-		.FogMaxOpacity = FogSettings.FogMaxOpacity,
-		.FogInscatteringColor = FogSettings.FogInscatteringColor,
 	};
-	Renderer.UpdatePostProcessConstants(Constants); // 설정값 (상수버퍼) 업데이트
+	Renderer.UpdatePostProcessConstants(PostProcessConstants); // 설정값 (상수버퍼) 업데이트
 
 	// Scene Depth 모드
 	if (View.ViewMode == EViewModeIndex::VMI_SceneDepth)
@@ -506,8 +502,20 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 		Renderer.RenderSceneDepth(View.Viewport);
 	}
 	// Fog를 그린다
-	else if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_Fog))
+	else if (View.ShowFlags & static_cast<uint64>(EEngineShowFlags::SF_Fog) && HeightFogComp)
 	{
+		FLinearColor FogInscatteringColor = HeightFogComp->GetFogInscatteringColor();
+		FogInscatteringColor.A = HeightFogComp->GetFogMaxOpacity();
+
+		// HeightFog 상수버퍼
+		FHeightFogConstants HeightFogConstants = {
+			.FogHeightFalloff = HeightFogComp->GetFogHeightFalloff(),
+			.CameraHeightDensity = HeightFogComp->GetCameraHeightDensity(View.Camera.GetPosition().Z),
+			.StartDistance = HeightFogComp->GetStartDistance(),
+			.FogCutoffDistance = HeightFogComp->GetFogCutoffDistance(),
+			.FogInscatteringColor = FogInscatteringColor,
+		};
+		Renderer.UpdateHeightFogConstants(HeightFogConstants);
 		Renderer.RenderFog(View.Viewport);
 	}
 
@@ -518,6 +526,24 @@ void FRenderView::RenderPostProcessPass(const FSceneView& View, const AActor* Se
 void FRenderView::DrawInstances(const FSceneView& View, FRenderPipeline* Pipeline)
 {
 	Renderer.DrawInstances(View.Camera, Pipeline, View.ViewMode == EViewModeIndex::VMI_Unlit);
+}
+
+UHeightFogComponent* FRenderView::GetHeightFogComp(const ULevel& Level)
+{
+	const TArray<UPrimitiveComponent*>& Components = Level.GetRenderComponents();
+	for (const auto& Component : Components)
+	{
+		if (!Component)
+		{
+			continue;
+		}
+		auto FogComponent = Component->Cast<UHeightFogComponent>();
+		if (FogComponent)
+		{
+			return FogComponent;
+		}
+	}
+	return nullptr;
 }
 
 void FRenderView::FlushLineBatch(const FMatrix& ViewProjection, const FName& PipelineId)

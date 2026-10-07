@@ -5,11 +5,11 @@
 #include "Runtime/Math/FVector2.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Rendering/FRenderQueue.h"
-#include "Runtime/Rendering/FPostProcess.h"
 #include "Runtime/Engine/FSceneView.h"
 #include "Runtime/Geometry/FFrustum.h"
 #include "Runtime/Engine/FCulling.h"
 #include "Runtime/Engine/FOcclusionCuller.h"
+
 
 class FCamera;
 class FGizmo;
@@ -18,6 +18,8 @@ class AActor;
 class ULevel;
 
 struct FPointLightConstants;
+class UHeightFogComponent;
+class AHeightFogActor;
 
 // 커맨드로 제어하는 컬링 옵션
 struct FCullingSettings
@@ -51,7 +53,7 @@ public:
 	void DrawGrid(const FSceneView& View, FGrid* Grid);
 	void FlushBasePass(const FSceneView& View);
 	void FlushLinePass(const FCamera& Camera);
-	void RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor);
+	void RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor, const UHeightFogComponent* HeightFogComp);
 
 	// 개별 렌더 및 디버그 라인
 	void RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo);
@@ -88,6 +90,8 @@ public:
 
 	// 측정 : 다음에 렌더되는 뷰 하나에서 오라클을 실행(한 프레임 멈춤)
 	void RequestOcclusionOracle() { bOracleRequested = true; }
+
+	UHeightFogComponent* GetHeightFogComp(const ULevel& Level);
 
 private:
 	FCullingSettings CullingSettings;

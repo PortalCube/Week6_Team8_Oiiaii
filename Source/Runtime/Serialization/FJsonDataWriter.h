@@ -4,6 +4,7 @@
 #include "Runtime/Core/TStack.h"
 #include "Runtime/Core/TQueue.h"
 #include "ThirdParty/Json/json.hpp"
+#include "Runtime/Core/FLinearColor.h"
 
 class FJsonDataWriter : public FArchive
 {
@@ -44,6 +45,8 @@ public:
 	virtual void Field(FStringView Key, FVector& Value);
 	virtual void Field(FStringView Key, FVector2& Value);
 	virtual void Field(FStringView Key, FVector4& Value);
+
+	virtual void Field(FStringView Key, FLinearColor& Value);
 
 	template <typename T>
 	void FieldInternal(FStringView Key, T Value);

@@ -1152,6 +1152,17 @@ bool FRenderer::InitializeConstantBuffers()
 		{
 			return false;
 		}
+
+		D3D11_BUFFER_DESC FrameResourceHeightFogConstantBufferDesc = {
+			.ByteWidth = sizeof(FHeightFogConstants),
+			.Usage = D3D11_USAGE_DEFAULT,
+			.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
+		};
+		Result = Device->CreateBuffer(&FrameResourceHeightFogConstantBufferDesc, nullptr, &FrameResources[i].HeightFogConstantBuffer);
+		if (FAILED(Result))
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -1202,6 +1213,12 @@ void FRenderer::UpdatePostProcessConstants(const FPostProcessConstants& Constant
 {
 	Context->UpdateSubresource(GetCurrentFrameResource()->PostProcessConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->PSSetConstantBuffers(3, 1, GetCurrentFrameResource()->PostProcessConstantBuffer.GetAddressOf());
+}
+
+void FRenderer::UpdateHeightFogConstants(const FHeightFogConstants& Constants)
+{
+	Context->UpdateSubresource(GetCurrentFrameResource()->HeightFogConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
+	Context->PSSetConstantBuffers(7, 1, GetCurrentFrameResource()->HeightFogConstantBuffer.GetAddressOf());
 }
 
 bool FRenderer::UploadObjectConstants(std::span<const FDrawCommand> Commands)

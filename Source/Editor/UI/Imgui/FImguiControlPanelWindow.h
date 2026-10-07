@@ -21,7 +21,6 @@ private:
 	void CameraSetting(FEditor& Editor);
 	// TODO : Directional light또한 Actor가 되어야하므로 지워야함
 	void DirectionLightSetting(FEditor& Editor);
-	void FogSetting(FEditor& Editor);
 	void BVHDebugSetting(FEditor& Editor);
 	// 마지막 피킹 광선으로 Iterations번 반복 측정해 중앙값/최솟값/평균과 작업량을 로그로 출력한다.
 	void RunPickBenchmark(FEditor& Editor, int Iterations);

@@ -4,6 +4,7 @@
 #include "Runtime/Math/FVector.h"
 #include "Runtime/Math/FVector2.h"
 #include "Runtime/Math/FVector4.h"
+#include "Runtime/Core/FLinearColor.h"
 
 // Register = b0
 struct FFrameConstants
@@ -78,14 +79,6 @@ struct FPostProcessConstants
 	float VisMax;		// 원근에서 SceneDepth의 최댓값
 	float VisMinOrtho;	// 직교에서 SceneDepth의 최솟값
 	float VisMaxOrtho;	// 직교에서 SceneDepth의 최댓값
-
-	// Exponential Height Fog에서 쓰이는 값. 픽셀마다 똑같으므로 CPU에서 한 번 계산해서 올림
-	float FogHeightFalloff;			
-	float CameraHeightDensity;
-	float StartDistance;
-	float FogCutoffDistance;
-	float FogMaxOpacity;
-	FVector FogInscatteringColor;
 	float Padding;
 };
 static_assert(sizeof(FPostProcessConstants) % 16 == 0);
@@ -114,3 +107,17 @@ struct FLightConstants
 	float AmbientIntensity = 0.05f;
 };
 static_assert(sizeof(FLightConstants) % 16 == 0);
+
+
+
+// Register = b7
+struct FHeightFogConstants
+{
+	// Exponential Height Fog에서 쓰이는 값. 픽셀마다 똑같으므로 CPU에서 한 번 계산해서 올림
+	float FogHeightFalloff;
+	float CameraHeightDensity;
+	float StartDistance;
+	float FogCutoffDistance;
+	FLinearColor FogInscatteringColor;
+};
+static_assert(sizeof(FHeightFogConstants) % 16 == 0);

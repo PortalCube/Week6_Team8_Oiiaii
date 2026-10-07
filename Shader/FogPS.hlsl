@@ -43,8 +43,8 @@ float4 MainPS(PS_IN Input) : SV_Target
 	float Tau = NewDistance * RayOriginDensity * ExtinctionCorrectionFactor;
 	float T = exp(-1 * Tau);
 
-	float FogFactor = max(T, 1.f - FogMaxOpacity);
+	float FogFactor = max(T, 1.f - FogInscatteringColor.a);
 	
-	return float4(lerp(FogInscatteringColor, SceneColor.rgb, FogFactor), SceneColor.a);
+	return float4(lerp(FogInscatteringColor.rgb, SceneColor.rgb, FogFactor), SceneColor.a);
 
 }

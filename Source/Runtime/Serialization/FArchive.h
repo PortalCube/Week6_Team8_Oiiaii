@@ -9,6 +9,7 @@
 #include "Runtime/Math/FVector.h"
 #include "Runtime/Math/FVector2.h"
 #include "Runtime/Math/FVector4.h"
+#include "Runtime/Core/FLinearColor.h"
 
 #include "Runtime/Utility/EngineUtil.h"
 
@@ -60,6 +61,7 @@ public:
 	virtual void Field(FStringView Key, FVector2& Value) = 0;
 	virtual void Field(FStringView Key, FVector4& Value) = 0;
 
+	virtual void Field(FStringView Key, FLinearColor& Value) = 0;
 
 
 	////////////////////////////////////////////////////////////

@@ -44,6 +44,8 @@ public:
 	virtual void Field(FStringView Key, FVector2& Value);
 	virtual void Field(FStringView Key, FVector4& Value);
 
+	virtual void Field(FStringView Key, FLinearColor& Value);
+
 	template <typename T>
 	void FieldInternal(FStringView Key, T& Value);
 

@@ -14,6 +14,7 @@
 #include "Runtime/Actors/ATextRenderActor.h"
 #include "Runtime/Actors/AFireBallActor.h"
 #include "Runtime/Actors/ACatActor.h"
+#include "Runtime/Actors/AHeightFogActor.h"
 
 namespace EditorConstant
 {
@@ -33,6 +34,7 @@ namespace EditorConstant
 		ASpotlightActor::StaticClass(),
 		ATextRenderActor::StaticClass(),
 		AFireBallActor::StaticClass(),
+		AHeightFogActor::StaticClass(),
 	};
 
 } // namespace EditorConstant

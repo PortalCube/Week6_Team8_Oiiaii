@@ -160,6 +160,18 @@ void FJsonDataReader::Field(FStringView Key, FVector4& Value)
 	}
 }
 
+void FJsonDataReader::Field(FStringView Key, FLinearColor& Value)
+{
+	TArray<float> Array{};
+
+	FieldInternal(Key, Array);
+
+	Value.R = Array[0];
+	Value.G = Array[1];
+	Value.B = Array[2];
+	Value.A = Array[3];
+}
+
 void FJsonDataReader::BeginSection(FStringView Key)
 {
 	nlohmann::json* Node = GetCurrentNode(Key);
