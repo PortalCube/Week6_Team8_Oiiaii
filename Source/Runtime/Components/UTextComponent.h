@@ -42,8 +42,8 @@ public:
 		return EEngineShowFlags::SF_BillboardText;
 	}
 
-	virtual void Serialize(FArchive& Archive) const override;
-	virtual void Deserialize(const FArchive& Archive) override;
+	virtual void Serialize(FArchive& Archive) override;
+
 
 	float GetWidth() const { return Width; }
 	float GetHeight() const { return Height; }

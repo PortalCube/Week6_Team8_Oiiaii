@@ -13,8 +13,8 @@
     },
     "Blend": { "BlendMode": "Translucent" },
     "DepthStencil": {
-        "DepthEnable": true,
-        "StencilEnable": true,
+        "DepthEnable": false,
+        "StencilEnable": false,
         "DepthWriteMode": "Disable"
     },
     "Instancing": true

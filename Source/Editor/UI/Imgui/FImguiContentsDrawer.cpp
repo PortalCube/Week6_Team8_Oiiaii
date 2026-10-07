@@ -166,7 +166,7 @@ void FImguiContentsDrawer::RenderContentView()
 	}
 	for (UAsset* Item : FolderView.Assets)
 	{
-		FString Path = Item->GetID().ToString();
+		FString Path = Item->GetIDString();
 
 		// 같은 이름이 있어도 ID가 겹치지 않도록 Key값으로 구분
 		ImGui::PushID(Path.c_str());

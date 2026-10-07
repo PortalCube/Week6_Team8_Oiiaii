@@ -1,4 +1,4 @@
-#include "FArchive.h"
+#include "FJson.h"
 
 #include "Runtime/Utility/WindowsUtil.h"
 
@@ -7,89 +7,89 @@
 #include <stdexcept>
 #include <utility>
 
-FArchive::FArchive()
-    : Object()
+FJson::FJson()
+	: Object()
 {
 }
 
-FArchive::FArchive(const nlohmann::json& InObject)
-    : Object(InObject)
+FJson::FJson(const nlohmann::json& InObject)
+	: Object(InObject)
 {
 }
 
-int32 FArchive::GetInt32(const FString& Key) const
+int32 FJson::GetInt32(const FString& Key) const
 {
 	return Object.at(Key).get<int32>();
 }
 
-void FArchive::SetInt32(const FString& Key, int32 Value)
+void FJson::SetInt32(const FString& Key, int32 Value)
 {
 	Object[Key] = Value;
 }
 
-float FArchive::GetFloat(const FString& Key) const
+float FJson::GetFloat(const FString& Key) const
 {
 	return Object.at(Key).get<float>();
 }
 
-void FArchive::SetFloat(const FString& Key, float Value)
+void FJson::SetFloat(const FString& Key, float Value)
 {
 	Object[Key] = Value;
 }
 
-uint32 FArchive::GetUInt32(const FString& Key) const
+uint32 FJson::GetUInt32(const FString& Key) const
 {
 	return Object.at(Key).get<uint32>();
 }
 
-void FArchive::SetUInt32(const FString& Key, uint32 Value)
+void FJson::SetUInt32(const FString& Key, uint32 Value)
 {
 	Object[Key] = Value;
 }
 
-double FArchive::GetDouble(const FString& Key) const
+double FJson::GetDouble(const FString& Key) const
 {
 	return Object.at(Key).get<double>();
 }
 
-void FArchive::SetDouble(const FString& Key, double Value)
+void FJson::SetDouble(const FString& Key, double Value)
 {
 	Object[Key] = Value;
 }
 
-bool FArchive::GetBool(const FString& Key) const
+bool FJson::GetBool(const FString& Key) const
 {
 	return Object.at(Key).get<bool>();
 }
 
-void FArchive::SetBool(const FString& Key, bool Value)
+void FJson::SetBool(const FString& Key, bool Value)
 {
 	Object[Key] = Value;
 }
 
-FString FArchive::GetString(const FString& Key) const
+FString FJson::GetString(const FString& Key) const
 {
 	return Object.at(Key).get<FString>();
 }
 
-void FArchive::SetString(const FString& Key, const FString& Value)
+void FJson::SetString(const FString& Key, const FString& Value)
 {
 	Object[Key] = Value;
 }
 
-FWString FArchive::GetWString(const FString& Key) const
+FWString FJson::GetWString(const FString& Key) const
 {
 	FString Result = Object.at(Key).get<FString>();
 	return WindowsUtil::ToWString(Result);
 }
 
-void FArchive::SetWString(const FString& Key, const FWString& Value)
+void FJson::SetWString(const FString& Key, const FWString& Value)
 {
 	FString Result = WindowsUtil::ToString(Value);
 	Object[Key] = Result;
 }
 
-bool FArchive::IsNull(const FString& Key) const
+bool FJson::IsNull(const FString& Key) const
 {
 	// 주어진 키 자체가 존재하지 않음
 	if (!Object.contains(Key))
@@ -107,13 +107,13 @@ bool FArchive::IsNull(const FString& Key) const
 	return false;
 }
 
-void FArchive::SetNull(const FString& Key)
+void FJson::SetNull(const FString& Key)
 {
 	// 참고: IsNull과는 다르게, SetNull은 반드시 명시적인 null을 지정함
 	Object[Key] = nullptr;
 }
 
-FVector FArchive::GetVector(const FString& Key) const
+FVector FJson::GetVector(const FString& Key) const
 {
 	TArray<float> Array = GetArray<float>(Key);
 
@@ -124,7 +124,7 @@ FVector FArchive::GetVector(const FString& Key) const
 	};
 }
 
-void FArchive::SetVector(const FString& Key, const FVector& Value)
+void FJson::SetVector(const FString& Key, const FVector& Value)
 {
 	TArray<float> Array{
 		Value.X,
@@ -135,7 +135,7 @@ void FArchive::SetVector(const FString& Key, const FVector& Value)
 	SetArray(Key, Array);
 }
 
-FVector2 FArchive::GetVector2(const FString& Key) const
+FVector2 FJson::GetVector2(const FString& Key) const
 {
 	TArray<float> Array = GetArray<float>(Key);
 
@@ -145,7 +145,7 @@ FVector2 FArchive::GetVector2(const FString& Key) const
 	};
 }
 
-void FArchive::SetVector2(const FString& Key, const FVector2& Value)
+void FJson::SetVector2(const FString& Key, const FVector2& Value)
 {
 	TArray<float> Array{
 		Value.X,
@@ -155,7 +155,7 @@ void FArchive::SetVector2(const FString& Key, const FVector2& Value)
 	SetArray(Key, Array);
 }
 
-FVector4 FArchive::GetVector4(const FString& Key) const
+FVector4 FJson::GetVector4(const FString& Key) const
 {
 	TArray<float> Array = GetArray<float>(Key);
 
@@ -167,7 +167,7 @@ FVector4 FArchive::GetVector4(const FString& Key) const
 	};
 }
 
-void FArchive::SetVector4(const FString& Key, const FVector4& Value)
+void FJson::SetVector4(const FString& Key, const FVector4& Value)
 {
 	TArray<float> Array{
 		Value.X,
@@ -179,20 +179,20 @@ void FArchive::SetVector4(const FString& Key, const FVector4& Value)
 	SetArray(Key, Array);
 }
 
-TArray<FArchive> FArchive::GetArchiveArray(const FString& Key) const
+TArray<FJson> FJson::GetJsonArray(const FString& Key) const
 {
-	TArray<FArchive> Array;
+	TArray<FJson> Array;
 
 	for (const auto& Item : Object.at(Key))
 	{
-		FArchive ItemArchive{ Item };
+		FJson ItemArchive{ Item };
 		Array.push_back(ItemArchive);
 	}
 
 	return Array;
 }
 
-void FArchive::SetArchiveArray(const FString& Key, const TArray<FArchive>& Value)
+void FJson::SetJsonArray(const FString& Key, const TArray<FJson>& Value)
 {
 	Object[Key] = nlohmann::json::array();
 
@@ -202,12 +202,12 @@ void FArchive::SetArchiveArray(const FString& Key, const TArray<FArchive>& Value
 	}
 }
 
-FArchive FArchive::GetArchive(const FString& Key) const
+FJson FJson::GetJson(const FString& Key) const
 {
-	return FArchive{ Object.at(Key) };
+	return FJson{ Object.at(Key) };
 }
 
-void FArchive::SetArchive(const FString& Key, const FArchive& Archive)
+void FJson::SetJson(const FString& Key, const FJson& Archive)
 {
 	Object[Key] = Archive.GetJSON();
 }

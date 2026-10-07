@@ -679,6 +679,12 @@ void FSceneBVH::TestObjectRay(UPrimitiveComponent* C, const FAxisAlignedBounding
 // 월드 AABB를 통과한 오브젝트의 메시(삼각형)를 검사한다
 void FSceneBVH::TestObjectMesh(UPrimitiveComponent* C, const FRay& Ray, float& Closest, UPrimitiveComponent*& OutHit, FVector& OutImpact) const
 {
+	const AActor* Owner = C ? C->GetOwner() : nullptr;
+	if (!Owner || !Owner->IsSelectable())
+	{
+		return;
+	}
+
 	const UStaticMesh* Asset = C->GetMeshAsset();
 	const FMesh* Mesh = Asset ? Asset->Get() : nullptr;
 	if (!Mesh)

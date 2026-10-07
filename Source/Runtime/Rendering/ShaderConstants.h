@@ -21,11 +21,12 @@ struct FViewConstants
 {
 	FMatrix View;
 	FMatrix Projection;
+	FMatrix ViewProjectionInverse;
 	FVector2 ViewportSize;
 	float NearZ;
 	float FarZ;
 	float IsPerspective;
-	FVector Padding;
+	FVector CameraPos;
 };
 static_assert(sizeof(FViewConstants) % 16 == 0);
 
@@ -34,15 +35,13 @@ static_assert(sizeof(FViewConstants) % 16 == 0);
 // Register = b2
 struct FObjectConstants
 {
-	// FMatrix MVP;
 	FVector4 Color{ 0.0f, 0.0f, 0.0f, 0.0f };
 	FVector2 UVScale{ 1.0f, 1.0f };
 	FVector2 UVOffset{ 0.0f, 0.0f };
 	FMatrix World = FMatrix::GetIdentity();
-	float DisableShading = 0.0f;
-	FVector Padding;
 	FMatrix WorldInverseTranspose = FMatrix::Identity;
 	FVector EmissiveColor{ 0.0f, 0.0f, 0.0f };
+	float DisableShading = 0.0f;
 	float EmissiveIntensity = 0.0f;
 };
 static_assert(sizeof(FObjectConstants) % 16 == 0);
@@ -76,8 +75,18 @@ static_assert(sizeof(FGridLineConstants) % 16 == 0);
 // Register = b3
 struct FPostProcessConstants
 {
-	float VisMax = 10.f;
-	FVector Padding;
+	float VisMax;		// 원근에서 SceneDepth의 최댓값
+	float VisMinOrtho;	// 직교에서 SceneDepth의 최솟값
+	float VisMaxOrtho;	// 직교에서 SceneDepth의 최댓값
+
+	// Exponential Height Fog에서 쓰이는 값. 픽셀마다 똑같으므로 CPU에서 한 번 계산해서 올림
+	float FogHeightFalloff;			
+	float CameraHeightDensity;
+	float StartDistance;
+	float FogCutoffDistance;
+	float FogMaxOpacity;
+	FVector FogInscatteringColor;
+	float Padding;
 };
 static_assert(sizeof(FPostProcessConstants) % 16 == 0);
 

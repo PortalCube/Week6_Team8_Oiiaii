@@ -1,7 +1,7 @@
 #include "UBillboardComponent.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Engine/ULevel.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 #include "Runtime/Rendering/FRenderResourceLibrary.h"
 #include "Runtime/Core/Log.h"
 #include "Runtime/Rendering/FRenderResourceLibrary.h"
@@ -27,33 +27,21 @@ void UBillboardComponent::Initialize()
 	RenderData.Type = ERenderType::Primitive;
 }
 
-void UBillboardComponent::Serialize(FArchive& Archive) const
+void UBillboardComponent::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
-
 	UTexture* Texture = GetTexture();
-	if (Texture)
+	FString TextureAssetID = Texture ? Texture->GetIDString() : "";
+	Archive.Field("TextureAsset", TextureAssetID);
+
+	if (Archive.IsReading() && !TextureAssetID.empty())
 	{
-		Archive.SetString("TextureAsset", Texture->GetID().ToString());
-	}
-}
+		UTexture* LoadedTexture = FAssetRegistry::GetInstance().Get<UTexture>(TextureAssetID);
 
-void UBillboardComponent::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
-
-	if (Archive.IsNull("TextureAsset"))
-	{
-		return;
-	}
-
-	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
-	FString TextureAssetID = Archive.GetString("TextureAsset");
-	UTexture* Texture = Registry.Get<UTexture>(TextureAssetID);
-
-	if (Texture)
-	{
-		SetTexture(Texture);
+		if (LoadedTexture)
+		{
+			SetTexture(LoadedTexture);
+		}
 	}
 }
 

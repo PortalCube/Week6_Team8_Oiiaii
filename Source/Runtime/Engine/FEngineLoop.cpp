@@ -26,8 +26,6 @@ void FEngineLoop::Init(HINSTANCE Instance)
 	    .Height = Globals::WindowHeight,
 	});
 
-	// UObject 시스템 초기화
-
 	// TransientPackage 생성
 	Globals::TransientPackage = NewObject<UPackage>(nullptr);
 	

@@ -25,14 +25,15 @@
 #include <d3d11_1.h>
 #include <wrl/client.h>
 #include <span>
+#include <type_traits>
 #include <utility>
 
 class FTexture;
 struct FTextureDesc;
 class FCamera;
-class UTextComponent;
 struct FDrawCommand;
 struct FPointLightConstants;
+struct FSceneView;
 
 struct FFrameResource
 {
@@ -42,11 +43,13 @@ struct FFrameResource
 	Microsoft::WRL::ComPtr<ID3D11Buffer> PostProcessConstantBuffer;
 };
 
-constexpr float ClearColor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+inline float ClearColor[4] = { 0.6f, 0.75f, 1.0f, 1.0f };
 
 class FRenderer final
 {
 public:
+	void DrawBillboardText(const FSceneView& View, FWStringView Text,
+	    const FVector& WorldPosition, float WorldSize);
 	// 생명주기
 	bool Initialize(HWND Window);
 	void Shutdown();
@@ -92,6 +95,8 @@ public:
 	void BindPointLights();
 	void UpdateFrameConstants(const FFrameConstants& Constants);
 	void UpdateViewConstants(const FViewConstants& Constants);
+	// 카메라로부터 ViewConstants를 만들어 갱신한다 (Projection은 D3D Clip 기준)
+	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
 	void UpdatePostProcessConstants(const FPostProcessConstants& Constants);
 
 	// Object Constant Buffer를 갱신한다.
@@ -102,12 +107,16 @@ public:
 		static_assert(sizeof(TConstants) % 16 == 0);
 
 		// 언리얼 Clip -> D3D Clip 좌표 변환.
-		// MVP, VP를 가진 상수 타입에만 적용한다(없는 타입은 그대로 통과).
+		// Object MVP는 현재 뷰와 World로 계산하고, 그리드 MVP는 전달된 값을 사용한다.
 		TConstants ShaderConstants = Constants;
-		if constexpr (requires { ShaderConstants.MVP; })
-		{
-			ShaderConstants.MVP = ShaderConstants.MVP.ToD3DMatrix();
-		}
+		//if constexpr (std::is_same_v<TConstants, FObjectConstants>)
+		//{
+		//	ShaderConstants.MVP = ShaderConstants.World * ViewProjection;
+		//}
+		//if constexpr (requires { ShaderConstants.MVP; })
+		//{
+		//	ShaderConstants.MVP = ShaderConstants.MVP.ToD3DMatrix();
+		//}
 
 		ID3D11Buffer* ObjectCB = GetCurrentFrameResource()->ObjectConstantBuffer.Get();
 
@@ -188,16 +197,18 @@ public:
 	}
 
 	// 스크린 패스 / 후처리
-	void RenderSceneDepth(const FViewport& TargetViewport);
-	void RenderSelectionOutline(const FViewport& TargetViewport);
-	void CopySceneColorToViewport(const FViewport& TargetViewport);
 	void DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VIEWPORT& TargetD3DViewport, ID3D11ShaderResourceView* const* SRVs, UINT NumSRVs, const FName& PipelineId);
+	void CopySceneColorToViewport(const FViewport& TargetViewport);
+	void RenderSelectionOutline(const FViewport& TargetViewport);
+	void RenderSceneDepth(const FViewport& TargetViewport);
+	void RenderFog(const FViewport& TargetViewport);
 
 	// 디버그
 	void QueryVisibility(const TArray<const FDrawCommand*>& Commands, TArray<uint64>& OutSamples);
 
 private:
 	// 초기화
+	void DrawTextInstanceData(const FDrawCommand& Command, std::span<const FInstanceData> InstanceData);
 	bool InitializeDeviceAndSwapChain(HWND Window);
 	bool InitializeBackBuffer();
 	bool InitializeConstantBuffers();
@@ -232,6 +243,7 @@ private:
 	static constexpr uint32 NumFrameResourceCount = 4;
 
 	FLineBatcher LineBatcher;
+	FMatrix ViewProjection = FMatrix::Identity;
 
 	// 디바이스
 	Microsoft::WRL::ComPtr<ID3D11Device> Device;
@@ -270,6 +282,10 @@ private:
 	// 텍스트 인스턴싱 버퍼
 	Microsoft::WRL::ComPtr<ID3D11Buffer> InstanceBuffer;
 	UINT TextInstanceBufferSize = 0;
+	FWString CachedBillboardText;
+	const FFont* CachedBillboardFont = nullptr;
+	TArray<FInstanceData> CachedBillboardGlyphs;
+	TArray<FInstanceData> BillboardWorldInstances;
 
 	// GPU 타이머
 	struct FGPUTimerQuery

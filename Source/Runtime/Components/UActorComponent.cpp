@@ -4,7 +4,7 @@
 #include "ThirdParty/Json/json.hpp"
 #include "UActorComponent.h"
 #include "UPrimitiveComponent.h"
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FArchive.h"
 #include "Runtime/Engine/ULevel.h"
 
 IMPLEMENT_UCLASS(UActorComponent, UObject)
@@ -105,12 +105,7 @@ bool UActorComponent::IsEditorOnly() const
 	return bIsEditorOnly;
 }
 
-void UActorComponent::Serialize(FArchive& Archive) const
+void UActorComponent::Serialize(FArchive& Archive)
 {
 	Super::Serialize(Archive);
-}
-
-void UActorComponent::Deserialize(const FArchive& Archive)
-{
-	Super::Deserialize(Archive);
 }

@@ -26,8 +26,8 @@ protected:
 
 	bool bIsEditorOnlyActor = false;
 
-	virtual void Serialize(FArchive& Archive) const override;
-	virtual void Deserialize(const FArchive& Archive) override;
+	virtual void Serialize(FArchive& Archive) override;
+
 
 public:
 
@@ -74,12 +74,17 @@ public:
 	virtual class UWorld* GetWorld() const;
 
 	virtual bool IsEditorOnly() const override;
+	virtual bool IsSelectable() const { return true; }
 
 
 
 	////////////////////////////////////////////////////////////
 	// Component
 	////////////////////////////////////////////////////////////
+
+
+
+
 
 	void SetRootComponent(USceneComponent* Component);
 	USceneComponent* GetRootComponent() const { return RootComponent; }

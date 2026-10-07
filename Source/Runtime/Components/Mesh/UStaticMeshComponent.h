@@ -58,6 +58,6 @@ public:
 	static uint32 SelectLOD(const UStaticMesh* Mesh, const FAxisAlignedBoundingBox& WorldBounds, const FLODView& View);
 
 protected:
-	virtual void Serialize(FArchive& Archive) const override;
-	virtual void Deserialize(const FArchive& Archive) override;
+	virtual void Serialize(FArchive& Archive) override;
+
 };

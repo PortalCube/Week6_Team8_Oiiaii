@@ -5,6 +5,7 @@
 #include "Runtime/CoreUObject/UClass.h"
 #include "Runtime/CoreUObject/UObjectGlobals.h"
 #include "Runtime/Asset/FAssetRegistry.h"
+#include "Runtime/Serialization/FArchive.h"
 
 IMPLEMENT_UCLASS(AFireBallActor, AActor)
 UCLASS_META(AFireBallActor, DisplayName, "FireBall Actor")
@@ -34,6 +35,16 @@ void AFireBallActor::Initialize()
 		FireBallComponent->SetRadiusFalloff(2.0f);
 
 		ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>();
+	}
+}
+
+void AFireBallActor::Serialize(FArchive& Archive)
+{
+	Super::Serialize(Archive);
+
+	if (FireBallComponent)
+	{
+		Archive.Reference("FireBallComponent", FireBallComponent);
 	}
 }
 

@@ -14,11 +14,6 @@
 
 class FRenderer;
 class FTexture;
-struct FTextVertex
-{
-	FVector Pos;
-	float u, v;
-};
 
 class FRenderResourceLibrary final
 {
@@ -131,6 +126,7 @@ private:
 	bool CreateSelectionStencilPipeline(FRenderer& Renderer);
 	bool CreateSelectionOutlinePipeline(FRenderer& Renderer);
 	bool CreateCompositePipeline(FRenderer& Renderer);
+	bool CreateFogPipeline(FRenderer& Renderer);
 	bool CreateSceneDepthPipeline(FRenderer& Renderer);
 	bool CreateCustomPipline(
 	    FRenderer& Renderer,

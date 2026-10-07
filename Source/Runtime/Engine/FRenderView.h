@@ -3,9 +3,9 @@
 #include "Runtime/Components/UPrimitiveComponent.h"
 #include "Runtime/Geometry/FTransform.h"
 #include "Runtime/Math/FVector2.h"
-#include "Runtime/Components/UTextComponent.h"
 #include "Runtime/Rendering/FRenderer.h"
 #include "Runtime/Rendering/FRenderQueue.h"
+#include "Runtime/Rendering/FPostProcess.h"
 #include "Runtime/Engine/FSceneView.h"
 #include "Runtime/Geometry/FFrustum.h"
 #include "Runtime/Engine/FCulling.h"
@@ -47,14 +47,15 @@ public:
 	// 뷰포트 패스 파이프라인
 	bool BeginView(const FSceneView& View);
 	void UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel);
-	void DrawGrid(const FCamera& Camera, FGrid& Grid);
+	void DrawVisualizer(const FSceneView& View, const FEditorRenderContext& EditorCtx);
+	void DrawGrid(const FSceneView& View, FGrid* Grid);
 	void FlushBasePass(const FSceneView& View);
 	void FlushLinePass(const FCamera& Camera);
 	void RenderPostProcessPass(const FSceneView& View, const AActor* SelectedActor);
-	void RenderOverlayPass(const FSceneView& SceneView, const FTransform& SelectedTransform, const FGizmo& Gizmo, UTextComponent* TextComp);
 
 	// 개별 렌더 및 디버그 라인
 	void RenderGizmo(const FSceneView& View, const FTransform& Transform, const FGizmo& Gizmo);
+	void RenderSelectedActorUUID(const FSceneView& View, const AActor* SelectedActor);
 
 	void RenderLine(const FVector& Start, const FVector& End, const FVector4& Color);
 	void RenderBoxCenterExtent(const FVector& Center, const FVector& Extent, const FVector4& Color);

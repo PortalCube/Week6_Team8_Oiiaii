@@ -1,4 +1,9 @@
 #include "FRenderer.h"
+#include "FTextRendering.h"
+#include "Runtime/Asset/FAssetRegistry.h"
+#include "Runtime/Asset/UFont.h"
+#include "Runtime/Asset/UMaterial.h"
+#include "Runtime/Asset/UStaticMesh.h"
 #include "FRenderResourceLibrary.h"
 
 #include <d3d11.h>
@@ -79,6 +84,10 @@ void FRenderer::Shutdown()
 	BackBufferRTV.Reset();
 	SceneTexturesPool.clear();
 	ActiveSceneTextures = nullptr;
+	CachedBillboardText.clear();
+	CachedBillboardFont = nullptr;
+	CachedBillboardGlyphs.clear();
+	BillboardWorldInstances.clear();
 
 	for (FGPUTimerQuery& Query : GPUTimerQueries)
 	{
@@ -1163,12 +1172,30 @@ void FRenderer::UpdateFrameConstants(const FFrameConstants& Constants)
 
 void FRenderer::UpdateViewConstants(const FViewConstants& Constants)
 {
-	FViewConstants ShaderConstants = Constants;
-	ShaderConstants.Projection = ShaderConstants.Projection.ToD3DMatrix();
-
-	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &ShaderConstants, 0, 0);
+	ViewProjection = Constants.View * Constants.Projection;
+	Context->UpdateSubresource(GetCurrentFrameResource()->ViewConstantBuffer.Get(), 0, nullptr, &Constants, 0, 0);
 	Context->VSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
 	Context->PSSetConstantBuffers(1, 1, GetCurrentFrameResource()->ViewConstantBuffer.GetAddressOf());
+}
+
+void FRenderer::UpdateViewConstants(const FCamera& Camera, FVector2 ViewportSizePixel)
+{
+	FMatrix Projection = Camera.GetProjectionMatrix();
+	FMatrix ProjectionD3D = Projection.ToD3DMatrix();
+	FMatrix ViewProjectionD3D = Camera.GetViewMatrix() * ProjectionD3D;
+	FMatrix InverseVPD3D;
+	ViewProjectionD3D.Inverse(InverseVPD3D);
+
+	UpdateViewConstants(FViewConstants{
+		.View = Camera.GetViewMatrix(),
+		.Projection = ProjectionD3D,
+		.ViewProjectionInverse = InverseVPD3D,
+		.ViewportSize = ViewportSizePixel,
+		.NearZ = Camera.GetProjection().GetNearPlane(),
+		.FarZ = Camera.GetProjection().GetFarPlane(),
+		.IsPerspective = Camera.GetProjection().GetProjectionType() == EProjectionType::Perspective ? 1.f : 0.f,
+		.CameraPos = Camera.GetPosition(),
+	});
 }
 
 void FRenderer::UpdatePostProcessConstants(const FPostProcessConstants& Constants)
@@ -1201,7 +1228,8 @@ bool FRenderer::UploadObjectConstants(std::span<const FDrawCommand> Commands)
 	for (size_t Index = 0; Index < Commands.size(); ++Index)
 	{
 		const uint32 ByteOffset = static_cast<uint32>(Index) * ObjectConstantStride;
-		const FObjectConstants& ShaderConstants = Commands[Index].Constants;
+		FObjectConstants ShaderConstants = Commands[Index].Constants;
+		//ShaderConstants.MVP = (ShaderConstants.World * ViewProjection).ToD3DMatrix();
 		std::memcpy(Destination + ByteOffset, &ShaderConstants, sizeof(FObjectConstants));
 	}
 	Context->Unmap(ObjectConstantUploadBuffer.Get(), 0);
@@ -1247,9 +1275,6 @@ void FRenderer::UploadPointLights(std::span<const FPointLightConstants> PointLig
 
 // ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Constants Buffer ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
 // =====================================================================
-
-
-
 
 
 // =====================================================================
@@ -1491,12 +1516,17 @@ void FRenderer::DrawTextInstances(const FDrawCommand& Command)
 
 	auto& ResLib = FRenderResourceLibrary::Get();
 
-	UpdateBuffer(Command.Constants, 2);
-
 	const TArray<FInstanceData>& InstanceData = ResLib.GetInstancingArray(Command.Mesh, &Command.Materials[0]);
+	DrawTextInstanceData(Command, InstanceData);
+}
 
-	if (InstanceData.empty())
+void FRenderer::DrawTextInstanceData(const FDrawCommand& Command, std::span<const FInstanceData> InstanceData)
+{
+	if (!Command.Mesh || Command.Materials.empty() || InstanceData.empty())
+	{
 		return;
+	}
+	UpdateBuffer(Command.Constants, 2);
 
 	const UINT InstanceCount = static_cast<UINT>(InstanceData.size());
 	const UINT RequiredSize = InstanceCount * sizeof(FInstanceData);
@@ -1553,6 +1583,67 @@ void FRenderer::DrawTextInstances(const FDrawCommand& Command)
 		INC_DWORD_STAT_BY("Prims", Mesh->VertexCount / 3u * InstanceCount);
 	}
 	INC_DWORD_STAT("Draws");
+}
+
+void FRenderer::DrawBillboardText(const FSceneView& View, FWStringView Text,
+    const FVector& WorldPosition, float WorldSize)
+{
+	const FViewportRenderTarget* Target = View.Viewport.RenderTarget.get();
+	if (!Target || !ActiveSceneTextures || Text.empty() || WorldSize <= 0.0f)
+	{
+		return;
+	}
+
+	FAssetRegistry& Registry = FAssetRegistry::GetInstance();
+	UFont* FontAsset = Registry.Get<UFont>("Font/NanumGothicBold.json");
+	UMaterial* MaterialAsset = Registry.Get<UMaterial>("Material/SelectedActor_Text.json");
+	UStaticMesh* MeshAsset = Registry.Get<UStaticMesh>("#Rect");
+	if (!FontAsset || !FontAsset->Get() || !FontAsset->GetTexture() ||
+	    !MaterialAsset || !MaterialAsset->GetPipeline() || !MeshAsset || !MeshAsset->Get())
+	{
+		return;
+	}
+
+	const FFont* Font = FontAsset->Get();
+	if (CachedBillboardText != Text || CachedBillboardFont != Font)
+	{
+		float Width, Height;
+		TextRendering::BuildGlyphInstances(Text, *Font, FVector4{1.0f, 1.0f, 1.0f, 1.0f},
+		    CachedBillboardGlyphs, Width, Height);
+		CachedBillboardText = Text;
+		CachedBillboardFont = Font;
+	}
+
+	FTransform Transform;
+	Transform.SetLocation(WorldPosition);
+	Transform.SetScale3D(FVector{WorldSize, WorldSize, WorldSize});
+	const FMatrix Billboard = TextRendering::MakeBillboardMatrix(Transform, View.Camera);
+	BillboardWorldInstances.clear();
+	BillboardWorldInstances.reserve(CachedBillboardGlyphs.size());
+	for (const FInstanceData& Glyph : CachedBillboardGlyphs)
+	{
+		FInstanceData Instance = Glyph;
+		Instance.World *= Billboard;
+		BillboardWorldInstances.push_back(Instance);
+	}
+
+	FMaterial Material;
+	Material.SetPipeLine(MaterialAsset->GetPipeline()->Get());
+	Material.SetTexture(FontAsset->GetTexture()->Get());
+	Material.SetSamplerDesc(MaterialAsset->GetSamplerDesc());
+	FDrawCommand Command;
+	Command.Mesh = MeshAsset->Get();
+	Command.Materials = std::span<const FMaterial>(&Material, 1);
+	Command.Type = ERenderType::Text;
+	// 글자 인스턴스에 월드 변환이 이미 적용되어 있으므로 World는 Identity.
+	Command.Constants.World = FMatrix::Identity;
+
+	ClearLastRenderState();
+	BindRenderTarget(Target->GetRTV(), ActiveSceneTextures->SceneDepthDSV.Get());
+	SetViewportPixel(View.ViewportSizePixel);
+	UpdateViewConstants(View.Camera, View.ViewportSizePixel);
+	DrawTextInstanceData(Command, BillboardWorldInstances);
+	ClearLastRenderState();
 }
 
 void FRenderer::ClearTextInstances()
@@ -1628,24 +1719,6 @@ void FRenderer::DrawScreenPass(ID3D11RenderTargetView* TargetRTV, const D3D11_VI
 // =====================================================================
 // ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Post Process ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
 
-// SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 그린다
-void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
-{
-	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
-	if (!RenderTarget || !ActiveSceneTextures)
-	{
-		return;
-	}
-
-	// 출력 RT와 SceneTextures는 같은 크기이고 둘 다 (0,0)부터 시작한다.
-	// 그래서 SelectionOutlinePS가 SV_Position으로 Load해도 좌표가 그대로 맞는다.
-	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
-
-	// t0: SceneColor, t1: Stencil
-	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneColorSRV.Get(), ActiveSceneTextures->SceneStencilSRV.Get() };
-	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#SelectionOutline"));
-}
-
 // SceneColor를 그대로 출력 RT에 복사
 void FRenderer::CopySceneColorToViewport(const FViewport& TargetViewport)
 {
@@ -1658,8 +1731,26 @@ void FRenderer::CopySceneColorToViewport(const FViewport& TargetViewport)
 	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
 
 	// 합성용 파이프라인(CompositePS: t0을 UV로 샘플링)을 그대로 복사에 재사용한다
-	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneColorSRV.Get() };
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetCurrentSRV() };
 	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#Composite"));
+}
+
+// SceneColor + Stencil을 읽어 외곽선을 그려 출력 RT에 그린다
+void FRenderer::RenderSelectionOutline(const FViewport& TargetViewport)
+{
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures)
+	{
+		return;
+	}
+
+	// 출력 RT와 SceneTextures는 같은 크기이고 둘 다 (0,0)부터 시작한다.
+	// 그래서 SelectionOutlinePS가 SV_Position으로 Load해도 좌표가 그대로 맞는다. 셈플러 필요 x
+	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.0f, 0.0f, static_cast<float>(RenderTarget->GetWidth()), static_cast<float>(RenderTarget->GetHeight()));
+
+	// t0: SceneColor, t1: Stencil
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->GetCurrentSRV(), ActiveSceneTextures->SceneStencilSRV.Get() };
+	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 2, FName("#SelectionOutline"));
 }
 
 // Scene Depth를 출력 RT에 그린다
@@ -1674,8 +1765,39 @@ void FRenderer::RenderSceneDepth(const FViewport& TargetViewport)
 	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.f, 0.f, TargetViewport.Rect.GetWidth(), TargetViewport.Rect.GetHeight());
 
 	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get() };
-	DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
+	//DrawScreenPass(RenderTarget->GetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
+	DrawScreenPass(ActiveSceneTextures->GetTargetRTV(), TargetD3DViewport, SRVs, 1, FName("#SceneDepth"));
+	ActiveSceneTextures->SwapPingPong();
 }
+
+// Fog를 SceneColor에 그린다
+void FRenderer::RenderFog(const FViewport& TargetViewport)
+{
+	const FViewportRenderTarget* RenderTarget = TargetViewport.RenderTarget.get();
+	if (!RenderTarget || !ActiveSceneTextures)
+	{
+		return;
+	}
+
+	const D3D11_VIEWPORT TargetD3DViewport = MakeD3DViewport(0.f, 0.f, TargetViewport.Rect.GetWidth(), TargetViewport.Rect.GetHeight());
+
+	ID3D11ShaderResourceView* SRVs[] = { ActiveSceneTextures->SceneDepthSRV.Get(), ActiveSceneTextures->GetCurrentSRV() };
+	// Fog는 마지막 패스가 아니니 SceneColor에 쓴다
+	DrawScreenPass(ActiveSceneTextures->GetTargetRTV(), TargetD3DViewport, SRVs, 2, FName("#Fog"));
+	ActiveSceneTextures->SwapPingPong();
+}
+
+// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Post Process ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
+// =====================================================================
+
+
+
+
+
+
+
+// =====================================================================
+// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Perfomance ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
 
 bool FRenderer::InitializeGPUTimerQueries()
 {
@@ -1695,18 +1817,6 @@ bool FRenderer::InitializeGPUTimerQueries()
 
 	return true;
 }
-
-// ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃ Post Process ⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃⌃
-// =====================================================================
-
-
-
-
-
-
-
-// =====================================================================
-// ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄ Perfomance ⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄⌄
 
 void FRenderer::BeginGPUTimer()
 {

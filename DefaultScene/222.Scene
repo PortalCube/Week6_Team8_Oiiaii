@@ -1,62 +1,12 @@
 {
-    "NextUUID": 137,
-    "Scene": {
+    "Level": {
         "Actors": [
             {
                 "RootComponent": {
                     "Location": [
-                        8.060699462890625,
-                        -4.876733303070068,
-                        2.1817281246185303
-                    ],
-                    "Materials": [
-                        {
-                            "Albedo": 1.0,
-                            "Color": [
-                                1.0,
-                                0.0,
-                                0.0,
-                                1.0
-                            ],
-                            "Diffuse": 1.0,
-                            "DisableShading": false,
-                            "MaterialAsset": "Material/Simple.json",
-                            "OverridePipelineAsset": "Pipeline/Simple_Solid.json",
-                            "OverrideTextureAsset": "",
-                            "Specular": 1.0,
-                            "UVOffset": [
-                                0.0,
-                                0.0
-                            ],
-                            "UVScale": [
-                                1.0,
-                                1.0
-                            ]
-                        }
-                    ],
-                    "MeshAsset": "#Sphere",
-                    "Rotation": [
-                        -0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "Scale": [
-                        0.5,
-                        0.5,
-                        0.5
-                    ],
-                    "Type": "UStaticMeshComponent",
-                    "UUID": 83
-                },
-                "Type": "AFireBallActor",
-                "UUID": 86
-            },
-            {
-                "RootComponent": {
-                    "Location": [
-                        2.049999952316284,
-                        0.4968177080154419,
-                        9.858330726623535
+                        2.1859092712402344,
+                        -14.400057792663574,
+                        3.179561138153076
                     ],
                     "Materials": [
                         {
@@ -90,12 +40,12 @@
                         0.0
                     ],
                     "Scale": [
-                        0.5,
-                        27.055837631225586,
-                        22.111303329467773
+                        25.0,
+                        25.0,
+                        0.5
                     ],
                     "Type": "UStaticMeshComponent",
-                    "UUID": 87
+                    "UUID": 89
                 },
                 "Type": "ACubeActor",
                 "UUID": 88
@@ -103,9 +53,9 @@
             {
                 "RootComponent": {
                     "Location": [
-                        12.615682601928711,
-                        1.4800000190734863,
-                        0.20999999344348907
+                        2.1336236000061035,
+                        -26.470478057861328,
+                        15.708659172058105
                     ],
                     "Materials": [
                         {
@@ -140,21 +90,21 @@
                     ],
                     "Scale": [
                         25.0,
-                        25.0,
-                        0.5
+                        0.5,
+                        25.0
                     ],
                     "Type": "UStaticMeshComponent",
-                    "UUID": 96
+                    "UUID": 91
                 },
                 "Type": "ACubeActor",
-                "UUID": 97
+                "UUID": 90
             },
             {
                 "RootComponent": {
                     "Location": [
-                        8.137567520141602,
-                        1.955344557762146,
-                        1.4884865283966064
+                        4.054899215698242,
+                        -17.028013229370117,
+                        6.215450286865234
                     ],
                     "Materials": [
                         {
@@ -193,17 +143,17 @@
                         0.5
                     ],
                     "Type": "UStaticMeshComponent",
-                    "UUID": 116
+                    "UUID": 93
                 },
                 "Type": "AFireBallActor",
-                "UUID": 119
+                "UUID": 92
             },
             {
                 "RootComponent": {
                     "Location": [
-                        12.989136695861816,
-                        2.060106039047241,
-                        2.4036474227905273
+                        2.0072717666625977,
+                        -22.82483673095703,
+                        6.256460189819336
                     ],
                     "Materials": [
                         {
@@ -242,14 +192,64 @@
                         0.5
                     ],
                     "Type": "UStaticMeshComponent",
-                    "UUID": 133
+                    "UUID": 97
                 },
                 "Type": "AFireBallActor",
-                "UUID": 136
+                "UUID": 96
+            },
+            {
+                "RootComponent": {
+                    "Location": [
+                        -1.3649847507476807,
+                        -19.99306869506836,
+                        6.544116973876953
+                    ],
+                    "Materials": [
+                        {
+                            "Albedo": 1.0,
+                            "Color": [
+                                1.0,
+                                0.0,
+                                0.0,
+                                1.0
+                            ],
+                            "Diffuse": 1.0,
+                            "DisableShading": false,
+                            "MaterialAsset": "Material/Simple.json",
+                            "OverridePipelineAsset": "Pipeline/Simple_Solid.json",
+                            "OverrideTextureAsset": "",
+                            "Specular": 1.0,
+                            "UVOffset": [
+                                0.0,
+                                0.0
+                            ],
+                            "UVScale": [
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "MeshAsset": "#Sphere",
+                    "Rotation": [
+                        -0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "Scale": [
+                        0.5,
+                        0.5,
+                        0.5
+                    ],
+                    "Type": "UStaticMeshComponent",
+                    "UUID": 101
+                },
+                "Type": "AFireBallActor",
+                "UUID": 100
             }
         ],
-        "Type": "UScene",
-        "UUID": 80
+        "Type": "ULevel",
+        "UUID": 85
     },
-    "Version": 2
+    "NextUUID": 194,
+    "Version": 1
 }

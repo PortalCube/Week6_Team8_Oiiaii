@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Runtime/Engine/FArchive.h"
+#include "Runtime/Serialization/FJson.h"
 #include "Runtime/Core/FString.h"
 #include "ThirdParty/Json/json.hpp"
 
@@ -13,6 +13,6 @@ namespace FileUtil
 	nlohmann::json ReadJSONFile(FStringView Path);
 	void WriteJSONFile(FStringView Path, const nlohmann::json& JSON);
 
-	FArchive ReadArchive(FStringView Path);
-	void WriteArchive(FStringView Path, const FArchive& Archive);
+	FJson ReadJson(FStringView Path);
+	void WriteJson(FStringView Path, const FJson& Archive);
 }

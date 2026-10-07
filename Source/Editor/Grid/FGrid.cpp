@@ -23,11 +23,10 @@ void FGrid::DrawLine(FRenderer& Renderer, const FCamera& Camera)
 	const float SnapX = std::floor(Camera.GetPosition().X / CellSize) * CellSize;
 	const float SnapY = std::floor(Camera.GetPosition().Y / CellSize) * CellSize;
 
-	const FVector4 MinorGridColor{ 0.1f, 0.1f, 0.1f, 1.0f };
-	const FVector4 MajorGridColor{ 0.3f, 0.3f, 0.3f, 1.0f };
+	const FVector4 MinorGridColor{ 0.5f, 0.5f, 0.5f, 0.5f };
+	const FVector4 MajorGridColor{ 0.1f, 0.1f, 0.1f, 0.5f };
 	const FVector4 AxisColorX{ 1.0f, 0.0f, 0.0f, 1.0f };
 	const FVector4 AxisColorY{ 0.0f, 1.0f, 0.0f, 1.0f };
-	const FVector4 BackgroundColor{ 0.05f, 0.05f, 0.08f, 1.0f };
 
 	// const bool bEnableMajorGrid = (CellSize <= 0.2f);
 	const float LineOffset = CellSize * 0.02f;

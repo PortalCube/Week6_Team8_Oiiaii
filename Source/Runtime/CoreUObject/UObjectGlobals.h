@@ -47,7 +47,6 @@ inline void DestroyObject(UObject* Object)
 	ObjectArray.DestroyObject(Object);
 }
 
-
 inline UPackage* GetTransientPackage()
 {
 	return Globals::TransientPackage;

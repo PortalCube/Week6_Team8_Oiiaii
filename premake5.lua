@@ -38,8 +38,6 @@ project "OiiaiiEngine"
     vectorextensions "AVX2"
 
     files {
-        "**.h",
-        "**.cpp",
         "Source/**.h",
         "Source/**.hpp",
         "Source/**.cpp",
@@ -75,6 +73,7 @@ project "OiiaiiEngine"
     links {
         "DirectXTK_Desktop_2026",
         "user32",
+        "comdlg32",
         "d3d11",
         "dxgi",
         "Psapi",
@@ -95,20 +94,20 @@ project "OiiaiiEngine"
 	-- 프리 빌드, 포스트 빌드 스크립트
 	prebuildmessage "빌드 전처리 단계를 실행합니다..."
 	prebuildcommands {
-		'powershell -NoProfile -ExecutionPolicy Bypass -File "%{wks.location}Scripts/PreBuild.ps1"'
+		'powershell -NoProfile -ExecutionPolicy Bypass -File "%{wks.location}/Scripts/PreBuild.ps1"'
 	}
 
 	postbuildmessage "빌드 후처리 단계를 실행합니다..."
     postbuildcommands {
-		'powershell -NoProfile -ExecutionPolicy Bypass -File "%{wks.location}Scripts/PostBuild.ps1" -TargetDirectory "%{cfg.targetdir}"'
+		'powershell -NoProfile -ExecutionPolicy Bypass -File "%{wks.location}/Scripts/PostBuild.ps1" -TargetDirectory "%{cfg.targetdir}"'
     }
 
     filter "configurations:Debug"
-        defines { "_DEBUG" }
+        defines { "_DEBUG", "ENGINE_EDITOR" }
         symbols "On"
 
     filter "configurations:Release"
-        defines { "NDEBUG" }
+        defines { "NDEBUG", "ENGINE_EDITOR" }
         --optimize "Full"
         --symbols "Off"
         --linktimeoptimization "On"
@@ -122,7 +121,7 @@ project "OiiaiiEngine"
 		linktimeoptimization "Off"
 
     filter "configurations:ObjViewer"
-        defines { "_OBJVIEWER", "NDEBUG" }
+        defines { "_OBJVIEWER", "NDEBUG", "ENGINE_OBJECTVIEWER" }
         --symbols "On"
 		symbols "Off"
 		
@@ -193,10 +192,26 @@ project "OiiaiiEngine.Tests"
         -- 테스트할 실제 제품 코드
         "Source/Runtime/Utility/WindowsUtil.cpp",
         "Source/Runtime/Utility/EngineUtil.cpp",
-        "Source/Runtime/Engine/FArchive.cpp",
+        "Source/Runtime/Serialization/FArchive.cpp",
+        "Source/Runtime/Serialization/FJson.cpp",
+        "Source/Runtime/Serialization/FJsonDataReader.cpp",
+        "Source/Runtime/Serialization/FJsonDataWriter.cpp",
+        "Source/Runtime/CoreUObject/UObject.cpp",
+        "Source/Runtime/CoreUObject/UClass.cpp",
+        "Source/Runtime/CoreUObject/FUObjectArray.cpp",
+        "Source/Runtime/Asset/UPackage.cpp",
+        "Source/Runtime/Core/FPoolAllocator.cpp",
+        "Source/Runtime/CoreUObject/FStatsManager.cpp",
+        "Source/Runtime/Core/FName.cpp",
+        "Source/Runtime/Core/FNamePool.cpp",
         "Source/Editor/Core/FConfigArchive.cpp",
         "Source/Editor/Core/FEditorState.cpp",
         "Source/Runtime/Mesh/MeshLODBuilder.cpp",
+        "Source/Runtime/Rendering/FFont.cpp",
+        "Source/Runtime/Core/FPoolAllocator.cpp",
+        "Source/Runtime/Core/FName.cpp",
+        "Source/Runtime/Core/FNamePool.cpp",
+        "Source/Runtime/CoreUObject/FStatsManager.cpp",
         "Source/ThirdParty/meshoptimizer/src/*.cpp",
     }
 
@@ -207,13 +222,19 @@ project "OiiaiiEngine.Tests"
         "Source/ThirdParty/meshoptimizer/src",
     }
 
+    forceincludes { "pch.h" }
+
     defines {
         "NOMINMAX",
         "_CONSOLE"
     }
 
     links {
-        "user32"
+        "DirectXTK_Desktop_2026",
+        "user32",
+        "d3d11",
+        "dxgi",
+        "Psapi",
     }
 
     buildoptions {

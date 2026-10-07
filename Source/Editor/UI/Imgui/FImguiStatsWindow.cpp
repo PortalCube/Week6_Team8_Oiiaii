@@ -77,6 +77,7 @@ double FImguiStatsWindow::GetStat(const FName& Name, size_t Range) const
 
 void FImguiStatsWindow::Process(FEditor& Editor, float InDeltaTime)
 {
+	DrawResolutionFPS();
 
 	if (Editor.bShowBenchmark)
 	{
@@ -119,6 +120,32 @@ void FImguiStatsWindow::DrawPickingStatsOverlay(const FEditor& Editor)
 
 	const ImVec2 Pos(ViewportPos.x + 12.0f, ViewportPos.y + ImGui::GetFrameHeight() + 6.0f);
 	constexpr float FontSize = 26.0f;
+	ImDrawList* DrawList = ImGui::GetWindowDrawList();
+
+	// 밝은 장면에서도 읽히도록 그림자를 먼저 그린다.
+	DrawList->AddText(ImGui::GetFont(), FontSize, ImVec2(Pos.x + 2.0f, Pos.y + 2.0f),
+	    IM_COL32(0, 0, 0, 220), Buffer);
+	DrawList->AddText(ImGui::GetFont(), FontSize, Pos,
+	    IM_COL32(0, 255, 0, 255), Buffer);
+}
+
+void FImguiStatsWindow::DrawResolutionFPS()
+{
+	const double DeltaTime = FTimeManager::GetDeltaTime();
+	const ImVec2 ViewportPos = ImGui::GetWindowPos();
+	const ImVec2 ViewportSize = ImGui::GetWindowSize();
+
+	const int ResolutionX = static_cast<int>(ViewportSize.x);
+	const int ResolutionY = static_cast<int>(ViewportSize.y - ImGui::GetFrameHeight());
+	const int FPS = DeltaTime > 0.0 ? static_cast<int>(1.0 / DeltaTime) : 0;
+	const double FrameMs = DeltaTime * 1000.0;
+
+	char Buffer[256];
+	snprintf(Buffer, sizeof(Buffer),
+	    "Resolution : %dx%d\nFPS : %d (%.2f ms)", ResolutionX, ResolutionY, FPS, FrameMs);
+
+	const ImVec2 Pos(ViewportPos.x + 12.0f, ViewportPos.y + ImGui::GetFrameHeight() + 6.0f);
+	constexpr float FontSize = 18.0f;
 	ImDrawList* DrawList = ImGui::GetWindowDrawList();
 
 	// 밝은 장면에서도 읽히도록 그림자를 먼저 그린다.

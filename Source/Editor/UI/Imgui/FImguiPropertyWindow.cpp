@@ -225,7 +225,7 @@ void FImguiPropertyWindow::ShowTextSettings(UTextComponent& TextComp) const
 
 	ImGui::TextDisabled("Font");
 	const UFont* Font = TextComp.GetFont();
-	const FString FontLabel = Font ? Font->GetID().ToString() : "No Font";
+	const FString FontLabel = Font ? Font->GetIDString() : "No Font";
 	const float FullWidth = ImGui::GetContentRegionAvail().x;
 	ImGui::Button(FontLabel.c_str(), ImVec2(FullWidth, SlotSize));
 
@@ -530,7 +530,7 @@ void FImguiPropertyWindow::ShowMaterialSlot(UStaticMeshComponent& MeshComp, int 
 
 	// 슬롯 만들기
 	float FullWidth = ImGui::GetContentRegionAvail().x;
-	const FString Label = Material ? Material->GetID().ToString() : "No Material";
+	const FString Label = Material ? Material->GetIDString() : "No Material";
 	ImGui::Button(Label.c_str(), ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
@@ -566,7 +566,7 @@ void FImguiPropertyWindow::ShowPipelineSlot(UStaticMeshComponent& MeshComp, int 
 
 	// 슬롯 만들기
 	float FullWidth = ImGui::GetContentRegionAvail().x;
-	ImGui::Button(Pipeline->GetID().ToString().c_str(), ImVec2(FullWidth, SlotSize));
+	ImGui::Button(Pipeline->GetIDString().c_str(), ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
 	if (!ImGui::BeginDragDropTarget())
@@ -650,7 +650,7 @@ void FImguiPropertyWindow::ShowStaticMeshSlot(UStaticMeshComponent& MeshComp) co
 
 	// 슬롯 만들기
 	float FullWidth = ImGui::GetContentRegionAvail().x;
-	ImGui::Button(StaticMesh->GetID().ToString().c_str(), ImVec2(FullWidth, SlotSize));
+	ImGui::Button(StaticMesh->GetIDString().c_str(), ImVec2(FullWidth, SlotSize));
 
 	// 드롭 타깃은 아이템을 그린 직후여야 한다.
 	if (!ImGui::BeginDragDropTarget())

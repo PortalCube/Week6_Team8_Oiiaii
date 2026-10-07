@@ -1,3 +1,5 @@
+#include "Runtime/Serialization/FJsonDataWriter.h"
+#include "Runtime/Serialization/FJson.h"
 #include "UEditorEngine.h"
 
 #include "Runtime/Core/Log.h"
@@ -230,7 +232,7 @@ void UEditorEngine::Tick(float DeltaTime)
 			// 기즈모 그리기(PIE 모드가 아닐때만)
 			if (!EditorViewport.IsPIE() && Editor.ObjectSelected())
 			{
-				RenderView.RenderOverlayPass(View, Editor.SelectedTransform, Editor.GetGizmo(), Editor.GetTextcomp());
+				RenderView.RenderSelectedActorUUID(View, Editor.GetSelectedActor());
 				RenderView.RenderGizmo(View, Editor.SelectedTransform, Editor.GetGizmo());
 			}
 
@@ -265,19 +267,13 @@ void UEditorEngine::Exit()
 
 void UEditorEngine::SaveLevel(const FString& Path, ULevel* Level)
 {
-	// 사실 여기서 하는건 레벨을 저장한다기 보단 엔진의 스냅샷을 저장하는 것에 가까움
-	// NextUUID 같은건 저장해선 안됨. 액터의 고유키나 참조 관계는 핸들로 저장해야함
-
-	FArchive Archive;
-
-	Archive.SetInt32("Version", 1);
-	Archive.SetInt32("NextUUID", FUObjectArray::Get().GetNextUUID());
-
-	FArchive LevelArchive;
-	Level->Serialize(LevelArchive);
-	Archive.SetArchive("Level", LevelArchive);
-
-	FileUtil::WriteArchive(Path, Archive);
+	FJsonDataWriter Writer;
+	Writer.Serialize(Level);
+	FJson Snapshot;
+	Snapshot.SetInt32("Version", 2);
+	Snapshot.SetUInt32("NextUUID", FUObjectArray::Get().GetNextUUID());
+	Snapshot.SetJson("Level", FJson{Writer.CloneJSON()});
+	FileUtil::WriteJson(Path, Snapshot);
 }
 
 UWorld* UEditorEngine::GetEditorWorld() const
@@ -425,32 +421,21 @@ bool UEditorEngine::StartPIESession(const FRequestPlaySessionParams& Params)
 
 	Editor.GetViewportLayout().SetActiveViewport(&TargetViewport);
 
-	// TODO: Editor World를 복제하기
-	// 지금은 비어있는 월드를 생성
-	LoadMap(*PIEWorldContext, "");
+	PIEWorldContext->World = GetEditorWorld()->DuplicateWorld(EWorldType::PIE);
 
-	if (!PIEWorldContext->World || !TargetViewport.IsPIE() || TargetViewport.GetRenderWorldContext() != PIEWorldContext)
-	{
-		StopPIESession();
-		return false;
-	}
+	// 월드 초기화 (Subsystem 및 물리 등록)
+	PIEWorldContext->World->InitWorld();
 
 	UWorld* PlayWorld = PIEWorldContext->World;
 
-	// 테스트. 나중에 없애야함
-	FVector Location;
-	ACatActor* TestActor1 = PIEWorldContext->World->SpawnActor<ACatActor>(ACatActor::StaticClass());
-	UStaticMeshComponent* TestMesh1 = TestActor1->GetRootComponent()->Cast<UStaticMeshComponent>();
+	// Subsystem에 모든 월드 액터/컴포넌트를 등록
+	PIEWorldContext->World->UpdateWorldComponents();
 
-	Location = {0.0, 5.0f, 0.0f};
-	TestMesh1->SetRelativeLocation(Location);
+	// 액터/컴포넌트들의 상호 초기화 단계
+	PIEWorldContext->World->InitializeActorsForPlay();
 
-	ACatActor* TestActor2 = PIEWorldContext->World->SpawnActor<ACatActor>(ACatActor::StaticClass());
-	UStaticMeshComponent* TestMesh2 = TestActor2->GetRootComponent()->Cast<UStaticMeshComponent>();
-
-	Location = { 0.0, 0.0f, 5.0f };
-	TestMesh2->SetRelativeLocation(Location);
-
+	// BeginPlay
+	PIEWorldContext->World->BeginPlay();
 
 	ULevel* Level = PlayWorld->GetCurrentLevel();
 	Level->UpdateDirtyBounds();
@@ -459,11 +444,9 @@ bool UEditorEngine::StartPIESession(const FRequestPlaySessionParams& Params)
 	Editor.UnSelectActor();
 	Editor.GetGizmo().EndInteraction();
 
-	// 요청할 때 확정한 뷰포트에 연결한다.
-	// TargetViewport.AttachGameClient(PIEWorldContext, InitialCamera);
+	OnWorldLoaded(*PIEWorldContext);
 
 	return true;
-
 }
 
 void UEditorEngine::StopPIESession()

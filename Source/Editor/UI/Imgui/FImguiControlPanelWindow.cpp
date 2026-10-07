@@ -17,6 +17,9 @@
 #include <iomanip>
 #include "Runtime/Math/Random.h"
 #include "Editor/Core/EditorConstant.h"
+#include "Runtime/Math/FVector.h"
+#include "Runtime/Rendering/FPostProcess.h"
+#include "Runtime/Rendering/FRenderer.h"
 #include <Windows.h>
 #include <ShlObj.h>
 #include <filesystem>
@@ -45,14 +48,15 @@ void FImguiControlPanelWindow::Process(FEditor& Editor, float DeltaTime)
 	ActorSpawnSetting(Editor);
 	// 그리드 설정
 	GridSetting(Editor);
-	// 뷰포트 렌더 모드 및 쇼 플래그 설정
-	RenderModeAndShowFlagSetting(Editor);
 	ImGui::Separator();
 	// 카메라
 	CameraSetting(Editor);
 	ImGui::Separator();
 	// 전역조명
 	DirectionLightSetting(Editor);
+	ImGui::Separator();
+	// 안개
+	FogSetting(Editor);
 
 	ImGui::Separator();
 	BVHDebugSetting(Editor);
@@ -405,49 +409,6 @@ void FImguiControlPanelWindow::GridSetting(FEditor& Editor)
 	ImGui::Text("Grid Cell Size");
 }
 
-void FImguiControlPanelWindow::RenderModeAndShowFlagSetting(FEditor& Editor)
-{
-
-	SEditorViewport* ActiveViewport = Editor.GetActiveViewport();
-	if (ActiveViewport)
-	{
-		// 뷰 모드 드롭박스
-		int CurrentViewMode = static_cast<int>(ActiveViewport->GetClient().GetViewMode());
-		const char* ViewModes[] = { "Lit", "Unlit", "Wireframe", "SceneDepth" };
-		ImGui::SetNextItemWidth(180.0f);
-		if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModes, IM_ARRAYSIZE(ViewModes)))
-		{
-			ActiveViewport->GetClient().SetViewMode(static_cast<EViewModeIndex>(CurrentViewMode));
-		}
-		ImGui::SameLine();
-		ImGui::Text("View Mode");
-
-		// 쇼 플래그 드롭박스
-		ImGui::SetNextItemWidth(180.0f);
-		if (ImGui::BeginCombo("##ShowFlags", "Show Flags"))
-		{
-			bool bPrimitives = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_Primitives);
-			if (ImGui::Checkbox("Primitives", &bPrimitives))
-			{
-				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_Primitives);
-			}
-			bool bBillboardText = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_BillboardText);
-			if (ImGui::Checkbox("Billboard Text", &bBillboardText))
-			{
-				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_BillboardText);
-			}
-			bool bGrid = ActiveViewport->GetClient().HasShowFlag(EEngineShowFlags::SF_Grid);
-			if (ImGui::Checkbox("Grid", &bGrid))
-			{
-				ActiveViewport->GetClient().ToggleShowFlag(EEngineShowFlags::SF_Grid);
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::SameLine();
-		ImGui::Text("Show Flags");
-	}
-}
-
 void FImguiControlPanelWindow::CameraSetting(FEditor& Editor)
 {
 	if (SEditorViewport* Viewport = Editor.GetActiveViewport())
@@ -605,4 +566,36 @@ void FImguiControlPanelWindow::DirectionLightSetting(FEditor& Editor)
 	ImGui::SliderFloat("##LightAmbient", &Editor.GlobalLight.AmbientIntensity, 0.0f, 1.0f, "%.2f");
 	ImGui::SameLine();
 	ImGui::Text("Ambient");
+}
+
+void FImguiControlPanelWindow::FogSetting(FEditor& Editor)
+{
+	ImGui::SeparatorText("Height Fog");
+
+	FFogSettings& Fog = GFogSettings;
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Fog Density", &Fog.FogDensity, 0.0f, 1.0f, "%.3f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Height Falloff", &Fog.FogHeightFalloff, 0.0f, 2.0f, "%.3f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Fog Height", &Fog.FogHeight, -50.0f, 50.0f, "%.2f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Start Distance", &Fog.StartDistance, 0.0f, 100.0f, "%.2f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Cutoff Distance", &Fog.FogCutoffDistance, 0.0f, 1000.0f, "%.1f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::SliderFloat("Max Opacity", &Fog.FogMaxOpacity, 0.0f, 1.0f, "%.2f");
+
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::ColorEdit3("Inscattering Color", &Fog.FogInscatteringColor.X);
+
+	// 배경(Clear) 색상
+	ImGui::SetNextItemWidth(180.0f);
+	ImGui::ColorEdit3("##ClearColor", ClearColor);
 }
