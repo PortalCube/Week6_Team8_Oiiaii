@@ -10,8 +10,5 @@ class AHeightFogActor : public AActor
 
 public:
 	void Initialize() override;
-	void Serialize(FArchive& Archive) override;
 
-private:
-	UHeightFogComponent* HeightFogComponent = nullptr;
 };
